@@ -1,0 +1,70 @@
+.bottom-nav {
+  height: 72px;
+  flex-shrink: 0;
+  z-index: 10;
+  background: rgba(var(--bg-rgb), 0.93);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -1px 0 var(--border), 0 -2px 8px rgba(0,0,0,0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0 2rem;
+}
+
+.bn-tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 95px;
+  height: 52px;
+  padding: 0.4rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.bn-tab:hover {
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.bn-tab--active {
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.08);
+  border-color: rgba(var(--accent-rgb), 0.25);
+}
+
+.bn-icon {
+  font-size: 1rem;
+  line-height: 1;
+  margin-bottom: 0.1rem;
+  opacity: 0.9;
+}
+
+.bn-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.bn-indicator {
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px 2px 0 0;
+}

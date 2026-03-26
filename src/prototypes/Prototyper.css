@@ -1,0 +1,95 @@
+.prototyper-menu {
+  min-height: 100vh;
+  background-color: #0f172a;
+  color: #f8fafc;
+  padding: 4rem 2rem;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.prototyper-header {
+  max-width: 800px;
+  margin: 0 auto 3rem auto;
+  text-align: center;
+}
+
+.prototyper-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #38bdf8, #818cf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.prototyper-header p {
+  color: #94a3b8;
+  font-size: 1.125rem;
+  margin-bottom: 1.5rem;
+}
+
+.prototyper-header button {
+  background: transparent;
+  color: #38bdf8;
+  border: 1px solid #38bdf8;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.prototyper-header button:hover {
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.prototyper-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.proto-card {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.proto-card:hover {
+  transform: translateY(-4px);
+  border-color: #38bdf8;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+}
+
+.proto-card h2 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: #f1f5f9;
+}
+
+.proto-card p {
+  color: #94a3b8;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* Common Back Button for all prototypes */
+.back-button {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 9999;
+  background: #1e293b;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+.back-button:hover {
+  background: #334155;
+}

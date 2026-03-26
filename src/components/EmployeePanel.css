@@ -1,0 +1,192 @@
+.employee-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.ep-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.ep-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.ep-count {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.ep-empty {
+  padding: 1.25rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.ep-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Employee card ── */
+
+.employee-card {
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.employee-card:last-child { border-bottom: none; }
+
+.ec-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.ec-role-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.2rem 0.45rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.employee-card--developer .ec-role-badge       { background: rgba(var(--accent-rgb), 0.1);  color: var(--accent); }
+.employee-card--product_manager .ec-role-badge { background: rgba(109, 89, 122, 0.1);  color: var(--purple); }
+.employee-card--sales .ec-role-badge           { background: rgba(var(--warning-rgb), 0.1);  color: var(--orange); }
+.employee-card--marketing .ec-role-badge       { background: rgba(var(--success-rgb), 0.1);  color: var(--green);  }
+
+.ec-info { flex: 1; display: flex; flex-direction: column; gap: 0.05rem; }
+
+.ec-name {
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ec-sub {
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.ec-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ec-status {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.4rem;
+  border-radius: 2px;
+}
+
+.ec-status--idle {
+  background: var(--surface2);
+  color: var(--muted);
+}
+
+.ec-status--busy {
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--accent);
+}
+
+.btn-fire {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 2px;
+  transition: color 0.15s;
+}
+
+.btn-fire:hover {
+  color: var(--danger);
+}
+
+.ec-task {
+  margin-bottom: 0.5rem;
+}
+
+.ec-task-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+  align-items: center;
+}
+
+.ec-task-pct {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.ec-progress-track {
+  height: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.ec-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  opacity: 0.7;
+  transition: width 0.5s ease;
+}
+
+.ec-stats {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.ec-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.ec-stat-key {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.ec-stat-val {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ec-salary {
+  font-size: 0.7rem;
+  color: var(--warn);
+}
+
+/* ── Progress ring ── */
+
+.progress-ring {
+  vertical-align: middle;
+}

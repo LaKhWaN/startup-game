@@ -1,0 +1,330 @@
+/* ── Overlay ─────────────────────────────────────────────────── */
+.ic-wrap {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 400;
+  padding: 1rem;
+  animation: ic-fade-in 0.15s ease;
+}
+
+@keyframes ic-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Shared close button ─────────────────────────────────────── */
+.ic-close {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.7rem;
+  color: var(--muted);
+  opacity: 0.5;
+  padding: 0.2rem 0.35rem;
+  border-radius: 4px;
+  line-height: 1;
+  transition: opacity 0.15s;
+}
+.ic-close:hover { opacity: 1; }
+
+/* ── Invite card ─────────────────────────────────────────────── */
+.ic-invite {
+  position: relative;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 420px;
+  padding: 1.5rem 2.5rem 1.5rem 1.4rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);
+  animation: ic-slide-up 0.2s ease;
+}
+
+.ic-invite-avatar {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 0.1rem;
+}
+
+.ic-invite-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.ic-invite-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.1rem;
+}
+
+.ic-invite-role {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.ic-invite-msg {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.45;
+  margin-bottom: 0.75rem;
+}
+
+.ic-invite-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.ic-btn-accept {
+  padding: 0.35rem 0.75rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.ic-btn-accept:hover { opacity: 0.88; }
+
+.ic-btn-later {
+  padding: 0.35rem 0.6rem;
+  background: none;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.ic-btn-later:hover {
+  border-color: rgba(0,0,0,0.2);
+  color: var(--text);
+}
+
+/* ── Modal ───────────────────────────────────────────────────── */
+.ic-modal {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  padding: 1.5rem 1.6rem 1.4rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);
+  animation: ic-slide-up 0.2s ease;
+}
+
+.ic-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.9rem;
+}
+
+.ic-modal-head .ic-close {
+  position: static;
+  opacity: 0.4;
+}
+
+.ic-step-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+/* ── Avatar + chat bubble ────────────────────────────────────── */
+.ic-avatar-row {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.ic-modal-avatar {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.ic-bubble {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 0 10px 10px 10px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.82rem;
+  color: var(--text);
+  line-height: 1.45;
+  flex: 1;
+}
+
+/* ── Mood ────────────────────────────────────────────────────── */
+.ic-mood-row {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.ic-mood-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.55rem 0.2rem;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.ic-mood-btn:hover {
+  border-color: rgba(var(--accent-rgb), 0.4);
+  background: rgba(var(--accent-rgb), 0.05);
+}
+
+.ic-mood-btn--on {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.08);
+}
+
+.ic-mood-emoji { font-size: 1.3rem; line-height: 1; }
+.ic-mood-label { font-size: 0.58rem; font-weight: 700; color: var(--muted); text-align: center; }
+
+/* ── Chips ───────────────────────────────────────────────────── */
+.ic-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.ic-chip {
+  padding: 0.35rem 0.7rem;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.ic-chip:hover {
+  border-color: rgba(var(--accent-rgb), 0.4);
+}
+
+.ic-chip--on {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--accent);
+}
+
+/* ── Textarea ────────────────────────────────────────────────── */
+.ic-textarea {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  color: var(--text);
+  resize: none;
+  outline: none;
+  margin-bottom: 0.9rem;
+  line-height: 1.5;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+.ic-textarea:focus { border-color: var(--accent); }
+.ic-textarea::placeholder { color: var(--muted); opacity: 0.6; }
+
+/* ── Next / Submit button ────────────────────────────────────── */
+.ic-next-btn {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.ic-next-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.06);
+}
+.ic-next-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ic-next-btn--submit {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.ic-next-btn--submit:hover {
+  background: var(--accent) !important;
+  opacity: 0.9;
+}
+
+/* ── Done state ──────────────────────────────────────────────── */
+.ic-modal--done {
+  text-align: center;
+  padding: 1.75rem 1.5rem;
+}
+
+.ic-done-emoji {
+  font-size: 2.5rem;
+  margin-bottom: 0.6rem;
+  line-height: 1;
+}
+
+.ic-done-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+
+.ic-done-sub {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+}
+
+/* ── Animation ───────────────────────────────────────────────── */
+@keyframes ic-slide-up {
+  from { transform: translateY(10px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}

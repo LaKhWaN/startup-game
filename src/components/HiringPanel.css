@@ -1,0 +1,220 @@
+.hiring-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.hp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.hp-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.btn-refresh {
+  font-size: 0.75rem;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 0.25rem 0.65rem;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.btn-refresh:hover {
+  color: var(--text);
+  border-color: rgba(0,0,0,0.2);
+}
+
+.hp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Candidate card ── */
+
+.candidate-card {
+  padding: 0.9rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.candidate-card:last-child { border-bottom: none; }
+
+.candidate-card--developer       { --cc-accent: var(--accent); }
+.candidate-card--product_manager { --cc-accent: var(--purple); }
+.candidate-card--sales           { --cc-accent: var(--orange); }
+.candidate-card--marketing       { --cc-accent: var(--green); }
+
+.cc-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.cc-role-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.2rem 0.45rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.candidate-card--developer .cc-role-badge       { background: rgba(var(--accent-rgb), 0.1);  color: var(--accent); }
+.candidate-card--product_manager .cc-role-badge { background: rgba(109, 89, 122, 0.1);  color: var(--purple); }
+.candidate-card--sales .cc-role-badge           { background: rgba(var(--warning-rgb), 0.1);  color: var(--orange); }
+.candidate-card--marketing .cc-role-badge       { background: rgba(var(--success-rgb), 0.1);  color: var(--green);  }
+
+.cc-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.cc-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.cc-role {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.cc-salary {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--warn);
+  white-space: nowrap;
+}
+
+.cc-overall {
+  margin: 0.35rem 0 0.7rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--surface) 80%, white);
+}
+
+.cc-overall-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.45rem;
+}
+
+.cc-overall-title {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cc-overall-level {
+  font-size: 0.72rem;
+  font-weight: 800;
+  font-family: 'Roboto Mono', monospace;
+  color: var(--text);
+}
+
+.cc-overall-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.06);
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.cc-overall-fill {
+  height: 100%;
+  background: color-mix(in oklab, var(--cc-accent) 75%, white);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.05) inset;
+}
+
+.cc-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem 0.65rem;
+  margin-bottom: 0.75rem;
+}
+
+.cc-stat-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 10px;
+  background: rgba(var(--bg-rgb), 0.45);
+}
+
+.cc-stat-label {
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-transform: capitalize;
+}
+
+.stat-bar {
+  display: flex;
+  gap: 2px;
+}
+
+.stat-pip {
+  width: 5px;
+  height: 8px;
+  background: var(--surface2);
+  border-radius: 1px;
+}
+
+.stat-pip--on {
+  background: var(--accent);
+  opacity: 0.8;
+}
+
+.cc-stat-val {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text);
+  text-align: right;
+}
+
+.btn-hire {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.btn-hire:hover:not(:disabled) {
+  background: rgba(var(--accent-rgb), 0.08);
+}
+
+.btn-hire:disabled {
+  border-color: var(--border);
+  color: var(--muted);
+  cursor: not-allowed;
+}

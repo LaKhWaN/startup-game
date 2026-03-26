@@ -1,0 +1,6 @@
+node_modules
+.env
+dist
+.git
+*.log
+public/assets/music/bg_music_original.mp3

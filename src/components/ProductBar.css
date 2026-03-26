@@ -1,0 +1,79 @@
+.product-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem 1.5rem;
+}
+
+.pb-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.pb-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.pb-shipped {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.pb-track {
+  position: relative;
+  height: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  overflow: visible;
+  margin-bottom: 0.4rem;
+}
+
+.pb-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 5px;
+  opacity: 0.7;
+  transition: width 0.4s ease;
+}
+
+.pb-milestone {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 16px;
+  background: var(--border);
+  transform: translateX(-50%);
+}
+
+.pb-milestone--hit {
+  background: var(--accent);
+}
+
+.pb-labels {
+  position: relative;
+  height: 16px;
+}
+
+.pb-pct {
+  font-size: 0.72rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.pb-ms-label {
+  position: absolute;
+  font-size: 0.62rem;
+  color: var(--border);
+  transform: translateX(-50%);
+  top: 0;
+}
+
+.pb-ms-label--hit {
+  color: var(--accent);
+  opacity: 0.7;
+}

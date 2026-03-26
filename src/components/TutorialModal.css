@@ -1,0 +1,441 @@
+/* ── Full-screen overlay ──────────────────────────────────────────────────── */
+
+.tm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  animation: tm-fade-in 0.2s ease;
+}
+
+@keyframes tm-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Spotlight hole ───────────────────────────────────────────────────────── */
+/*    The huge box-shadow darkens everything OUTSIDE the hole.                */
+/*    The hole itself sits directly over the target element.                  */
+
+.tm-spotlight {
+  position: fixed;
+  border-radius: 10px;
+  z-index: 251;
+  pointer-events: none;
+
+  /* Dark scrim covering everything outside the hole */
+  box-shadow:
+    0 0 0 9999px rgba(10, 15, 28, 0.72),
+    0 0 0 2px rgba(14, 165, 233, 0.55);
+
+  /* Smooth movement between targets */
+  transition:
+    left   0.38s cubic-bezier(0.4, 0, 0.2, 1),
+    top    0.38s cubic-bezier(0.4, 0, 0.2, 1),
+    width  0.38s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+
+  animation: tm-spotlight-appear 0.22s ease;
+}
+
+@keyframes tm-spotlight-appear {
+  from { box-shadow: 0 0 0 9999px rgba(10, 15, 28, 0), 0 0 0 2px rgba(14, 165, 233, 0); }
+  to   { box-shadow: 0 0 0 9999px rgba(10, 15, 28, 0.72), 0 0 0 2px rgba(14, 165, 233, 0.55); }
+}
+
+/* Pulsing accent ring around the spotlight */
+.tm-spotlight::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(14, 165, 233, 0.4);
+  animation: tm-ring-pulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes tm-ring-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%       { opacity: 0.9; transform: scale(1.008); }
+}
+
+/* ── Spotlight tooltip ────────────────────────────────────────────────────── */
+
+.tm-tooltip {
+  position: fixed;
+  z-index: 260;
+  width: 320px;
+  max-height: 340px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.1);
+  padding: 1.1rem 1.2rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  animation: tm-tooltip-in 0.22s ease 0.12s both;
+}
+
+@keyframes tm-tooltip-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+/* Arrow — CSS pseudo-element caret toward the highlighted element */
+
+.tm-tooltip::before {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transform: rotate(45deg);
+}
+
+/* Arrow side classes */
+.tm-tooltip--top::before {
+  top: -6px;
+  left: var(--arrow-offset, 50%);
+  margin-left: -5px;
+  border-bottom: none;
+  border-right: none;
+}
+
+.tm-tooltip--bottom::before {
+  bottom: -6px;
+  left: var(--arrow-offset, 50%);
+  margin-left: -5px;
+  border-top: none;
+  border-left: none;
+}
+
+.tm-tooltip--left::before {
+  left: -6px;
+  top: 50%;
+  margin-top: -5px;
+  border-right: none;
+  border-top: none;
+}
+
+.tm-tooltip--right::before {
+  right: -6px;
+  top: 50%;
+  margin-top: -5px;
+  border-left: none;
+  border-bottom: none;
+}
+
+.tm-tt-step {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.tm-tt-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.25;
+}
+
+.tm-tt-body {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.tm-tt-body p {
+  margin: 0 0 0.5rem;
+}
+
+.tm-tt-body p:last-child {
+  margin-bottom: 0;
+}
+
+.tm-tt-body strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.tm-tt-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+/* ── Centered modal (for steps without a target) ─────────────────────────── */
+
+.tm-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 260;
+  width: 100%;
+  max-width: 440px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.22), 0 4px 16px rgba(0,0,0,0.1);
+  padding: 1.5rem 1.75rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+
+  /* Dim background using box-shadow scrim — fills whole screen behind modal */
+  box-shadow:
+    0 0 0 9999px rgba(10, 15, 28, 0.62),
+    0 24px 64px rgba(0,0,0,0.22),
+    0 4px 16px rgba(0,0,0,0.1);
+
+  animation: tm-modal-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes tm-modal-in {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 16px)) scale(0.95); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.tm-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tm-modal-step {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tm-modal-icon {
+  font-size: 3rem;
+  line-height: 1;
+  text-align: center;
+  padding: 0.25rem 0;
+}
+
+.tm-modal-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.tm-modal-body {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.65;
+  text-align: center;
+}
+
+.tm-modal-body p {
+  margin: 0 0 0.55rem;
+}
+
+.tm-modal-body p:last-child {
+  margin-bottom: 0;
+}
+
+.tm-modal-body strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.tm-modal-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+/* ── HUD: step dots + skip (shown while spotlight is active) ─────────────── */
+
+.tm-hud {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 265;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 0.45rem 1rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  animation: tm-hud-in 0.3s ease 0.1s both;
+}
+
+@keyframes tm-hud-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ── Shared dots ─────────────────────────────────────────────────────────── */
+
+.tm-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.tm-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.tm-dot--done {
+  background: rgba(14, 165, 233, 0.3);
+}
+
+.tm-dot--active {
+  background: var(--accent);
+  width: 18px;
+  border-radius: 4px;
+}
+
+/* ── Skip button ─────────────────────────────────────────────────────────── */
+
+.tm-skip {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.1rem 0.2rem;
+  font-family: inherit;
+  transition: color 0.15s;
+  white-space: nowrap;
+}
+
+.tm-skip:hover {
+  color: var(--text);
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+
+.tm-btn {
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 7px;
+  padding: 0.5rem 0.95rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.tm-btn--back {
+  background: none;
+  border-color: var(--border);
+  color: var(--muted);
+}
+
+.tm-btn--back:hover {
+  color: var(--text);
+  border-color: var(--text);
+  background: rgba(0,0,0,0.04);
+}
+
+.tm-btn--primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.tm-btn--primary:hover {
+  filter: brightness(1.08);
+}
+
+/* ── Tooltip step-content helpers ────────────────────────────────────────── */
+
+/* Bullet list */
+.tm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0.4rem 0;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.65rem;
+}
+
+.tm-list-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text);
+}
+
+.tm-list-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tm-dot-green  { background: var(--green); }
+.tm-dot-blue   { background: var(--accent); }
+.tm-dot-purple { background: var(--purple); }
+.tm-dot-red    { background: var(--red); }
+.tm-dot-orange { background: var(--orange); }
+
+/* Feature flow */
+.tm-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 0.5rem 0;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.5rem;
+}
+
+.tm-flow-step {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.tm-flow-arrow {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* Win pill (final modal) */
+.tm-win-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 20px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--green);
+  margin: 0.5rem auto 0;
+}

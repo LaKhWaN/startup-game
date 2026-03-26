@@ -1,0 +1,64 @@
+.story-log {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.25rem 1.5rem;
+}
+
+.story-log-header {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
+.story-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.story-entry {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 0.75rem;
+  opacity: 0.45;
+}
+
+.story-entry--current {
+  opacity: 1;
+}
+
+.story-week {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+  padding-top: 2px;
+}
+
+.story-entry--current .story-week {
+  color: var(--accent);
+}
+
+.story-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.story-line {
+  font-size: 0.82rem;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.story-entry--current .story-line {
+  color: var(--text);
+}
+
+.story-line--churn {
+  color: var(--red);
+  font-weight: 600;
+}

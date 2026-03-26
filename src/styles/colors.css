@@ -1,0 +1,54 @@
+/* Centralized color tokens (light mode) */
+
+:root {
+  /* ── Core Brand & Neutrals ─────────────────────────────────────────────── */
+  --brand-primary:   #5C3D1A; /* Deep Earth Brown */
+  --brand-secondary: #8B6B4A; /* Warm Tan */
+  --brand-bg:        #FEFAE0; /* Cream White */
+  --brand-text:      #2C1E0F; /* Shadow Brown */
+  --brand-neutral:   #A68A64; /* Muted Clay */
+  --brand-accent:    #D4A373; /* Soft Sand */
+
+  /* ── Functional & Strategic ────────────────────────────────────────────── */
+  --success:   #606C38; /* Olive Green */
+  --warning:   #BC6C25; /* Burnt Orange */
+  --error:     #9E2A2B; /* Deep Garnet */
+  --info:      #457B9D; /* Steel Blue */
+  --focus:     #B56576; /* Dusty Rose */
+  --strategic: #6D597A; /* Muted Plum */
+
+  /* ── App semantic aliases (used throughout existing CSS) ───────────────── */
+  --bg:       var(--brand-bg);
+  --surface:  color-mix(in oklab, var(--brand-bg) 92%, white);
+  --surface2: color-mix(in oklab, var(--brand-bg) 82%, var(--brand-neutral));
+  --border:   var(--brand-neutral);
+
+  --text:     var(--brand-text);
+  --muted:    var(--brand-secondary);
+
+  /* Existing UI uses --accent / --purple / --green / --orange / --yellow / --red */
+  --accent:   var(--brand-accent);
+  --purple:   var(--strategic);
+  --green:    var(--success);
+  --orange:   var(--warning);
+  --yellow:   var(--warning);
+  --red:      var(--error);
+
+  /* Legacy aliases */
+  --warn:     var(--warning);
+  --danger:   var(--error);
+
+  /* On-color text */
+  --on-accent: var(--brand-text);
+  --on-dark:   var(--brand-bg);
+
+  /* RGB helpers (for existing rgba() patterns) */
+  --accent-rgb: 212 163 115;
+  --success-rgb: 96 108 56;
+  --error-rgb: 158 42 43;
+  --warning-rgb: 188 108 37;
+  --text-rgb: 44 30 15;
+  --bg-rgb: 254 250 224;
+  --focus-rgb: 181 101 118;
+}
+

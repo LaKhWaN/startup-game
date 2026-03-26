@@ -1,0 +1,80 @@
+.game-root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-topbar-spacer {
+  flex-shrink: 0;
+  height: 96px;
+}
+
+.game-main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.game-canvas-area {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Game loader ──────────────────────────────────────────── */
+.game-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.5s ease;
+}
+
+.game-loader--fade {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gl-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.gl-dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.gl-dots span {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: gl-bounce 1s ease-in-out infinite;
+}
+
+.gl-dots span:nth-child(2) { animation-delay: 0.15s; }
+.gl-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes gl-bounce {
+  0%, 80%, 100% { transform: translateY(0);    opacity: 0.3; }
+  40%            { transform: translateY(-8px); opacity: 1;   }
+}
+
+.gl-text {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}

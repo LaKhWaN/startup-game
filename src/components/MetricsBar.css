@@ -1,0 +1,69 @@
+.metrics-bar {
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.m-time {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.m-time-val {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.04em;
+}
+
+.m-paused {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--warn);
+  letter-spacing: 0.06em;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  min-width: 60px;
+}
+
+.ml {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin-bottom: 0.15rem;
+}
+
+.mv {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.mv.accent { color: var(--accent); }
+.mv.warn   { color: var(--warn); }
+.mv.danger { color: var(--danger); }
+
+.m-divider {
+  width: 1px;
+  height: 30px;
+  background: var(--border);
+  flex-shrink: 0;
+}

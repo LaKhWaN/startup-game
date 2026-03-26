@@ -1,0 +1,97 @@
+.crt-container {
+  position: fixed;
+  top: 108px;
+  right: 1.5rem;
+  z-index: 90;
+  pointer-events: none;
+}
+
+.crt-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  width: 280px;
+  cursor: pointer;
+  animation: crt-slide-in 0.25s ease;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.05);
+  border-left-width: 3px;
+}
+
+.crt-toast--great { border-left-color: var(--green); }
+.crt-toast--ok    { border-left-color: var(--yellow); }
+.crt-toast--poor  { border-left-color: var(--red); }
+
+@keyframes crt-slide-in {
+  from { transform: translateX(20px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+.crt-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+  flex-shrink: 0;
+  padding-top: 0.1rem;
+}
+
+.crt-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.crt-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.crt-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.crt-toast--great .crt-label { color: var(--green); }
+.crt-toast--ok    .crt-label { color: var(--yellow); }
+.crt-toast--poor  .crt-label { color: var(--red); }
+
+.crt-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.15rem;
+}
+
+.crt-gained {
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: 'Roboto Mono', monospace;
+  padding: 0.12rem 0.5rem;
+  border-radius: 20px;
+}
+
+.crt-gained--great {
+  color: var(--green);
+  background: rgba(var(--success-rgb), 0.1);
+}
+
+.crt-gained--ok {
+  color: var(--yellow);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.crt-gained--poor {
+  color: var(--red);
+  background: rgba(var(--error-rgb), 0.08);
+}
+
+.crt-expected {
+  font-size: 0.65rem;
+  color: var(--muted);
+}

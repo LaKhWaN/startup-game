@@ -1,0 +1,118 @@
+.ms-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.ms-header-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.03em;
+}
+
+.ms-header-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  font-family: 'Roboto Mono', monospace;
+}
+
+.ms-progress-bar {
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.ms-progress-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+/* ── Milestone row ───────────────────────────────────────────────────────── */
+
+.ms-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 8px;
+  margin-bottom: 0.25rem;
+  transition: all 0.15s ease;
+}
+
+.ms-row--done {
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.18);
+}
+
+.ms-row--next {
+  background: rgba(14, 165, 233, 0.07);
+  border: 1px solid rgba(14, 165, 233, 0.25);
+}
+
+.ms-row--locked {
+  opacity: 0.45;
+  border: 1px solid transparent;
+}
+
+.ms-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 1.4rem;
+  text-align: center;
+}
+
+.ms-row--done .ms-icon {
+  color: var(--green);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.ms-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.ms-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ms-row--done .ms-name {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-color: rgba(107, 114, 128, 0.4);
+}
+
+.ms-desc {
+  font-size: 0.68rem;
+  color: var(--muted);
+  line-height: 1.3;
+}
+
+.ms-next-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.25);
+  border-radius: 4px;
+  padding: 0.15rem 0.4rem;
+  flex-shrink: 0;
+}

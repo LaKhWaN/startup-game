@@ -1,0 +1,123 @@
+.scm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.scm-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  width: 420px;
+  max-width: 92vw;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+.scm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.scm-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.scm-close {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0 0.25rem;
+  line-height: 1;
+}
+
+.scm-valuation {
+  text-align: center;
+  padding: 1.5rem 1.5rem 1rem;
+}
+
+.scm-valuation-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+
+.scm-valuation-amount {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--green);
+  font-family: 'Roboto Mono', monospace;
+}
+
+.scm-breakdown {
+  padding: 0 1.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.scm-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+}
+
+.scm-row-label {
+  color: var(--muted);
+}
+
+.scm-row-value {
+  color: var(--text);
+  font-weight: 600;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.scm-actions {
+  padding: 1rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.scm-btn {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.03em;
+  transition: opacity 0.15s;
+}
+
+.scm-btn:hover {
+  opacity: 0.88;
+}
+
+.scm-btn--sell {
+  background: var(--green);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+
+.scm-btn--cancel {
+  background: var(--surface);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}

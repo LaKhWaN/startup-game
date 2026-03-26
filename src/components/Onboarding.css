@@ -1,0 +1,584 @@
+.ob-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--bg);
+}
+
+.ob-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2.5rem;
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.ob-card-wide {
+  max-width: 680px;
+}
+
+.ob-logo {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin-bottom: 0.4rem;
+}
+
+.ob-tagline {
+  color: var(--muted);
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+}
+
+.ob-step-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+
+.ob-heading {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 0.4rem;
+}
+
+.ob-hint {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.ob-textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.8rem 1rem;
+  outline: none;
+  resize: vertical;
+  min-height: 100px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  line-height: 1.5;
+}
+
+.ob-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15);
+}
+
+.ob-textarea::placeholder {
+  color: var(--muted);
+}
+
+.ob-char-count {
+  text-align: right;
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 0.3rem;
+  margin-bottom: 1.2rem;
+}
+
+.ob-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.7rem 0.9rem;
+  outline: none;
+  margin-bottom: 1.5rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.ob-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15);
+}
+
+.ob-input::placeholder {
+  color: var(--muted);
+}
+
+/* ── Buttons ─────────────────────────────── */
+
+.ob-btn {
+  border: none;
+  padding: 0.75rem 2rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.03em;
+  transition: opacity 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+
+.ob-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ob-btn-primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 4px 14px rgba(var(--accent-rgb), 0.3);
+}
+
+.ob-btn-primary:hover:not(:disabled) {
+  opacity: 0.92;
+  box-shadow: 0 6px 20px rgba(var(--accent-rgb), 0.4);
+}
+
+.ob-btn-secondary {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.ob-btn-secondary:hover {
+  opacity: 0.85;
+}
+
+.ob-actions {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+/* ── Loading ─────────────────────────────── */
+
+.ob-loading-card {
+  max-width: 360px;
+  padding: 3rem;
+}
+
+.ob-spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  margin: 0 auto 1.2rem;
+  animation: ob-spin 0.8s linear infinite;
+}
+
+@keyframes ob-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ob-loading-text {
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+/* ── Assessment ──────────────────────────── */
+
+.ob-idea-echo {
+  font-style: italic;
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin-bottom: 1.2rem;
+  padding: 0.6rem 1rem;
+  background: var(--bg);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.ob-score-section {
+  margin-bottom: 1.2rem;
+}
+
+.ob-score-bar-wrap {
+  height: 10px;
+  background: var(--bg);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 0.6rem;
+  border: 1px solid var(--border);
+}
+
+.ob-score-bar {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.6s ease;
+}
+
+.ob-score-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ob-score-num {
+  font-size: 1.6rem;
+  font-weight: 800;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.ob-difficulty-badge {
+  padding: 0.3rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.04em;
+}
+
+.ob-feedback {
+  font-size: 0.92rem;
+  color: var(--text);
+  line-height: 1.6;
+  margin-bottom: 1.2rem;
+  text-align: left;
+}
+
+.ob-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.ob-col-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.4rem;
+}
+
+.ob-col-title--green { color: var(--success); }
+.ob-col-title--red   { color: var(--error); }
+
+.ob-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ob-list li {
+  font-size: 0.84rem;
+  color: var(--text);
+  padding: 0.3rem 0;
+  padding-left: 1rem;
+  position: relative;
+  line-height: 1.45;
+}
+
+.ob-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--muted);
+}
+
+.ob-suggestion {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  font-size: 0.84rem;
+  color: var(--text);
+  text-align: left;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.ob-suggestion strong {
+  color: var(--info);
+}
+
+.ob-difficulty-detail {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  text-align: left;
+}
+
+.ob-difficulty-detail h4 {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+}
+
+.ob-diff-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.25rem 1rem;
+  font-size: 0.82rem;
+}
+
+.ob-diff-grid span:nth-child(odd) {
+  color: var(--muted);
+}
+
+.ob-diff-grid span:nth-child(even) {
+  font-weight: 700;
+  color: var(--text);
+  font-family: 'Roboto Mono', monospace;
+  text-align: right;
+}
+
+/* ── Workspace ───────────────────────────── */
+
+.ob-workspace-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.ob-ws-card {
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 1.2rem 0.8rem;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+  font-family: inherit;
+  color: var(--text);
+}
+
+.ob-ws-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.ob-ws-card--selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.2), 0 4px 16px rgba(var(--accent-rgb), 0.15);
+  background: var(--surface);
+}
+
+.ob-ws-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.ob-ws-name {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.ob-ws-stats {
+  margin-bottom: 0.6rem;
+}
+
+.ob-ws-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.76rem;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.ob-ws-row:last-child {
+  border-bottom: none;
+}
+
+.ob-ws-row span:first-child {
+  color: var(--muted);
+}
+
+.ob-ws-row span:last-child {
+  font-weight: 600;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.ob-ws-perks {
+  font-size: 0.72rem;
+  color: var(--success);
+  font-weight: 600;
+  margin-top: 0.4rem;
+}
+
+/* ── Name / Summary ──────────────────────── */
+
+.ob-summary {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  text-align: left;
+  margin-bottom: 0.5rem;
+}
+
+.ob-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.ob-summary-row:last-child {
+  border-bottom: none;
+}
+
+.ob-summary-row span:first-child {
+  color: var(--muted);
+}
+
+.ob-summary-val {
+  color: var(--text);
+  font-weight: 600;
+  max-width: 60%;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Save Slots ─────────────────────────── */
+
+.ob-saves-section {
+  width: 100%;
+  max-width: 680px;
+  margin-bottom: 1.5rem;
+}
+
+.ob-saves-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  margin: 0 0 0.8rem;
+}
+
+.ob-saves-grid {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.ob-save-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  width: 200px;
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.ob-save-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+}
+
+.ob-save-slot-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+
+.ob-save-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ob-save-idea {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-style: italic;
+  margin: 0.2rem 0 0.4rem;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ob-save-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.15rem;
+}
+
+.ob-save-date {
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+}
+
+.ob-save-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.ob-btn-sm {
+  padding: 0.35rem 0.8rem;
+  font-size: 0.75rem;
+  border-radius: 6px;
+}
+
+.ob-btn-danger {
+  background: var(--error);
+  color: white;
+  opacity: 0.7;
+}
+
+.ob-btn-danger:hover {
+  opacity: 1;
+}
+
+.ob-saves-divider {
+  text-align: center;
+  margin-top: 1.2rem;
+  position: relative;
+}
+
+.ob-saves-divider::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--border);
+}
+
+.ob-saves-divider span {
+  position: relative;
+  background: var(--bg);
+  padding: 0 1rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
