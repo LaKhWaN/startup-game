@@ -40,12 +40,13 @@ Open the URL Vite prints. **It runs with an empty `.env`** — idea scoring fall
 
 | Variable | Needed for | Without it |
 |---|---|---|
-| `VITE_GEMINI_API_KEY` | AI idea scoring | Falls back to a keyword heuristic |
+| `GEMINI_API_KEY` | AI idea scoring, via `/api/rate-idea` | Falls back to a keyword heuristic |
 | `MONGODB_URI` | Analytics + global leaderboard | Those routes return 503 |
 | `MONGODB_DB_NAME` | — | Defaults to `startup-game` |
+| `VITE_SITE_URL` | Canonical URLs, OG tags, sitemap, share links | Defaults to `https://failunicorn.vercel.app` |
 | `VITE_DISABLE_REMOTE_ANALYTICS` | — | Set `true` to never phone home |
 
-> `VITE_`-prefixed variables are **inlined into the client bundle and publicly readable**. Never put a secret behind one. See [SECURITY.md](SECURITY.md).
+> `VITE_`-prefixed variables are **inlined into the client bundle and publicly readable**. Never put a secret behind one — that's why the Gemini key has no prefix and is only ever read server-side. See [SECURITY.md](SECURITY.md).
 
 ## Scripts
 

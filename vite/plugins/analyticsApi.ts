@@ -4,6 +4,7 @@ import { loadEnv } from 'vite'
 import { ingestGameDay } from '../../server/ingestGameDay'
 import { ingestFeedback } from '../../server/ingestFeedback'
 import { getLeaderboard } from '../../server/getLeaderboard'
+import { rateIdea } from '../../server/rateIdea'
 
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -29,7 +30,8 @@ export function analyticsApiPlugin(): Plugin {
         const isKnownRoute =
           pathname === '/api/ingest-game-day' ||
           pathname === '/api/ingest-feedback' ||
-          pathname === '/api/leaderboard'
+          pathname === '/api/leaderboard' ||
+          pathname === '/api/rate-idea'
         if (!isKnownRoute) {
           next()
           return
@@ -47,6 +49,7 @@ export function analyticsApiPlugin(): Plugin {
         const mode = server.config.mode
         const loaded = loadEnv(mode, process.cwd(), '')
         const env = {
+          GEMINI_API_KEY: loaded.GEMINI_API_KEY ?? process.env.GEMINI_API_KEY,
           MONGODB_URI: loaded.MONGODB_URI ?? process.env.MONGODB_URI,
           MONGODB_DB_NAME: loaded.MONGODB_DB_NAME ?? process.env.MONGODB_DB_NAME,
           ANALYTICS_INGEST_SECRET: loaded.ANALYTICS_INGEST_SECRET ?? process.env.ANALYTICS_INGEST_SECRET,
@@ -75,6 +78,15 @@ export function analyticsApiPlugin(): Plugin {
           }
 
           const raw = await readBody(req as IncomingMessage)
+
+          if (pathname === '/api/rate-idea') {
+            const { status, body } = await rateIdea(raw, env)
+            nodeRes.statusCode = status
+            nodeRes.setHeader('Content-Type', 'application/json')
+            nodeRes.end(JSON.stringify(body))
+            return
+          }
+
           const handler = pathname === '/api/ingest-feedback' ? ingestFeedback : ingestGameDay
           const { status, body } = await handler(raw, env)
           nodeRes.statusCode = status
