@@ -12,8 +12,10 @@ interface SEOHeadProps {
   schema?: object
 }
 
-const BASE_URL = 'https://failunicorn.com'
-const DEFAULT_IMAGE = `${BASE_URL}/og-default.png`
+import { SITE_URL, OG_IMAGE } from '../config/site'
+
+const BASE_URL = SITE_URL
+const DEFAULT_IMAGE = OG_IMAGE
 
 function setMeta(property: string, content: string, attr: 'name' | 'property' = 'property') {
   let el = document.querySelector(`meta[${attr}="${property}"]`) as HTMLMetaElement | null

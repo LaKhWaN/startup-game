@@ -3,6 +3,7 @@ import { BlogLayout } from '../components/BlogLayout'
 import { SEOHead } from '../components/SEOHead'
 import { BlockRenderer } from '../components/BlockRenderer'
 import { BLOG_POSTS } from '../data/blogPosts'
+import { SITE_URL, url } from '../config/site'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -35,9 +36,9 @@ export function BlogPostPage() {
     publisher: {
       '@type': 'Organization',
       name: 'failunicorn',
-      url: 'https://failunicorn.com',
+      url: SITE_URL,
     },
-    url: `https://failunicorn.com/blog/${post.slug}`,
+    url: url(`/blog/${post.slug}`),
   }
 
   return (
@@ -45,7 +46,7 @@ export function BlogPostPage() {
       <SEOHead
         title={`${post.title} — failunicorn Blog`}
         description={post.description}
-        canonical={`https://failunicorn.com/blog/${post.slug}`}
+        canonical={url(`/blog/${post.slug}`)}
         ogType="article"
         publishedAt={post.publishedAt}
         updatedAt={post.updatedAt}

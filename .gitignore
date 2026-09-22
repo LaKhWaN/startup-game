@@ -11,3 +11,4 @@ public/assets/music/bg_music_original.mp3
 
 # Generated at build time by scripts/generate-sitemap.ts
 public/sitemap.xml
+public/robots.txt

@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
 import type { FeatureImpact } from '../types'
 import type { FeatureTemplate } from '../data/featureTemplates'
 import { FEATURE_TEMPLATES } from '../data/featureTemplates'
@@ -91,14 +90,36 @@ function writeCache<T>(key: string, data: T): void {
 
 // ─── Model ───────────────────────────────────────────────────────────────────
 
-function getModel() {
-  const key = import.meta.env.VITE_GEMINI_API_KEY as string | undefined
-  if (!key) {
-    console.warn('[gemini] No VITE_GEMINI_API_KEY found — using fallback. Restart dev server if you just added .env')
+/**
+ * Asks the server to run the model. The API key stays server-side — see
+ * server/rateIdea.ts (dev) and api/rate-idea.js (production).
+ *
+ * Returns the model's raw text, or null if the route is unconfigured or failed,
+ * in which case the caller uses its local fallback.
+ */
+async function askModel(op: 'validate' | 'roadmap', idea: string, score = 5): Promise<string | null> {
+  try {
+    const res = await withTimeout(fetch('/api/rate-idea', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ op, idea, score }),
+    }), 15_000)
+
+    if (res.status === 503) {
+      console.warn('[gemini] /api/rate-idea has no GEMINI_API_KEY configured — using fallback')
+      return null
+    }
+    if (!res.ok) {
+      console.warn(`[gemini] /api/rate-idea returned ${res.status} — using fallback`)
+      return null
+    }
+
+    const body = await res.json() as { text?: unknown }
+    return typeof body.text === 'string' ? body.text.trim() : null
+  } catch (e) {
+    console.warn('[gemini] /api/rate-idea request failed — using fallback', e)
     return null
   }
-  const genAI = new GoogleGenerativeAI(key)
-  return genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 }
 
 const VALID_IMPACTS: FeatureImpact[] = ['users', 'churn', 'mrr', 'upsell', 'activation', 'reach', 'enterprise', 'integration']
@@ -111,28 +132,11 @@ export async function validateIdea(idea: string): Promise<IdeaValidation> {
     return { ...cached, idea }
   }
 
-  const model = getModel()
-  if (!model) return fallbackValidation(idea)
-
-  const prompt = `You are evaluating a startup idea for a business simulation game. Analyze the following startup idea and return ONLY valid JSON (no markdown, no code fences).
-
-Startup idea: "${idea}"
-
-Return this exact JSON structure:
-{
-  "score": <number 1-10, where 10 is an excellent idea with strong market fit>,
-  "feedback": "<2-3 sentence assessment of the idea>",
-  "strengths": ["<strength 1>", "<strength 2>"],
-  "risks": ["<risk 1>", "<risk 2>"],
-  "suggestion": "<optional one-sentence suggestion to improve the idea, or null>"
-}
-
-Be realistic but fair. Most decent ideas should score 4-7. Only truly exceptional ideas get 8+. Only terrible ideas get 1-2.`
 
   try {
-    console.log('[gemini] validateIdea: calling API...')
-    const result = await withTimeout(model.generateContent(prompt), 12_000)
-    const text = result.response.text().trim()
+    console.log('[gemini] validateIdea: calling /api/rate-idea...')
+    const text = await askModel('validate', idea)
+    if (!text) return fallbackValidation(idea)
     console.log('[gemini] validateIdea raw response:', text.slice(0, 200))
     const json = JSON.parse(text.replace(/^```json?\s*/i, '').replace(/```\s*$/, ''))
     const score = Math.max(1, Math.min(10, Math.round(json.score ?? 5)))
@@ -171,37 +175,11 @@ export async function generateRoadmap(idea: string, score: number): Promise<Feat
     return cached
   }
 
-  const model = getModel()
-  if (!model) return fallbackRoadmap()
-
-  const prompt = `You are generating a product roadmap for a startup simulation game. The user's startup idea is: "${idea}" (viability score: ${score}/10).
-
-Generate a realistic, ORDERED list of 18 features/tasks this startup would build, from earliest to latest. Follow a real startup lifecycle:
-- First 4-5: Foundation (landing page, auth, core MVP functionality)
-- Next 4-5: Launch (payments, onboarding, analytics)  
-- Next 4-5: Growth (marketing features, integrations, team tools)
-- Last 3-4: Scale (enterprise features, advanced capabilities, compliance)
-
-Each feature must be relevant to the startup idea "${idea}".
-
-Return ONLY valid JSON (no markdown, no code fences) as an array:
-[
-  {
-    "title": "<feature name>",
-    "description": "<1 sentence description specific to this startup>",
-    "baseDays": <number 2-15>,
-    "value": "<low|medium|high>",
-    "impacts": [<1-3 items from: "users","churn","mrr","upsell","activation","reach","enterprise","integration">],
-    "phase": "<foundation|launch|growth|scale>"
-  }
-]
-
-Make titles concise (2-4 words). Make descriptions specific to "${idea}", not generic.`
 
   try {
-    console.log('[gemini] generateRoadmap: calling API...')
-    const result = await withTimeout(model.generateContent(prompt), 12_000)
-    const text = result.response.text().trim()
+    console.log('[gemini] generateRoadmap: calling /api/rate-idea...')
+    const text = await askModel('roadmap', idea, score)
+    if (!text) return fallbackRoadmap()
     console.log('[gemini] generateRoadmap raw response:', text.slice(0, 300))
     const json = JSON.parse(text.replace(/^```json?\s*/i, '').replace(/```\s*$/, ''))
     if (!Array.isArray(json) || json.length < 5) return fallbackRoadmap()

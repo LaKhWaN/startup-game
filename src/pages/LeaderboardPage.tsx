@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { BlogLayout } from '../components/BlogLayout'
 import { SEOHead } from '../components/SEOHead'
+import { url as absUrl } from '../config/site'
 
 interface LeaderboardEntry {
   rank: number
@@ -67,7 +68,7 @@ export function LeaderboardPage() {
 
   function handleShare(entry: LeaderboardEntry) {
     const text = `${entry.startupName} ranked #${entry.rank} on the failunicorn global leaderboard — ${formatValuation(entry.valuation)} valuation in ${entry.lastRecordedDay} days.`
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(`https://failunicorn.com/leaderboard?highlight=${encodeURIComponent(entry.startupName)}`)}`
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(absUrl(`/leaderboard?highlight=${encodeURIComponent(entry.startupName)}`))}`
     window.open(url, '_blank', 'noopener,noreferrer')
   }
 
@@ -76,7 +77,7 @@ export function LeaderboardPage() {
       <SEOHead
         title="Global Leaderboard — failunicorn"
         description="See the top startup founders on failunicorn — ranked by valuation. Can your startup make the list?"
-        canonical="https://failunicorn.com/leaderboard"
+        canonical={absUrl('/leaderboard')}
       />
 
       <div style={{ marginBottom: 32, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>

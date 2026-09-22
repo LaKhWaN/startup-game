@@ -6,7 +6,7 @@
 
 Hire a team, ship features, burn runway, survive crises. Get to $10k MRR before the cash hits zero — most players don't.
 
-[Play it](https://failunicorn.com) · [Blog](https://failunicorn.com/blog) · [Leaderboard](https://failunicorn.com/leaderboard) · [Idea Rater](https://failunicorn.com/tools/startup-idea-rater)
+[Play it](https://failunicorn.vercel.app) · [Blog](https://failunicorn.vercel.app/blog) · [Leaderboard](https://failunicorn.vercel.app/leaderboard) · [Idea Rater](https://failunicorn.vercel.app/tools/startup-idea-rater)
 
 [![CI](https://github.com/LaKhWaN/startup-game/actions/workflows/ci.yml/badge.svg)](https://github.com/LaKhWaN/startup-game/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-D4A373.svg)](LICENSE)
@@ -40,12 +40,13 @@ Open the URL Vite prints. **It runs with an empty `.env`** — idea scoring fall
 
 | Variable | Needed for | Without it |
 |---|---|---|
-| `VITE_GEMINI_API_KEY` | AI idea scoring | Falls back to a keyword heuristic |
+| `GEMINI_API_KEY` | AI idea scoring, via `/api/rate-idea` | Falls back to a keyword heuristic |
 | `MONGODB_URI` | Analytics + global leaderboard | Those routes return 503 |
 | `MONGODB_DB_NAME` | — | Defaults to `startup-game` |
+| `VITE_SITE_URL` | Canonical URLs, OG tags, sitemap, share links | Defaults to `https://failunicorn.vercel.app` |
 | `VITE_DISABLE_REMOTE_ANALYTICS` | — | Set `true` to never phone home |
 
-> `VITE_`-prefixed variables are **inlined into the client bundle and publicly readable**. Never put a secret behind one. See [SECURITY.md](SECURITY.md).
+> `VITE_`-prefixed variables are **inlined into the client bundle and publicly readable**. Never put a secret behind one — that's why the Gemini key has no prefix and is only ever read server-side. See [SECURITY.md](SECURITY.md).
 
 ## Scripts
 

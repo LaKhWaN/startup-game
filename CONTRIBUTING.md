@@ -50,11 +50,11 @@ There is no test suite yet. Until there is, say in your PR description what you 
 | Panels, toasts, modals | `src/components/` |
 | Blog posts, changelog entries | `src/data/` |
 | Marketing pages | `src/pages/` |
-| Analytics / leaderboard | `server/` **and** `api/` — see below |
+| Analytics / leaderboard / idea rating | `server/` **and** `api/` — see below |
 
 ### The one real gotcha
 
-Analytics and leaderboard logic exists **twice**: `server/*.ts` runs in dev through `vite/plugins/analyticsApi.ts`, and `api/*.js` runs on Vercel in production. They are separate files with the same logic, and they have silently drifted before — a missing field in one copy's Mongo projection made the whole leaderboard return zeroes.
+Analytics, leaderboard and idea-rating logic each exist **twice**: `server/*.ts` runs in dev through `vite/plugins/analyticsApi.ts`, and `api/*.js` runs on Vercel in production. They are separate files with the same logic, and they have silently drifted before — a missing field in one copy's Mongo projection made the whole leaderboard return zeroes.
 
 **If you change one, change the other, and say in your PR that you did.** Consolidating these two into one shared module is a genuinely welcome PR.
 
