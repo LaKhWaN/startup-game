@@ -11,6 +11,10 @@ Hire a team, ship features, burn runway, survive crises. Get to $10k MRR before 
 [![CI](https://github.com/LaKhWaN/startup-game/actions/workflows/ci.yml/badge.svg)](https://github.com/LaKhWaN/startup-game/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-D4A373.svg)](LICENSE)
 
+<br />
+
+<img src="docs/images/office-hire.png" alt="The failunicorn office on day 1 — pixel-art workspace on the left, hiring panel on the right showing two candidates with their stats and monthly salaries" width="900" />
+
 </div>
 
 ---
@@ -23,6 +27,31 @@ A browser game. You describe a startup idea, an AI scores it, and that score set
 - **Lose:** cash reaches $0
 
 No signup, no backend account, saves live in your browser.
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%">
+      <img src="docs/images/onboarding-workspace.png" alt="Onboarding step 3: choosing between Home, Co-working and Office, each showing max desks, starting cash and monthly cost" />
+      <p align="center"><em>Every choice is a trade-off. Home gives you $120k and 2 desks; an Office gives you 6 desks, brand and culture — and $40k less runway.</em></p>
+    </td>
+    <td width="50%">
+      <img src="docs/images/office-team.png" alt="The office view with the Team panel open, showing an empty roster on day 1" />
+      <p align="center"><em>Day 1. No team, $100k in the bank, and 12% churn already working against you.</em></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/images/how-it-works.png" alt="Landing page section titled Build. Ship. Burn. Repeat. showing the four phases: pitch your idea, build your team, ship and acquire, survive or sell" />
+      <p align="center"><em>Four phases, from pitching an idea to selling — or running out of money.</em></p>
+    </td>
+    <td width="50%">
+      <img src="docs/images/metrics.png" alt="Landing page section showing live financial metrics: MRR, active users, runway, valuation and monthly churn" />
+      <p align="center"><em>No abstract health bars. MRR, runway, churn and valuation, like a real dashboard.</em></p>
+    </td>
+  </tr>
+</table>
 
 ## Quick start
 
