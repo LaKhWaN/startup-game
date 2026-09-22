@@ -4,5 +4,5 @@ contact_links:
     url: https://github.com/LaKhWaN/startup-game/security/advisories/new
     about: Report privately. Please do not open a public issue.
   - name: Play the game
-    url: https://failunicorn.com
+    url: https://failunicorn.vercel.app
     about: Not sure whether it's a bug? Try reproducing it on the live site.

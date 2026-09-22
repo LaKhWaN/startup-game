@@ -6,7 +6,7 @@
 
 Hire a team, ship features, burn runway, survive crises. Get to $10k MRR before the cash hits zero — most players don't.
 
-[Play it](https://failunicorn.com) · [Blog](https://failunicorn.com/blog) · [Leaderboard](https://failunicorn.com/leaderboard) · [Idea Rater](https://failunicorn.com/tools/startup-idea-rater)
+[Play it](https://failunicorn.vercel.app) · [Blog](https://failunicorn.vercel.app/blog) · [Leaderboard](https://failunicorn.vercel.app/leaderboard) · [Idea Rater](https://failunicorn.vercel.app/tools/startup-idea-rater)
 
 [![CI](https://github.com/LaKhWaN/startup-game/actions/workflows/ci.yml/badge.svg)](https://github.com/LaKhWaN/startup-game/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-D4A373.svg)](LICENSE)

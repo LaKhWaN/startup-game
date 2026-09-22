@@ -5,6 +5,7 @@ import { getLeaderboard, addLeaderboardEntry } from '../save/leaderboard'
 import { persistDayAnalytics } from '../analytics/persistDayAnalytics'
 import type { LeaderboardEntry } from '../types'
 import './PostMortem.css'
+import { SITE_URL } from '../config/site'
 
 export function PostMortem() {
   const state        = useGameStore(s => s)
@@ -159,12 +160,12 @@ function ShareResult({
     : `${startupName} burned out on Day ${day} with $${mrr.toLocaleString()}/mo MRR 💀 Can you survive longer? #failunicorn`
 
   function handleShareX() {
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent('https://failunicorn.com')}`
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(SITE_URL)}`
     window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   function handleCopy() {
-    navigator.clipboard.writeText(shareText + '\nhttps://failunicorn.com')
+    navigator.clipboard.writeText(`${shareText}\n${SITE_URL}`)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }

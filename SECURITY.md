@@ -12,7 +12,7 @@ Include what you'd need to reproduce it: the affected route or file, the steps, 
 
 ## Scope
 
-In scope: this repository, and failunicorn.com.
+In scope: this repository, and the deployed site at https://failunicorn.vercel.app.
 
 Out of scope:
 - Anything requiring physical access to a player's device

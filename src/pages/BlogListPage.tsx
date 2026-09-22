@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { BlogLayout } from '../components/BlogLayout'
 import { SEOHead } from '../components/SEOHead'
 import { BLOG_POSTS } from '../data/blogPosts'
+import { SITE_URL, SITE_NAME, url } from '../config/site'
 
 const sorted = [...BLOG_POSTS].sort(
   (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
@@ -17,14 +18,14 @@ export function BlogListPage() {
       <SEOHead
         title="Blog — failunicorn"
         description="Startup strategy guides, simulation game tips, and founder education from the team behind failunicorn."
-        canonical="https://failunicorn.com/blog"
+        canonical={url('/blog')}
         schema={{
           '@context': 'https://schema.org',
           '@type': 'Blog',
           name: 'failunicorn Blog',
           description: 'Startup strategy guides, simulation tips, and founder education.',
-          url: 'https://failunicorn.com/blog',
-          publisher: { '@type': 'Organization', name: 'failunicorn', url: 'https://failunicorn.com' },
+          url: url('/blog'),
+          publisher: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
         }}
       />
 

@@ -3,6 +3,7 @@ import { BlogLayout } from '../components/BlogLayout'
 import { SEOHead } from '../components/SEOHead'
 import { validateIdea, scoreToDifficulty, tierLabel, tierColor } from '../ai/gemini'
 import type { IdeaValidation } from '../ai/gemini'
+import { url as absUrl } from '../config/site'
 
 const FAQ = [
   {
@@ -101,12 +102,12 @@ export function IdeaRaterPage() {
 
   function handleShare() {
     const text = buildShareText()
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://failunicorn.com/tools/startup-idea-rater')}`
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(absUrl('/tools/startup-idea-rater'))}`
     window.open(url, '_blank', 'noopener,noreferrer')
   }
 
   function handleCopy() {
-    navigator.clipboard.writeText(buildShareText() + '\nhttps://failunicorn.com/tools/startup-idea-rater')
+    navigator.clipboard.writeText(`${buildShareText()}\n${absUrl('/tools/startup-idea-rater')}`)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -126,7 +127,7 @@ export function IdeaRaterPage() {
       <SEOHead
         title="Free Startup Idea Rater — failunicorn"
         description="Paste your startup idea and get an AI score (1-10) with strengths, risks, and difficulty rating. Free, instant, no signup needed."
-        canonical="https://failunicorn.com/tools/startup-idea-rater"
+        canonical={absUrl('/tools/startup-idea-rater')}
         schema={faqSchema}
       />
 

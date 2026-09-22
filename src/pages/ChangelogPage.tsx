@@ -1,6 +1,7 @@
 import { BlogLayout } from '../components/BlogLayout'
 import { SEOHead } from '../components/SEOHead'
 import { CHANGELOG } from '../data/changelog'
+import { SITE_URL, url } from '../config/site'
 
 const TYPE_LABELS: Record<string, { label: string; color: string; bg: string }> = {
   new:      { label: 'NEW',      color: 'var(--success)', bg: 'rgba(96,108,56,0.1)' },
@@ -18,14 +19,14 @@ export function ChangelogPage() {
       <SEOHead
         title="Changelog — failunicorn"
         description="See what's new in failunicorn — new features, improvements, and fixes to the startup simulation game."
-        canonical="https://failunicorn.com/changelog"
+        canonical={url('/changelog')}
         schema={{
           '@context': 'https://schema.org',
           '@type': 'SoftwareApplication',
           name: 'failunicorn',
           applicationCategory: 'Game',
           operatingSystem: 'Any',
-          url: 'https://failunicorn.com',
+          url: SITE_URL,
           offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
         }}
       />

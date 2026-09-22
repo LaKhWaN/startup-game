@@ -3,6 +3,7 @@ import './LandingPage.css'
 import { SEOHead } from './components/SEOHead'
 import { SiteNav } from './components/SiteNav'
 import { SiteFooter } from './components/SiteFooter'
+import { SITE_URL, SITE_NAME } from './config/site'
 
 /* ── Hooks ────────────────────────────────────────────────────────────────── */
 
@@ -146,9 +147,9 @@ export function LandingPage({ onPlay }: LandingPageProps) {
     gamePlatform: 'Browser',
     operatingSystem: 'Any',
     applicationCategory: 'Game',
-    url: 'https://failunicorn.com',
+    url: SITE_URL,
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-    publisher: { '@type': 'Organization', name: 'failunicorn', url: 'https://failunicorn.com' },
+    publisher: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
   }
 
   return (
@@ -156,7 +157,7 @@ export function LandingPage({ onPlay }: LandingPageProps) {
       <SEOHead
         title="failunicorn — Build a Startup. Survive. (Probably Don't.)"
         description="A free browser startup simulator. Hire your team, ship features, manage burn rate, and survive crises. How long can you last?"
-        canonical="https://failunicorn.com"
+        canonical={SITE_URL}
         schema={videoGameSchema}
       />
 
