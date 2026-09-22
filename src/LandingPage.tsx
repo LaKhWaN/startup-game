@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import './LandingPage.css'
+import { SEOHead } from './components/SEOHead'
+import { SiteNav } from './components/SiteNav'
+import { SiteFooter } from './components/SiteFooter'
 
 /* ── Hooks ────────────────────────────────────────────────────────────────── */
 
@@ -109,13 +112,11 @@ export function LandingPage({ onPlay }: LandingPageProps) {
 
   // Scroll progress bar + parallax CSS var
   const [progress, setProgress] = useState(0)
-  const [scrolled,  setScrolled] = useState(false)
   useEffect(() => {
     const h = () => {
       const sy = window.scrollY
       const total = document.documentElement.scrollHeight - window.innerHeight
       setProgress(total > 0 ? sy / total : 0)
-      setScrolled(sy > 40)
       // Drive parallax via CSS custom property — zero React re-renders
       document.documentElement.style.setProperty('--lp-sy', `${sy}px`)
     }
@@ -136,8 +137,29 @@ export function LandingPage({ onPlay }: LandingPageProps) {
   }
   function onTiltLeave() { setTilt({ x: 0, y: 0 }) }
 
+  const videoGameSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'VideoGame',
+    name: 'failunicorn',
+    description: 'A free browser startup simulator. Hire your team, ship features, manage burn rate, and survive crises. No signup needed.',
+    genre: ['Strategy', 'Simulation', 'Business'],
+    gamePlatform: 'Browser',
+    operatingSystem: 'Any',
+    applicationCategory: 'Game',
+    url: 'https://failunicorn.com',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    publisher: { '@type': 'Organization', name: 'failunicorn', url: 'https://failunicorn.com' },
+  }
+
   return (
     <div className="lp-root">
+      <SEOHead
+        title="failunicorn — Build a Startup. Survive. (Probably Don't.)"
+        description="A free browser startup simulator. Hire your team, ship features, manage burn rate, and survive crises. How long can you last?"
+        canonical="https://failunicorn.com"
+        schema={videoGameSchema}
+      />
+
       {/* Grain texture overlay */}
       <div className="lp-grain" aria-hidden="true" />
 
@@ -149,17 +171,7 @@ export function LandingPage({ onPlay }: LandingPageProps) {
       />
 
       {/* ── Nav ─────────────────────────────────────────────────────────── */}
-      <nav className={`lp-nav${scrolled ? ' lp-nav--solid' : ''}`}>
-        <div className="lp-nav-inner">
-          <div className="lp-logo">
-            <span className="lp-logo-name">fail<span className="lp-logo-accent">unicorn</span></span>
-          </div>
-          <div className="lp-nav-right">
-            <span className="lp-nav-hint">Free · No signup</span>
-            <button className="lp-btn lp-btn--sm" onClick={onPlay}>Play Now →</button>
-          </div>
-        </div>
-      </nav>
+      <SiteNav onPlay={onPlay} ghostUntilScroll />
 
       {/* ── Hero ────────────────────────────────────────────────────────── */}
       <section className="lp-hero">
@@ -468,14 +480,7 @@ export function LandingPage({ onPlay }: LandingPageProps) {
       </section>
 
       {/* ── Footer ──────────────────────────────────────────────────────── */}
-      <footer className="lp-footer">
-        <div className="lp-container lp-footer-inner">
-          <div className="lp-logo">
-            <span className="lp-logo-name">fail<span className="lp-logo-accent">unicorn</span></span>
-          </div>
-          <p className="lp-footer-note">Most startups fail. Might as well make it fun.</p>
-        </div>
-      </footer>
+      <SiteFooter onPlay={onPlay} />
     </div>
   )
 }

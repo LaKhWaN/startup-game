@@ -3,7 +3,6 @@ import { useGameStore } from './store/gameStore'
 import { LandingPage } from './LandingPage'
 import { Onboarding }  from './components/Onboarding'
 import { PostMortem } from './components/PostMortem'
-import { AdminAnalytics } from './components/AdminAnalytics'
 import { OfficeCanvas } from './office/OfficeCanvas'
 import { TopBar }     from './components/TopBar'
 import { BottomNav }  from './components/BottomNav'
@@ -18,6 +17,11 @@ import { InvestorCheckin } from './components/InvestorCheckin'
 import { saveGame } from './save/saveManager'
 import type { NavPanel } from './components/BottomNav'
 import './App.css'
+
+function isLandingRoute(): boolean {
+  const params = new URLSearchParams(window.location.search)
+  return !params.has('play')
+}
 
 const TUTORIAL_KEY = 'startup-game-tutorial-completed'
 
@@ -115,25 +119,10 @@ function GameScreen() {
   )
 }
 
-function isAdminRoute(): boolean {
-  const path = window.location.pathname
-  if (path === '/admin' || path.startsWith('/admin/')) return true
-  const hash = window.location.hash.replace(/^#/, '')
-  if (hash === 'admin' || hash.startsWith('admin/') || hash === '/admin' || hash.startsWith('/admin/')) return true
-  return false
-}
-
-function isLandingRoute(): boolean {
-  if (isAdminRoute()) return false
-  const params = new URLSearchParams(window.location.search)
-  return !params.has('play')
-}
-
 export default function App() {
   const phase = useGameStore(s => s.phase)
   const [showLanding, setShowLanding] = useState(isLandingRoute)
 
-  if (isAdminRoute()) return <AdminAnalytics />
   if (showLanding) return <LandingPage onPlay={() => setShowLanding(false)} />
   if (phase === 'setup')                   return <Onboarding />
   if (phase === 'sold' || phase === 'lost') return <><PostMortem /><InvestorCheckin /></>

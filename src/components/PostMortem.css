@@ -285,3 +285,45 @@
   border-color: var(--accent);
   background: rgba(var(--accent-rgb), 0.06);
 }
+
+/* Share result */
+.pm-share {
+  padding: 1rem 2rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pm-share-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pm-share-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.pm-share-btn {
+  padding: 6px 14px;
+  border-radius: 7px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.pm-share-btn:hover {
+  border-color: var(--brand-primary);
+  background: rgba(var(--text-rgb), 0.04);
+}
