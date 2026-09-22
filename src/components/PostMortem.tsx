@@ -119,12 +119,62 @@ export function PostMortem() {
           </div>
         )}
 
+        {/* Social sharing */}
+        <ShareResult
+          startupName={state.startupName}
+          isSold={isSold}
+          day={day}
+          mrr={Math.floor(state.mrr)}
+          valuation={displayValuation}
+        />
+
         <div className="pm-actions">
           {state.lastConfig && (
             <button className="btn-quick-restart" onClick={quickRestart}>↺ Play Again (same idea)</button>
           )}
           <button className="btn-restart" onClick={restartGame}>New Game →</button>
         </div>
+      </div>
+    </div>
+  )
+}
+
+function ShareResult({
+  startupName,
+  isSold,
+  day,
+  mrr,
+  valuation,
+}: {
+  startupName: string
+  isSold: boolean
+  day: number
+  mrr: number
+  valuation: number
+}) {
+  const [copied, setCopied] = useState(false)
+
+  const shareText = isSold
+    ? `I sold ${startupName} for $${valuation.toLocaleString()} on Day ${day} 🏆 #failunicorn`
+    : `${startupName} burned out on Day ${day} with $${mrr.toLocaleString()}/mo MRR 💀 Can you survive longer? #failunicorn`
+
+  function handleShareX() {
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent('https://failunicorn.com')}`
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
+  function handleCopy() {
+    navigator.clipboard.writeText(shareText + '\nhttps://failunicorn.com')
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="pm-share">
+      <div className="pm-share-label">Share your result</div>
+      <div className="pm-share-buttons">
+        <button className="pm-share-btn" onClick={handleShareX}>Share on X</button>
+        <button className="pm-share-btn" onClick={handleCopy}>{copied ? 'Copied!' : 'Copy'}</button>
       </div>
     </div>
   )

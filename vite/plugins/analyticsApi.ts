@@ -3,6 +3,7 @@ import type { Plugin } from 'vite'
 import { loadEnv } from 'vite'
 import { ingestGameDay } from '../../server/ingestGameDay'
 import { ingestFeedback } from '../../server/ingestFeedback'
+import { getLeaderboard } from '../../server/getLeaderboard'
 
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -25,7 +26,11 @@ export function analyticsApiPlugin(): Plugin {
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const pathname = req.url?.split('?')[0] ?? ''
-        if (pathname !== '/api/ingest-game-day' && pathname !== '/api/ingest-feedback') {
+        const isKnownRoute =
+          pathname === '/api/ingest-game-day' ||
+          pathname === '/api/ingest-feedback' ||
+          pathname === '/api/leaderboard'
+        if (!isKnownRoute) {
           next()
           return
         }
@@ -39,13 +44,6 @@ export function analyticsApiPlugin(): Plugin {
           return
         }
 
-        if (req.method !== 'POST') {
-          nodeRes.statusCode = 405
-          nodeRes.setHeader('Content-Type', 'application/json')
-          nodeRes.end(JSON.stringify({ error: 'Method not allowed' }))
-          return
-        }
-
         const mode = server.config.mode
         const loaded = loadEnv(mode, process.cwd(), '')
         const env = {
@@ -55,6 +53,27 @@ export function analyticsApiPlugin(): Plugin {
         }
 
         try {
+          if (pathname === '/api/leaderboard') {
+            if (req.method !== 'GET') {
+              nodeRes.statusCode = 405
+              nodeRes.setHeader('Content-Type', 'application/json')
+              nodeRes.end(JSON.stringify({ error: 'Method not allowed' }))
+              return
+            }
+            const { status, body } = await getLeaderboard(env)
+            nodeRes.statusCode = status
+            nodeRes.setHeader('Content-Type', 'application/json')
+            nodeRes.end(JSON.stringify(body))
+            return
+          }
+
+          if (req.method !== 'POST') {
+            nodeRes.statusCode = 405
+            nodeRes.setHeader('Content-Type', 'application/json')
+            nodeRes.end(JSON.stringify({ error: 'Method not allowed' }))
+            return
+          }
+
           const raw = await readBody(req as IncomingMessage)
           const handler = pathname === '/api/ingest-feedback' ? ingestFeedback : ingestGameDay
           const { status, body } = await handler(raw, env)

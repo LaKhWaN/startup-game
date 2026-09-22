@@ -154,39 +154,6 @@ html { scroll-behavior: smooth; }
 /* ════════════════════════════════════════════════════════════════════════════
    NAVIGATION
    ════════════════════════════════════════════════════════════════════════════ */
-.lp-nav {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 500;
-  padding: 16px 0;
-  transition: background 0.35s ease, border-bottom 0.35s ease, box-shadow 0.35s ease;
-}
-.lp-nav--solid {
-  background: rgba(254, 250, 224, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--lp-border);
-  box-shadow: 0 2px 18px rgba(44, 30, 15, 0.07);
-}
-.lp-nav-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 36px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.lp-nav-right { display: flex; align-items: center; gap: 16px; }
-.lp-nav-hint  { font-size: 0.88rem; color: var(--lp-muted); }
-
-/* ── Logo ──────────────────────────────────────────────────────────────────── */
-.lp-logo { display: flex; align-items: center; }
-.lp-logo-name {
-  font-family: 'DM Serif Display', Georgia, serif;
-  font-weight: 400; font-size: 2rem;
-  color: var(--lp-primary); letter-spacing: -0.01em; line-height: 1;
-}
-.lp-logo-accent { color: var(--lp-orange); font-style: italic; }
 
 /* ── Tag pill ──────────────────────────────────────────────────────────────── */
 .lp-tag {
@@ -774,9 +741,6 @@ html { scroll-behavior: smooth; }
 /* ════════════════════════════════════════════════════════════════════════════
    FOOTER
    ════════════════════════════════════════════════════════════════════════════ */
-.lp-footer { border-top: 1px solid var(--lp-border); padding: 28px 0; background: var(--lp-surf2); }
-.lp-footer-inner { display: flex; align-items: center; justify-content: space-between; }
-.lp-footer-note  { font-size: 0.78rem; color: var(--lp-muted); }
 
 /* ════════════════════════════════════════════════════════════════════════════
    RESPONSIVE
@@ -813,7 +777,5 @@ html { scroll-behavior: smooth; }
   .lp-metric:nth-child(-n+3),
   .lp-metric:nth-child(4),
   .lp-metric:nth-child(5) { grid-column: span 1; }
-  .lp-nav-hint    { display: none; }
   .lp-midcta-inner { flex-direction: column; text-align: center; }
-  .lp-footer-inner { flex-direction: column; gap: 10px; text-align: center; }
 }
