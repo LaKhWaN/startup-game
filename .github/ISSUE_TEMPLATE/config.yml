@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/LaKhWaN/startup-game/security/advisories/new
+    about: Report privately. Please do not open a public issue.
+  - name: Play the game
+    url: https://failunicorn.com
+    about: Not sure whether it's a bug? Try reproducing it on the live site.

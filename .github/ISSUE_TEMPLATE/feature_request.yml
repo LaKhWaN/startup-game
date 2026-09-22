@@ -1,0 +1,39 @@
+name: Feature or balance idea
+description: Suggest a mechanic, a page, or a tuning change
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What's the idea?
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why does the game need it?
+      description: What's unsatisfying about how it works today? Concrete beats abstract.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of change is this?
+      options:
+        - Balance tuning (prices, churn, event odds)
+        - New game mechanic
+        - New random event
+        - UI or accessibility improvement
+        - Marketing site / content
+        - Something else
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: offer
+    attributes:
+      label: Would you like to build it?
+      options:
+        - label: I'd be up for opening a PR for this

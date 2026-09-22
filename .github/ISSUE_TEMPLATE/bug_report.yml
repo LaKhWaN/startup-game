@@ -1,0 +1,58 @@
+name: Bug report
+description: Something in the game or site behaves incorrectly
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Please don't use this form for security problems — see [SECURITY.md](../blob/main/SECURITY.md).
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what did you get instead?
+      placeholder: I shipped a feature on day 12 and my cash went up instead of down.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Start a new game with the Coworking office
+        2. Hire a developer
+        3. Queue a feature and let it build
+        4. ...
+    validations:
+      required: true
+
+  - type: input
+    id: where
+    attributes:
+      label: Where did it happen?
+      description: The page or screen — e.g. the game, /leaderboard, /tools/startup-idea-rater
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: Chrome 140 on macOS 15
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors
+      description: Anything red in the browser devtools console. Paste as text, not a screenshot.
+      render: shell
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots help — one showing the metrics bar is usually enough context.
