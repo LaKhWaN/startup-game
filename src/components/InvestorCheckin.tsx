@@ -5,6 +5,8 @@ import { ingestFeedbackRemote } from '../analytics/mongoIngest'
 import './InvestorCheckin.css'
 
 const STORAGE_KEY = 'investor-checkin-done'
+const SNOOZE_DELAY_MS = 10 * 60 * 1000
+const MAX_SNOOZES = 2
 
 const MOODS = [
   { emoji: '😫', label: 'Brutal' },
@@ -42,6 +44,7 @@ export function InvestorCheckin() {
 
   const [step, setStep]       = useState<Step | null>(null)
   const [visible, setVisible] = useState(false)
+  const [snoozeCount, setSnoozeCount] = useState(0)
   const [feedback, setFeedback] = useState<FeedbackData>({
     mood: null, challenges: [], wishlist: '', day, mrr, customers,
   })
@@ -75,8 +78,13 @@ export function InvestorCheckin() {
 
   function later() {
     setVisible(false)
-    // Re-show once after a short delay (don't mark as done)
-    setTimeout(() => setVisible(true), 120_000)
+    if (snoozeCount >= MAX_SNOOZES) {
+      // Stop pestering — treat as done after a couple of snoozes
+      localStorage.setItem(STORAGE_KEY, '1')
+      return
+    }
+    setSnoozeCount(n => n + 1)
+    setTimeout(() => setVisible(true), SNOOZE_DELAY_MS)
   }
 
   function toggleChallenge(c: string) {

@@ -52,3 +52,14 @@
   --focus-rgb: 181 101 118;
 }
 
+/* Consistent keyboard-focus ring app-wide — outline only, no layout shift */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+

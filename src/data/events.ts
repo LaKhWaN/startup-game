@@ -469,6 +469,283 @@ export const EVENTS: GameEvent[] = [
   },
 
   {
+    id: 'bad-migration',
+    category: 'crisis',
+    title: 'Database Migration Went Sideways',
+    description:
+      'A routine schema migration locked up production for longer than planned. Some writes may have been dropped.',
+    choices: [
+      {
+        label: 'Roll back and redo it carefully',
+        consequence:
+          'You reverted and rebuilt the migration with more guardrails. Slower, safer.',
+        effect: (s: GameState) => {
+          const r = roll()
+          // 70% → clean recovery, minor progress hit; 30% → some data loss surfaces later
+          return r < 0.70
+            ? { productProgress: Math.max(0, s.productProgress - 3) }
+            : { churnRate: Math.min(s.churnRate + 6, 60), techDebt: Math.min(100, s.techDebt + 8) }
+        },
+      },
+      {
+        label: 'Patch forward — keep moving',
+        consequence:
+          'You pushed a forward-fix instead of rolling back. Momentum over caution.',
+        effect: (s: GameState) => {
+          const r = roll()
+          // 45% → forward-fix works; 55% → underlying issue resurfaces worse
+          return r < 0.45
+            ? { techDebt: Math.min(100, s.techDebt + 4) }
+            : { churnRate: Math.min(s.churnRate + 10, 60), techDebt: Math.min(100, s.techDebt + 15) }
+        },
+      },
+    ],
+  },
+
+  {
+    id: 'oss-vulnerability',
+    category: 'crisis',
+    title: 'Critical Vulnerability in a Dependency',
+    description:
+      'A widely-used open-source package you depend on just disclosed a critical CVE. A patch exists, but upgrading isn\'t trivial.',
+    choices: [
+      {
+        label: 'Emergency patch — pull devs off everything else',
+        consequence:
+          'You froze the roadmap to patch immediately. Fast, but it cost you elsewhere.',
+        effect: (s: GameState) => {
+          const r = roll()
+          return r < 0.75
+            ? { productProgress: Math.max(0, s.productProgress - 5) }
+            : { productProgress: Math.max(0, s.productProgress - 5), techDebt: Math.min(100, s.techDebt + 6) }
+        },
+      },
+      {
+        label: 'Assess exposure first, patch on the next cycle',
+        consequence:
+          'You judged the risk and scheduled the fix normally. Reasonable — unless you judged wrong.',
+        effect: (s: GameState) => {
+          const r = roll()
+          // 65% → exposure was low, nothing happens; 35% → it was exploited before the patch landed
+          return r < 0.65
+            ? {}
+            : {
+                churnRate: Math.min(s.churnRate + 12, 60),
+                brand: Math.max(0, s.brand - 15),
+              }
+        },
+      },
+    ],
+  },
+
+  {
+    id: 'api-abuse',
+    category: 'crisis',
+    title: 'API Being Hammered by Bots',
+    description:
+      'Automated traffic is hitting your public API hard enough to slow things down for real users.',
+    choices: [
+      {
+        label: 'Ship rate limiting now',
+        consequence:
+          'Devs shipped throttling fast. Aggressive limits sometimes catch legitimate users too.',
+        effect: (s: GameState) => {
+          const r = roll()
+          return r < 0.6
+            ? { techDebt: Math.min(100, s.techDebt + 3) }
+            : { churnRate: Math.min(s.churnRate + 3, 60), techDebt: Math.min(100, s.techDebt + 3) }
+        },
+      },
+      {
+        label: 'Pay for a WAF/bot-mitigation service ($500/mo)',
+        consequence:
+          'You bought your way out of the problem instead of building it in-house.',
+        effect: (s: GameState) => ({ infraCostMonthly: s.infraCostMonthly + 500 }),
+      },
+    ],
+  },
+
+  {
+    id: 'hackathon-win',
+    category: 'opportunity',
+    title: 'Team Wants to Enter a Hackathon',
+    description:
+      'A high-profile hackathon is coming up. Win or lose, it\'s a weekend the team could spend building instead.',
+    choices: [
+      {
+        label: 'Let them go compete',
+        consequence:
+          'You gave the team the weekend. Hackathons are a coin flip on payoff.',
+        effect: (s: GameState) => {
+          const r = roll()
+          // 35% → win, brand + customers; 45% → good exposure, small brand bump; 20% → nothing
+          if (r < 0.35) return { brand: Math.min(100, s.brand + 10), customers: s.customers + 6 }
+          if (r < 0.80) return { brand: Math.min(100, s.brand + 3) }
+          return {}
+        },
+      },
+      {
+        label: 'Keep everyone on the roadmap',
+        consequence:
+          'You kept focus on shipping. Steady, if less exciting.',
+        effect: (s: GameState) => ({ productProgress: Math.min(100, s.productProgress + 3) }),
+      },
+    ],
+  },
+
+  {
+    id: 'conference-sponsorship',
+    category: 'opportunity',
+    title: 'Conference Sponsorship Offer',
+    description:
+      'A mid-size industry conference offers a booth + logo placement for $900. Your target buyers will be in the room.',
+    choices: [
+      {
+        label: 'Sponsor it ($900)',
+        consequence:
+          'You paid for the booth and sent someone to work the room.',
+        effect: (s: GameState) => {
+          const r = roll()
+          if (r < 0.4) return { cash: s.cash - 900, customers: s.customers + 12, brand: Math.min(100, s.brand + 4) }
+          if (r < 0.75) return { cash: s.cash - 900, customers: s.customers + 4 }
+          return { cash: s.cash - 900, brand: Math.min(100, s.brand + 2) }
+        },
+      },
+      {
+        label: 'Skip it — not the right audience',
+        consequence:
+          'You passed and saved the cash.',
+        effect: () => ({}),
+      },
+    ],
+  },
+
+  {
+    id: 'enterprise-intro',
+    category: 'opportunity',
+    title: 'Investor Offers a Warm Intro to an Enterprise Buyer',
+    description:
+      'One of your investors knows a VP at a mid-size company who might be a great fit — if the product can handle their scale.',
+    choices: [
+      {
+        label: 'Take the meeting',
+        consequence:
+          'You took the call. Enterprise buyers move slow and ask hard questions.',
+        effect: (s: GameState) => {
+          const r = roll()
+          // 40% → they sign, big win; 35% → they want changes first (nothing now); 25% → not a fit, minor brand ding
+          if (r < 0.40) return { customers: s.customers + 20, cash: s.cash + 2500 }
+          if (r < 0.75) return {}
+          return { brand: Math.max(0, s.brand - 3) }
+        },
+      },
+      {
+        label: 'Pass — not ready for that scale yet',
+        consequence:
+          'You stayed focused on your current segment.',
+        effect: () => ({}),
+      },
+    ],
+  },
+
+  {
+    id: 'product-hunt-launch',
+    category: 'market',
+    title: 'Featured on a Popular Launch Site',
+    description:
+      'You got picked up by a well-known product discovery site. Traffic is about to spike for a day, maybe two.',
+    choices: [
+      {
+        label: 'Rally the team to engage all day',
+        consequence:
+          'Everyone dropped what they were doing to respond to comments and questions.',
+        effect: (s: GameState) => {
+          const r = roll()
+          if (r < 0.45) return { customers: s.customers + 22, brand: Math.min(100, s.brand + 8) }
+          if (r < 0.80) return { customers: s.customers + 9, brand: Math.min(100, s.brand + 3) }
+          return { customers: s.customers + 3, churnRate: Math.min(s.churnRate + 2, 60) }
+        },
+      },
+      {
+        label: 'Let it ride — keep shipping as normal',
+        consequence:
+          'You didn\'t change plans for it. Some of the traffic converts anyway.',
+        effect: (s: GameState) => {
+          const r = roll()
+          return r < 0.5 ? { customers: s.customers + 6 } : { customers: s.customers + 2 }
+        },
+      },
+    ],
+  },
+
+  {
+    id: 'pricing-leak',
+    category: 'market',
+    title: 'A Competitor Undercut Your Pricing Publicly',
+    description:
+      'A rival just posted a comparison page claiming they\'re half your price for "the same thing." It\'s getting shared.',
+    choices: [
+      {
+        label: 'Publish your own honest comparison',
+        consequence:
+          'You responded with a clear, factual comparison instead of a discount.',
+        effect: (s: GameState) => {
+          const r = roll()
+          return r < 0.55
+            ? { brand: Math.min(100, s.brand + 5) }
+            : { churnRate: Math.min(s.churnRate + 4, 60) }
+        },
+      },
+      {
+        label: 'Quietly match their price for new signups',
+        consequence:
+          'You matched the price for new customers without announcing it.',
+        effect: (s: GameState) => {
+          const r = roll()
+          return r < 0.5
+            ? { customers: s.customers + 6 }
+            : { customers: s.customers + 6, brand: Math.max(0, s.brand - 4) }
+        },
+      },
+    ],
+  },
+
+  {
+    id: 'talent-poaching',
+    category: 'market',
+    title: 'A Bigger Company Is Poaching Your Space',
+    description:
+      'A well-funded player just started hiring aggressively for roles in your exact niche — including, rumor has it, from your own team.',
+    choices: [
+      {
+        label: 'Get ahead of it — raise comp for the team now',
+        consequence:
+          'You moved preemptively on compensation before anyone left.',
+        effect: (s: GameState) => ({
+          employees: s.employees.map(e => ({ ...e, morale: Math.min(100, e.morale + 8) })),
+          cash: s.cash - s.employees.length * 200,
+        }),
+      },
+      {
+        label: 'Wait and see',
+        consequence:
+          'You held off. Sometimes nothing happens.',
+        effect: (s: GameState) => {
+          const r = roll()
+          // 70% → nothing; 30% → lose someone
+          if (r < 0.70) return {}
+          const anyEmp = s.employees[Math.floor(Math.random() * s.employees.length)]
+          if (!anyEmp) return {}
+          return {
+            employees: s.employees.filter(e => e.id !== anyEmp.id),
+            culture: Math.max(0, s.culture - 8),
+          }
+        },
+      },
+    ],
+  },
+
+  {
     id: 'competitor-freemium',
     category: 'crisis',
     title: 'Top Competitor Just Went Free',

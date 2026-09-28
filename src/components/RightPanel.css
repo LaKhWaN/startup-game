@@ -1170,6 +1170,25 @@
 }
 .rcc-launch-btn:hover { background: rgba(var(--accent-rgb), 0.08); }
 
+.rcc-assign-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.rcc-assignee-select {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.72rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.3rem 0.4rem;
+  border-radius: 6px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
 /* (old vitals section removed — replaced by .rtc-gauges above) */
 
 /* ─── Tech debt card ──────────────────────────────────────────────────────── */
