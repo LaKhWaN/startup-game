@@ -8,6 +8,19 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v1.3',
+    date: '2026-09-29',
+    title: 'Player Feedback Round',
+    type: 'improved',
+    items: [
+      'Fixed the feedback popup re-appearing every couple of minutes when dismissed with "Maybe later" — it now snoozes at most twice before backing off',
+      'GTM campaigns can now be assigned to a specific idle salesperson or marketer when more than one is free, instead of always picking the first one',
+      'Rebalanced churn: sales and marketing hires reduce churn meaningfully faster, and churn now drifts back down over time instead of staying elevated after a bad event',
+      'Expanded the feature pool so Product Managers don\'t run out of ideas to propose in long games',
+      'Added 9 new random events',
+    ],
+  },
+  {
     version: 'v1.2',
     date: '2026-03-20',
     title: 'Vercel Analytics + Performance',
