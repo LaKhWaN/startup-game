@@ -2,10 +2,10 @@ import { lazy, Suspense } from 'react'
 import type { ReactNode } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 
-/* The game pulls in Phaser + three.js + sql.js, and the admin view pulls in the
-   analytics stack. Keep both out of the marketing/SEO pages' initial payload. */
+/* The game pulls in Phaser + three.js + sql.js. Keep that out of the
+   marketing/SEO pages' initial payload. */
 const App            = lazy(() => import('./App'))
-const AdminAnalytics = lazy(() => import('./components/AdminAnalytics').then(m => ({ default: m.AdminAnalytics })))
+const AdminDashboard = lazy(() => import('./components/AdminDashboard').then(m => ({ default: m.AdminDashboard })))
 const BlogListPage   = lazy(() => import('./pages/BlogListPage').then(m => ({ default: m.BlogListPage })))
 const BlogPostPage   = lazy(() => import('./pages/BlogPostPage').then(m => ({ default: m.BlogPostPage })))
 const ChangelogPage  = lazy(() => import('./pages/ChangelogPage').then(m => ({ default: m.ChangelogPage })))
@@ -34,7 +34,7 @@ function route(element: ReactNode) {
 }
 
 export const router = createBrowserRouter([
-  { path: '/admin', element: route(<AdminAnalytics />) },
+  { path: '/admin', element: route(<AdminDashboard />) },
   { path: '/blog', element: route(<BlogListPage />) },
   { path: '/blog/:slug', element: route(<BlogPostPage />) },
   { path: '/changelog', element: route(<ChangelogPage />) },

@@ -1,0 +1,111 @@
+.admin-dash { min-height: 100vh; background: var(--bg); color: var(--text); font-family: 'Roboto', sans-serif; }
+
+.admin-login-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.admin-login-card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.admin-login-card h1 { font-size: 20px; font-weight: 800; color: var(--brand-primary); margin: 0 0 20px; }
+
+.admin-field { margin-bottom: 14px; }
+.admin-field label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.admin-field input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.admin-field input:focus { outline: none; box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.2); }
+
+.admin-login-btn {
+  width: 100%;
+  padding: 11px;
+  border-radius: 8px;
+  border: none;
+  background: var(--brand-primary);
+  color: var(--brand-bg);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 6px;
+}
+.admin-login-btn:disabled { opacity: 0.6; cursor: default; }
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-body { padding: 28px; max-width: 1200px; margin: 0 auto; }
+
+.admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 28px; }
+
+.admin-stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+.admin-stat-card .label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.admin-stat-card .value { font-size: 24px; font-weight: 800; font-family: 'Roboto Mono', monospace; color: var(--brand-primary); }
+.admin-stat-card .sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+.admin-section { margin-bottom: 28px; }
+.admin-section h2 { font-size: 15px; font-weight: 700; color: var(--text); margin: 0 0 14px; }
+
+.admin-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
+
+.admin-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 13px; }
+.admin-bar-row .bar-label { width: 110px; flex-shrink: 0; color: var(--muted); text-transform: capitalize; }
+.admin-bar-track { flex: 1; height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+.admin-bar-fill { height: 100%; border-radius: 4px; }
+.admin-bar-count { width: 32px; text-align: right; font-family: 'Roboto Mono', monospace; color: var(--text); font-weight: 600; }
+
+.admin-feedback-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.admin-feedback-meta { display: flex; gap: 10px; align-items: center; font-size: 11px; color: var(--muted); margin-bottom: 8px; flex-wrap: wrap; }
+.admin-feedback-wishlist { font-size: 13px; color: var(--text); line-height: 1.5; }
+.admin-feedback-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.admin-feedback-tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; background: rgba(var(--accent-rgb), 0.15); color: var(--brand-primary); }
+
+.admin-error { padding: 14px 18px; border-radius: 8px; background: rgba(158,42,43,0.08); border-left: 3px solid var(--error); color: var(--error); font-size: 13px; }
+.admin-empty { text-align: center; padding: 40px 0; color: var(--muted); font-size: 14px; }
+
+.admin-logout-btn {
+  padding: 7px 14px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+.admin-logout-btn:hover { color: var(--text); border-color: var(--brand-primary); }

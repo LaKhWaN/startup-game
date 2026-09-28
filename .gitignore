@@ -15,3 +15,6 @@ public/robots.txt
 
 # Raw full-resolution screenshots; optimised copies live in docs/images/
 image/
+
+# Local planning notes, not for the repo
+TODOS.md
