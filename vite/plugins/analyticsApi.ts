@@ -5,6 +5,8 @@ import { ingestGameDay } from '../../server/ingestGameDay'
 import { ingestFeedback } from '../../server/ingestFeedback'
 import { getLeaderboard } from '../../server/getLeaderboard'
 import { rateIdea } from '../../server/rateIdea'
+import { adminLogin } from '../../server/adminAuth'
+import { adminDashboard } from '../../server/adminDashboard'
 
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -17,8 +19,8 @@ function readBody(req: IncomingMessage): Promise<string> {
 
 function setCors(res: ServerResponse): void {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
 }
 
 export function analyticsApiPlugin(): Plugin {
@@ -31,7 +33,9 @@ export function analyticsApiPlugin(): Plugin {
           pathname === '/api/ingest-game-day' ||
           pathname === '/api/ingest-feedback' ||
           pathname === '/api/leaderboard' ||
-          pathname === '/api/rate-idea'
+          pathname === '/api/rate-idea' ||
+          pathname === '/api/admin-login' ||
+          pathname === '/api/admin-dashboard'
         if (!isKnownRoute) {
           next()
           return
@@ -53,6 +57,9 @@ export function analyticsApiPlugin(): Plugin {
           MONGODB_URI: loaded.MONGODB_URI ?? process.env.MONGODB_URI,
           MONGODB_DB_NAME: loaded.MONGODB_DB_NAME ?? process.env.MONGODB_DB_NAME,
           ANALYTICS_INGEST_SECRET: loaded.ANALYTICS_INGEST_SECRET ?? process.env.ANALYTICS_INGEST_SECRET,
+          ADMIN_USERNAME: loaded.ADMIN_USERNAME ?? process.env.ADMIN_USERNAME,
+          ADMIN_PASSWORD: loaded.ADMIN_PASSWORD ?? process.env.ADMIN_PASSWORD,
+          ADMIN_SECRET: loaded.ADMIN_SECRET ?? process.env.ADMIN_SECRET,
         }
 
         try {
@@ -64,6 +71,29 @@ export function analyticsApiPlugin(): Plugin {
               return
             }
             const { status, body } = await getLeaderboard(env)
+            nodeRes.statusCode = status
+            nodeRes.setHeader('Content-Type', 'application/json')
+            nodeRes.end(JSON.stringify(body))
+            return
+          }
+
+          if (pathname === '/api/admin-dashboard') {
+            if (req.method !== 'GET') {
+              nodeRes.statusCode = 405
+              nodeRes.setHeader('Content-Type', 'application/json')
+              nodeRes.end(JSON.stringify({ error: 'Method not allowed' }))
+              return
+            }
+            const { status, body } = await adminDashboard(req.headers.authorization, env)
+            nodeRes.statusCode = status
+            nodeRes.setHeader('Content-Type', 'application/json')
+            nodeRes.end(JSON.stringify(body))
+            return
+          }
+
+          if (pathname === '/api/admin-login') {
+            const raw = await readBody(req as IncomingMessage)
+            const { status, body } = await adminLogin(raw, env)
             nodeRes.statusCode = status
             nodeRes.setHeader('Content-Type', 'application/json')
             nodeRes.end(JSON.stringify(body))
