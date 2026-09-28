@@ -313,7 +313,7 @@ function processDayTick(state: GameState, day: number): GameState {
       storyLines.push(`${emp.name} (Sales) closed a new customer.`)
     }
     const persistence = emp.stats.persistence ?? 5
-    s = { ...s, churnRate: Math.max(churnFloorGlobal, s.churnRate - persistence / 3000) }
+    s = { ...s, churnRate: Math.max(churnFloorGlobal, s.churnRate - persistence / 300) }
   }
 
   // ── Marketing: grow organic + reduce churn ─────────────────────────────────
@@ -323,7 +323,7 @@ function processDayTick(state: GameState, day: number): GameState {
     const reach       = emp.stats.reach ?? 5
     const analytics   = emp.stats.analytics ?? 5
 
-    s = { ...s, churnRate: Math.max(churnFloorGlobal, s.churnRate - (consistency + analytics) / 6000) }
+    s = { ...s, churnRate: Math.max(churnFloorGlobal, s.churnRate - (consistency + analytics) / 600) }
 
     const organicChance = (reach / 1000) * custMult * satFactor
     if (Math.random() < organicChance) {
@@ -467,7 +467,9 @@ function processDayTick(state: GameState, day: number): GameState {
   }
 
   // ── Daily churn ────────────────────────────────────────────────────────────
-  s = { ...s, churnRate: Math.max(churnFloorGlobal, s.churnRate) }
+  // Small natural pull toward the difficulty floor so a bad crisis stretch
+  // doesn't leave churn permanently elevated once things stabilize.
+  s = { ...s, churnRate: Math.max(churnFloorGlobal, s.churnRate - 0.08) }
   const dailyChurnRate = s.churnRate / 100 / DAYS_PER_MONTH
   const churned        = Math.floor(newCustomers * dailyChurnRate)
   newCustomers = Math.max(0, newCustomers - churned)

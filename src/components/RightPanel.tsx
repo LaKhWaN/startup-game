@@ -596,14 +596,88 @@ function ShopPanel() {
 
 // ─── GTM Panel ───────────────────────────────────────────────────────────────
 
-function GTMPanel() {
-  const [tab, setTab] = useState<'marketing' | 'sales'>('marketing')
-
+function GTMCampaignCard({ template }: { template: import('../types').CampaignTemplate }) {
   const employees      = useGameStore(s => s.employees)
   const cash           = useGameStore(s => s.cash)
   const activeCampaigns = useGameStore(s => s.activeCampaigns)
   const completedIds   = useGameStore(s => s.completedCampaignIds)
   const launchCampaign = useGameStore(s => s.launchCampaign)
+
+  const [selected, setSelected] = useState<string>('')
+
+  const idleWorkers = employees.filter(e => e.role === template.requires && e.status === 'idle')
+  const isRunning   = activeCampaigns.some(c => c.templateId === template.id)
+  const isDone      = template.oneTimeOnly && completedIds.includes(template.id)
+  const cantAfford  = cash < template.cost
+  const noWorker    = idleWorkers.length === 0
+  const disabled    = isRunning || isDone || cantAfford || noWorker
+
+  let reason = ''
+  if (isDone)      reason = 'Already done'
+  else if (isRunning)  reason = 'Running'
+  else if (cantAfford) reason = `Need $${template.cost.toLocaleString()}`
+  else if (noWorker)   reason = `No idle ${template.requires.replace('_', ' ')}`
+
+  function handleLaunch() {
+    const empId = selected || (idleWorkers[0]?.id ?? '')
+    if (!empId) return
+    launchCampaign(template.id, empId)
+    setSelected('')
+  }
+
+  const chosen = idleWorkers.find(e => e.id === selected) ?? idleWorkers[0]
+
+  return (
+    <div className={`rp-camp-card ${disabled ? 'rp-camp-card--off' : ''}`}>
+      <div className="rcc-top">
+        <span className="rcc-name">{template.name}</span>
+        {template.oneTimeOnly && <span className="rcc-once">1×</span>}
+      </div>
+      <div className="rcc-meta">
+        <span className="rcc-cost">{template.cost === 0 ? 'Free' : `$${template.cost.toLocaleString()}`}</span>
+        <span className="rcc-dot">·</span>
+        <span className="rcc-dur">{template.durationDays}d</span>
+        <span className="rcc-dot">·</span>
+        <span className="rcc-gain">+{template.baseCustomerGain[0]}–{template.baseCustomerGain[1]} users</span>
+        {template.churnEffect && (
+          <>
+            <span className="rcc-dot">·</span>
+            <span className={template.churnEffect > 0 ? 'rcc-churn-up' : 'rcc-churn-down'}>
+              churn {template.churnEffect > 0 ? '+' : ''}{template.churnEffect}%
+            </span>
+          </>
+        )}
+      </div>
+      {disabled ? (
+        <span className="rcc-reason">{reason}</span>
+      ) : (
+        <div className="rcc-assign-row">
+          {idleWorkers.length > 1 && (
+            <select
+              className="rcc-assignee-select"
+              value={selected}
+              onChange={e => setSelected(e.target.value)}
+              aria-label={`Assign ${template.name} to`}
+            >
+              <option value="">Auto-assign</option>
+              {idleWorkers.map(e => (
+                <option key={e.id} value={e.id}>{e.name}</option>
+              ))}
+            </select>
+          )}
+          <button className="rcc-launch-btn" onClick={handleLaunch}>
+            Launch{chosen ? ` · ${chosen.name.split(' ')[0]}` : ''} →
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function GTMPanel() {
+  const [tab, setTab] = useState<'marketing' | 'sales'>('marketing')
+
+  const activeCampaigns = useGameStore(s => s.activeCampaigns)
 
   const templates = CAMPAIGN_TEMPLATES.filter(t => t.type === tab)
   const running   = activeCampaigns.filter(c => c.type === tab)
@@ -643,56 +717,7 @@ function GTMPanel() {
 
       <section className="rp-section">
         <div className="rp-section-label">Available</div>
-        {templates.map(t => {
-          const idleWorkers  = employees.filter(e => e.role === t.requires && e.status === 'idle')
-          const isRunning    = activeCampaigns.some(c => c.templateId === t.id)
-          const isDone       = t.oneTimeOnly && completedIds.includes(t.id)
-          const cantAfford   = cash < t.cost
-          const noWorker     = idleWorkers.length === 0
-          const disabled     = isRunning || isDone || cantAfford || noWorker
-
-          let reason = ''
-          if (isDone)      reason = 'Already done'
-          else if (isRunning)  reason = 'Running'
-          else if (cantAfford) reason = `Need $${t.cost.toLocaleString()}`
-          else if (noWorker)   reason = `No idle ${t.requires.replace('_', ' ')}`
-
-          const empId = idleWorkers[0]?.id ?? ''
-
-          return (
-            <div key={t.id} className={`rp-camp-card ${disabled ? 'rp-camp-card--off' : ''}`}>
-              <div className="rcc-top">
-                <span className="rcc-name">{t.name}</span>
-                {t.oneTimeOnly && <span className="rcc-once">1×</span>}
-              </div>
-              <div className="rcc-meta">
-                <span className="rcc-cost">{t.cost === 0 ? 'Free' : `$${t.cost.toLocaleString()}`}</span>
-                <span className="rcc-dot">·</span>
-                <span className="rcc-dur">{t.durationDays}d</span>
-                <span className="rcc-dot">·</span>
-                <span className="rcc-gain">+{t.baseCustomerGain[0]}–{t.baseCustomerGain[1]} users</span>
-                {t.churnEffect && (
-                  <>
-                    <span className="rcc-dot">·</span>
-                    <span className={t.churnEffect > 0 ? 'rcc-churn-up' : 'rcc-churn-down'}>
-                      churn {t.churnEffect > 0 ? '+' : ''}{t.churnEffect}%
-                    </span>
-                  </>
-                )}
-              </div>
-              {disabled ? (
-                <span className="rcc-reason">{reason}</span>
-              ) : (
-                <button
-                  className="rcc-launch-btn"
-                  onClick={() => launchCampaign(t.id, empId)}
-                >
-                  Launch{idleWorkers[0] ? ` · ${idleWorkers[0].name.split(' ')[0]}` : ''} →
-                </button>
-              )}
-            </div>
-          )
-        })}
+        {templates.map(t => <GTMCampaignCard key={t.id} template={t} />)}
       </section>
     </div>
   )
