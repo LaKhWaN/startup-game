@@ -38,7 +38,7 @@ const PHASE_COLORS: Record<string, string> = {
   setup: 'var(--muted)',
 }
 
-const MOOD_LABELS: Record<number, string> = { 1: '😞', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' }
+const MOOD_LABELS: Record<number, string> = { 0: '😫', 1: '😕', 2: '😐', 3: '🙂', 4: '🤩' }
 
 function fmtMoney(n: number): string {
   if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`
