@@ -1,11 +1,14 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
-
 export type RateIdeaEnv = {
-  GEMINI_API_KEY?: string
+  GROQ_API_KEYS?: string
 }
 
-const MODEL = 'gemini-2.5-flash'
-const TIMEOUT_MS = 12_000
+const GROQ_MODEL = 'openai/gpt-oss-120b'
+const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
+// The roadmap generation call (18 structured features) can take a while on a
+// slow provider — kept generous even though Groq is typically much faster
+// than the Gemini call this replaced.
+const TIMEOUT_MS_VALIDATE = 12_000
+const TIMEOUT_MS_ROADMAP  = 28_000
 const MAX_IDEA_LENGTH = 500
 
 /**
@@ -44,7 +47,7 @@ Vague one-line ideas ("an app for X", "uber for Y" with no specifics) should usu
 
 Generate a realistic, ORDERED list of 18 features/tasks this startup would build, from earliest to latest. Follow a real startup lifecycle:
 - First 4-5: Foundation (landing page, auth, core MVP functionality)
-- Next 4-5: Launch (payments, onboarding, analytics)  
+- Next 4-5: Launch (payments, onboarding, analytics)
 - Next 4-5: Growth (marketing features, integrations, team tools)
 - Last 3-4: Scale (enterprise features, advanced capabilities, compliance)
 
@@ -73,6 +76,65 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 }
 
 /**
+ * GROQ_API_KEYS is a bracketed, comma-separated list, e.g.
+ * "[gsk_abc, gsk_def]" — lets multiple free-tier keys be rotated through
+ * so one key's daily quota running out doesn't take the feature down.
+ */
+function parseApiKeys(raw: string | undefined): string[] {
+  if (!raw) return []
+  return raw
+    .trim()
+    .replace(/^\[/, '')
+    .replace(/\]$/, '')
+    .split(',')
+    .map(k => k.trim().replace(/^['"]|['"]$/g, ''))
+    .filter(Boolean)
+}
+
+/**
+ * Tries each key in order, moving to the next on a quota/auth/server error.
+ * Throws only once every key has failed.
+ */
+async function callGroq(prompt: string, keys: string[], timeoutMs: number): Promise<string> {
+  let lastError: unknown = new Error('No GROQ_API_KEYS configured')
+
+  for (const key of keys) {
+    try {
+      const res = await withTimeout(fetch(GROQ_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${key}`,
+        },
+        body: JSON.stringify({
+          model: GROQ_MODEL,
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.9,
+        }),
+      }), timeoutMs)
+
+      if (!res.ok) {
+        lastError = new Error(`Groq key failed with ${res.status}`)
+        continue // rate-limited, unauthorized, or server error — try the next key
+      }
+
+      const data = await res.json() as { choices?: { message?: { content?: string } }[] }
+      const text = data.choices?.[0]?.message?.content
+      if (!text) {
+        lastError = new Error('Empty response from Groq')
+        continue
+      }
+      return text.trim()
+    } catch (e) {
+      lastError = e
+      // network error or timeout on this key — try the next one
+    }
+  }
+
+  throw lastError
+}
+
+/**
  * Returns the model's raw text. The client parses it, exactly as it did when it
  * called the model directly, so the parsing and fallback logic is unchanged.
  */
@@ -80,10 +142,10 @@ export async function rateIdea(
   rawJson: string,
   env: RateIdeaEnv,
 ): Promise<{ status: number; body: Record<string, unknown> }> {
-  const key = env.GEMINI_API_KEY
+  const keys = parseApiKeys(env.GROQ_API_KEYS)
   // No key configured is a normal local setup, not an error — the client falls
   // back to its heuristic. Say so distinctly so it doesn't log a real failure.
-  if (!key) return { status: 503, body: { error: 'not_configured' } }
+  if (keys.length === 0) return { status: 503, body: { error: 'not_configured' } }
 
   let parsed: { op?: unknown; idea?: unknown; score?: unknown }
   try {
@@ -107,9 +169,9 @@ export async function rateIdea(
   const score = Number.isFinite(rawScore) ? Math.max(1, Math.min(10, Math.round(rawScore))) : 5
 
   try {
-    const model = new GoogleGenerativeAI(key).getGenerativeModel({ model: MODEL })
-    const result = await withTimeout(model.generateContent(buildPrompt(op, idea, score)), TIMEOUT_MS)
-    return { status: 200, body: { text: result.response.text().trim() } }
+    const timeoutMs = op === 'roadmap' ? TIMEOUT_MS_ROADMAP : TIMEOUT_MS_VALIDATE
+    const text = await callGroq(buildPrompt(op, idea, score), keys, timeoutMs)
+    return { status: 200, body: { text } }
   } catch (e) {
     console.error('[rate-idea]', e)
     return { status: 502, body: { error: 'Model request failed' } }

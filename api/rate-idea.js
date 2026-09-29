@@ -1,7 +1,10 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
-
-const MODEL = 'gemini-2.5-flash'
-const TIMEOUT_MS = 12_000
+const GROQ_MODEL = 'openai/gpt-oss-120b'
+const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
+// The roadmap generation call (18 structured features) can take a while on a
+// slow provider — kept generous even though Groq is typically much faster
+// than the Gemini call this replaced.
+const TIMEOUT_MS_VALIDATE = 12_000
+const TIMEOUT_MS_ROADMAP  = 28_000
 const MAX_IDEA_LENGTH = 500
 
 // Best-effort per-IP limiting. Serverless instances aren't shared, so this
@@ -39,14 +42,21 @@ Return this exact JSON structure:
   "suggestion": "<optional one-sentence suggestion to improve the idea, or null>"
 }
 
-Be realistic but fair. Most decent ideas should score 4-7. Only truly exceptional ideas get 8+. Only terrible ideas get 1-2.`
+Score honestly using the FULL 1-10 range based on real signals: market size and demand, differentiation from existing solutions, feasibility for a small team, and timing. Do not default to the middle of the range — most quickly-typed, generic, or underdeveloped ideas genuinely belong in the 3-6 band, and you should score them there rather than rounding up to be encouraging.
+- 9-10: Exceptional — large market, clear differentiation, highly feasible, strong timing
+- 7-8: Strong — solid fit and feasibility, but with a real gap or unproven edge
+- 5-6: Average — workable, but generic, crowded, or with a real execution/differentiation problem
+- 3-4: Weak — a real structural issue: tiny market, brutal competition, unclear demand, or very hard to build
+- 1-2: Poor — no real market, fundamentally broken concept, or not a coherent business idea
+
+Vague one-line ideas ("an app for X", "uber for Y" with no specifics) should usually land 3-5, not 6-7 — lack of specificity is itself a weakness, not neutral.`
   }
 
   return `You are generating a product roadmap for a startup simulation game. The user's startup idea is: "${idea}" (viability score: ${score}/10).
 
 Generate a realistic, ORDERED list of 18 features/tasks this startup would build, from earliest to latest. Follow a real startup lifecycle:
 - First 4-5: Foundation (landing page, auth, core MVP functionality)
-- Next 4-5: Launch (payments, onboarding, analytics)  
+- Next 4-5: Launch (payments, onboarding, analytics)
 - Next 4-5: Growth (marketing features, integrations, team tools)
 - Last 3-4: Scale (enterprise features, advanced capabilities, compliance)
 
@@ -74,6 +84,65 @@ function withTimeout(promise, ms) {
   ])
 }
 
+/**
+ * GROQ_API_KEYS is a bracketed, comma-separated list, e.g.
+ * "[gsk_abc, gsk_def]" — lets multiple free-tier keys be rotated through
+ * so one key's daily quota running out doesn't take the feature down.
+ */
+function parseApiKeys(raw) {
+  if (!raw) return []
+  return raw
+    .trim()
+    .replace(/^\[/, '')
+    .replace(/\]$/, '')
+    .split(',')
+    .map(k => k.trim().replace(/^['"]|['"]$/g, ''))
+    .filter(Boolean)
+}
+
+/**
+ * Tries each key in order, moving to the next on a quota/auth/server error.
+ * Throws only once every key has failed.
+ */
+async function callGroq(prompt, keys, timeoutMs) {
+  let lastError = new Error('No GROQ_API_KEYS configured')
+
+  for (const key of keys) {
+    try {
+      const res = await withTimeout(fetch(GROQ_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${key}`,
+        },
+        body: JSON.stringify({
+          model: GROQ_MODEL,
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.9,
+        }),
+      }), timeoutMs)
+
+      if (!res.ok) {
+        lastError = new Error(`Groq key failed with ${res.status}`)
+        continue // rate-limited, unauthorized, or server error — try the next key
+      }
+
+      const data = await res.json()
+      const text = data.choices?.[0]?.message?.content
+      if (!text) {
+        lastError = new Error('Empty response from Groq')
+        continue
+      }
+      return text.trim()
+    } catch (e) {
+      lastError = e
+      // network error or timeout on this key — try the next one
+    }
+  }
+
+  throw lastError
+}
+
 function readBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = []
@@ -97,9 +166,9 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') { res.statusCode = 204; res.end(); return }
   if (req.method !== 'POST') return json(res, 405, { error: 'Method not allowed' })
 
-  const key = process.env.GEMINI_API_KEY
+  const keys = parseApiKeys(process.env.GROQ_API_KEYS)
   // Not configured is a normal state, not a failure — the client falls back.
-  if (!key) return json(res, 503, { error: 'not_configured' })
+  if (keys.length === 0) return json(res, 503, { error: 'not_configured' })
 
   const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown'
   if (rateLimited(ip)) return json(res, 429, { error: 'Too many requests' })
@@ -126,9 +195,9 @@ export default async function handler(req, res) {
   const score = Number.isFinite(rawScore) ? Math.max(1, Math.min(10, Math.round(rawScore))) : 5
 
   try {
-    const model = new GoogleGenerativeAI(key).getGenerativeModel({ model: MODEL })
-    const result = await withTimeout(model.generateContent(buildPrompt(op, idea, score)), TIMEOUT_MS)
-    return json(res, 200, { text: result.response.text().trim() })
+    const timeoutMs = op === 'roadmap' ? TIMEOUT_MS_ROADMAP : TIMEOUT_MS_VALIDATE
+    const text = await callGroq(buildPrompt(op, idea, score), keys, timeoutMs)
+    return json(res, 200, { text })
   } catch (e) {
     console.error('[rate-idea]', e)
     return json(res, 502, { error: 'Model request failed' })

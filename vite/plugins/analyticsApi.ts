@@ -53,7 +53,7 @@ export function analyticsApiPlugin(): Plugin {
         const mode = server.config.mode
         const loaded = loadEnv(mode, process.cwd(), '')
         const env = {
-          GEMINI_API_KEY: loaded.GEMINI_API_KEY ?? process.env.GEMINI_API_KEY,
+          GROQ_API_KEYS: loaded.GROQ_API_KEYS ?? process.env.GROQ_API_KEYS,
           MONGODB_URI: loaded.MONGODB_URI ?? process.env.MONGODB_URI,
           MONGODB_DB_NAME: loaded.MONGODB_DB_NAME ?? process.env.MONGODB_DB_NAME,
           ANALYTICS_INGEST_SECRET: loaded.ANALYTICS_INGEST_SECRET ?? process.env.ANALYTICS_INGEST_SECRET,
