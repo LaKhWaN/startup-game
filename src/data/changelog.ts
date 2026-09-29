@@ -8,6 +8,19 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v1.4',
+    date: '2026-09-29',
+    title: 'Economy Rebalance & Smarter Idea Scoring',
+    type: 'improved',
+    items: [
+      'Startups now start with a leaner budget and higher salaries, so cash management actually matters instead of every game snowballing into an easy win',
+      'Seed and Series A funding offers now scale to your actual burn rate instead of always being a flat $200k/$500k windfall',
+      'Acquisition offers to buy your startup now only show up once you have real traction, and even then only occasionally — no more getting "acquired" for cash on day one before you\'ve built anything',
+      'Idea scoring now uses the full range instead of clustering almost everything into the same difficulty tier — Promising and Risky/Brutal startups should actually show up now',
+      'Fixed the AI-generated roadmap silently falling back to a generic one on every game — it\'s now reliably tailored to the idea you typed in',
+    ],
+  },
+  {
     version: 'v1.3',
     date: '2026-09-29',
     title: 'Player Feedback Round',
