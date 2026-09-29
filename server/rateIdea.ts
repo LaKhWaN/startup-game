@@ -1,4 +1,6 @@
-export type RateIdeaEnv = {
+import { notifyQuotaExhausted, type NotifyEnv } from './notifyQuotaExhausted'
+
+export type RateIdeaEnv = NotifyEnv & {
   GROQ_API_KEYS?: string
 }
 
@@ -174,6 +176,8 @@ export async function rateIdea(
     return { status: 200, body: { text } }
   } catch (e) {
     console.error('[rate-idea]', e)
+    const message = e instanceof Error ? e.message : String(e)
+    await notifyQuotaExhausted(env, message)
     return { status: 502, body: { error: 'Model request failed' } }
   }
 }
