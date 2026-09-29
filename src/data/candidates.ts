@@ -32,10 +32,10 @@ export const ROLE_LABELS: Record<EmployeeRole, string> = {
 }
 
 const BASE_SALARY: Record<EmployeeRole, number> = {
-  developer:       7000,
-  product_manager: 6000,
-  sales:           4500,
-  marketing:       5000,
+  developer:       8000,
+  product_manager: 7000,
+  sales:           5250,
+  marketing:       5750,
 }
 
 const BIOS_DEV = [

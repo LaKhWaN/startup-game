@@ -22,9 +22,9 @@ export function yearNumber(t: GameTime)  { return Math.floor(totalMonths(t) / MO
 // ─── Initial state ───────────────────────────────────────────────────────────
 
 const WORKSPACE_CONFIG = {
-  home:      { cash: 120_000, desks: 2, infra: 200,   brand: 10, culture: 60 },
-  coworking: { cash: 100_000, desks: 4, infra: 1_000, brand: 10, culture: 60 },
-  office:    { cash: 80_000,  desks: 6, infra: 2_500, brand: 20, culture: 70 },
+  home:      { cash: 85_000, desks: 2, infra: 200,   brand: 10, culture: 60 },
+  coworking: { cash: 70_000, desks: 4, infra: 1_000, brand: 10, culture: 60 },
+  office:    { cash: 55_000, desks: 6, infra: 2_500, brand: 20, culture: 70 },
 } as const
 
 export function createInitialState(config: OnboardingConfig): GameState {
@@ -486,7 +486,7 @@ function processDayTick(state: GameState, day: number): GameState {
   let pendingEvent = pendingEventPre   // may already be set by investor trigger
   const daysSinceLast = day - s.lastEventDay
   if (!pendingEvent && daysSinceLast >= 5 && Math.random() < 0.55) {
-    pendingEvent = pickEvent(s.usedEventIds, s.difficultyModifier?.eventWeighting)
+    pendingEvent = pickEvent(s.usedEventIds, s.difficultyModifier?.eventWeighting, { mrr: newMrr, customers: newCustomers })
   }
 
   // ── Goals ──────────────────────────────────────────────────────────────────
@@ -921,14 +921,36 @@ function pickNextFeatureFromRoadmap(state: GameState): { template: FeatureTempla
   return { template: fallback[Math.floor(Math.random() * fallback.length)], newIndex: idx }
 }
 
-function pickEvent(usedIds: string[], eventWeighting?: { crisisWeight: number; opportunityWeight: number }): GameEvent | null {
-  let available = EVENTS.filter(e => !usedIds.includes(e.id))
+// Acquisition offers should only show up for startups with real traction, and
+// even then only rarely — not the instant, guaranteed-once-eligible cheese
+// win path they were before.
+const ACQUISITION_EVENT_IDS = new Set(['acquisition-lowball', 'acquisition-premium'])
+const ACQUISITION_MIN_MRR = 5000
+const ACQUISITION_MIN_CUSTOMERS = 500
+const ACQUISITION_SHOW_CHANCE = 0.2
+
+function pickEvent(
+  usedIds: string[],
+  eventWeighting?: { crisisWeight: number; opportunityWeight: number },
+  traction?: { mrr: number; customers: number },
+): GameEvent | null {
+  const acquisitionEligible =
+    !!traction &&
+    traction.mrr >= ACQUISITION_MIN_MRR &&
+    traction.customers >= ACQUISITION_MIN_CUSTOMERS &&
+    Math.random() < ACQUISITION_SHOW_CHANCE
+
+  const notIneligibleAcquisition = (e: GameEvent) =>
+    !ACQUISITION_EVENT_IDS.has(e.id) || acquisitionEligible
+
+  let available = EVENTS.filter(e => !usedIds.includes(e.id) && notIneligibleAcquisition(e))
   // Recycle when pool is exhausted — keep last 5 used as buffer to avoid immediate repeats
   if (available.length === 0) {
     const buffer = usedIds.slice(-5)
-    available = EVENTS.filter(e => !buffer.includes(e.id))
+    available = EVENTS.filter(e => !buffer.includes(e.id) && notIneligibleAcquisition(e))
   }
-  if (available.length === 0) available = [...EVENTS] // total fallback
+  if (available.length === 0) available = EVENTS.filter(notIneligibleAcquisition) // total fallback
+  if (available.length === 0) return null // only possible if acquisition events are the entire pool and ineligible
 
 
   if (eventWeighting) {
