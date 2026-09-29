@@ -75,7 +75,7 @@ Collections: `game_sessions`, `game_day_snapshots`, `game_feedback`
 
 Env vars: `MONGODB_URI`, `MONGODB_DB_NAME` (default: `startup-game`), `ANALYTICS_INGEST_SECRET`, `VITE_ANALYTICS_API_URL`, `VITE_DISABLE_REMOTE_ANALYTICS`
 
-## Difficulty Tiers (from idea score via Gemini AI)
+## Difficulty Tiers (from idea score via Groq AI — `GROQ_API_KEYS`, `server/rateIdea.ts`/`api/rate-idea.js`)
 - Promising (8-10): ×1.2 customers, 3% churn floor
 - Competitive (6-7): ×1.0, 5% floor
 - Risky (4-5): ×0.7, 8% floor

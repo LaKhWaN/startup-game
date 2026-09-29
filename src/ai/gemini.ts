@@ -106,7 +106,7 @@ async function askModel(op: 'validate' | 'roadmap', idea: string, score = 5): Pr
     }), 15_000)
 
     if (res.status === 503) {
-      console.warn('[gemini] /api/rate-idea has no GEMINI_API_KEY configured — using fallback')
+      console.warn('[gemini] /api/rate-idea has no GROQ_API_KEYS configured — using fallback')
       return null
     }
     if (!res.ok) {
