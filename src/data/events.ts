@@ -1252,20 +1252,22 @@ export const EVENTS: GameEvent[] = [
     category: 'opportunity',
     title: 'Seed Investor Wants to Meet',
     description:
-      "An angel investor has noticed your traction. They're offering $200k for 20% equity. Runway extends — expectations rise.",
+      "An angel investor has noticed your traction. They're offering a round sized to your current burn, for 20% equity. Runway extends — expectations rise.",
     choices: [
       {
-        label: 'Take the deal — $200k for 20% equity',
+        label: 'Take the deal — funding for 20% equity',
         consequence:
           "You closed the seed round. Capital solves some problems and creates others.",
         effect: (s: GameState) => {
           const r = roll()
+          const monthlyBurn = s.infraCostMonthly + s.employees.reduce((sum, e) => sum + e.salary, 0)
+          const raise = Math.round(Math.min(250_000, Math.max(60_000, monthlyBurn * 5)))
           // 65% → clean deal, good terms; 35% → investor adds board pressure, culture takes hit
           if (r < 0.65) {
-            return { cash: s.cash + 200_000, equity: s.equity - 20, brand: Math.min(100, s.brand + 8), investorInterest: 10 }
+            return { cash: s.cash + raise, equity: s.equity - 20, brand: Math.min(100, s.brand + 8), investorInterest: 10 }
           } else {
             return {
-              cash: s.cash + 200_000,
+              cash: s.cash + raise,
               equity: s.equity - 20,
               brand: Math.min(100, s.brand + 8),
               investorInterest: 10,
@@ -1291,20 +1293,22 @@ export const EVENTS: GameEvent[] = [
     category: 'opportunity',
     title: 'Series A Term Sheet',
     description:
-      "A top-tier VC firm is impressed. $500k for 25% equity. This changes everything — including expectations.",
+      "A top-tier VC firm is impressed. A round scaled to your current burn, for 25% equity. This changes everything — including expectations.",
     choices: [
       {
-        label: 'Accept — $500k for 25% equity',
+        label: 'Accept — funding for 25% equity',
         consequence:
           "Series A closed. Significant capital but the board now has expectations to match.",
         effect: (s: GameState) => {
           const r = roll()
+          const monthlyBurn = s.infraCostMonthly + s.employees.reduce((sum, e) => sum + e.salary, 0)
+          const raise = Math.round(Math.min(700_000, Math.max(150_000, monthlyBurn * 8)))
           // 60% → clean scale; 40% → board demands aggressive hiring, costs spike
           if (r < 0.60) {
-            return { cash: s.cash + 500_000, equity: s.equity - 25, brand: Math.min(100, s.brand + 15), investorInterest: 10 }
+            return { cash: s.cash + raise, equity: s.equity - 25, brand: Math.min(100, s.brand + 15), investorInterest: 10 }
           } else {
             return {
-              cash: s.cash + 500_000,
+              cash: s.cash + raise,
               equity: s.equity - 25,
               brand: Math.min(100, s.brand + 15),
               investorInterest: 10,

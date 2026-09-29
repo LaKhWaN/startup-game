@@ -22,10 +22,16 @@ npm run dev
 
 ## Key Financial Numbers
 - ARPU: $50/user/month
-- Starting cash: Home $120k, Coworking $100k, Office $80k
+- Starting cash: Home $85k, Coworking $70k, Office $55k
 - Infra: $200 / $1k / $2.5k/mo
-- Dev salary: ~$7k/mo, PM ~$6k, Marketing ~$5k, Sales ~$4.5k
+- Dev salary: ~$8k/mo, PM ~$7k, Marketing ~$5.75k, Sales ~$5.25k
 - Desk cost: $1,500 each, max 6
+- Acquisition offer events only become eligible at $5k+ MRR and 500+
+  customers, and even then only a 20% chance per roll — see
+  `ACQUISITION_MIN_MRR`/`ACQUISITION_MIN_CUSTOMERS`/`ACQUISITION_SHOW_CHANCE`
+  in `gameEngine.ts`
+- Seed/Series A investor events scale funding to current monthly burn
+  (5x/8x, clamped) instead of a flat $200k/$500k
 
 ## UI Layout
 ```
