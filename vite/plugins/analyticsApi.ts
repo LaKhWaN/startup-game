@@ -54,6 +54,8 @@ export function analyticsApiPlugin(): Plugin {
         const loaded = loadEnv(mode, process.cwd(), '')
         const env = {
           GROQ_API_KEYS: loaded.GROQ_API_KEYS ?? process.env.GROQ_API_KEYS,
+          RESEND_API_KEY: loaded.RESEND_API_KEY ?? process.env.RESEND_API_KEY,
+          ALERT_EMAIL: loaded.ALERT_EMAIL ?? process.env.ALERT_EMAIL,
           MONGODB_URI: loaded.MONGODB_URI ?? process.env.MONGODB_URI,
           MONGODB_DB_NAME: loaded.MONGODB_DB_NAME ?? process.env.MONGODB_DB_NAME,
           ANALYTICS_INGEST_SECRET: loaded.ANALYTICS_INGEST_SECRET ?? process.env.ANALYTICS_INGEST_SECRET,
