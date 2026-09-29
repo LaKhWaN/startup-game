@@ -1,7 +1,11 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
 const MODEL = 'gemini-2.5-flash'
-const TIMEOUT_MS = 12_000
+// The roadmap generation call (18 structured features) reliably takes
+// ~20-25s — a flat 12s timeout here made it fail 100% of the time and
+// silently fall back to the static template list on every game.
+const TIMEOUT_MS_VALIDATE = 12_000
+const TIMEOUT_MS_ROADMAP  = 28_000
 const MAX_IDEA_LENGTH = 500
 
 // Best-effort per-IP limiting. Serverless instances aren't shared, so this
@@ -39,7 +43,14 @@ Return this exact JSON structure:
   "suggestion": "<optional one-sentence suggestion to improve the idea, or null>"
 }
 
-Be realistic but fair. Most decent ideas should score 4-7. Only truly exceptional ideas get 8+. Only terrible ideas get 1-2.`
+Score honestly using the FULL 1-10 range based on real signals: market size and demand, differentiation from existing solutions, feasibility for a small team, and timing. Do not default to the middle of the range — most quickly-typed, generic, or underdeveloped ideas genuinely belong in the 3-6 band, and you should score them there rather than rounding up to be encouraging.
+- 9-10: Exceptional — large market, clear differentiation, highly feasible, strong timing
+- 7-8: Strong — solid fit and feasibility, but with a real gap or unproven edge
+- 5-6: Average — workable, but generic, crowded, or with a real execution/differentiation problem
+- 3-4: Weak — a real structural issue: tiny market, brutal competition, unclear demand, or very hard to build
+- 1-2: Poor — no real market, fundamentally broken concept, or not a coherent business idea
+
+Vague one-line ideas ("an app for X", "uber for Y" with no specifics) should usually land 3-5, not 6-7 — lack of specificity is itself a weakness, not neutral.`
   }
 
   return `You are generating a product roadmap for a startup simulation game. The user's startup idea is: "${idea}" (viability score: ${score}/10).
@@ -127,7 +138,8 @@ export default async function handler(req, res) {
 
   try {
     const model = new GoogleGenerativeAI(key).getGenerativeModel({ model: MODEL })
-    const result = await withTimeout(model.generateContent(buildPrompt(op, idea, score)), TIMEOUT_MS)
+    const timeoutMs = op === 'roadmap' ? TIMEOUT_MS_ROADMAP : TIMEOUT_MS_VALIDATE
+    const result = await withTimeout(model.generateContent(buildPrompt(op, idea, score)), timeoutMs)
     return json(res, 200, { text: result.response.text().trim() })
   } catch (e) {
     console.error('[rate-idea]', e)

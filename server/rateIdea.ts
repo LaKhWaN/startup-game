@@ -5,7 +5,11 @@ export type RateIdeaEnv = {
 }
 
 const MODEL = 'gemini-2.5-flash'
-const TIMEOUT_MS = 12_000
+// The roadmap generation call (18 structured features) reliably takes
+// ~20-25s — a flat 12s timeout here made it fail 100% of the time and
+// silently fall back to the static template list on every game.
+const TIMEOUT_MS_VALIDATE = 12_000
+const TIMEOUT_MS_ROADMAP  = 28_000
 const MAX_IDEA_LENGTH = 500
 
 /**
@@ -108,7 +112,8 @@ export async function rateIdea(
 
   try {
     const model = new GoogleGenerativeAI(key).getGenerativeModel({ model: MODEL })
-    const result = await withTimeout(model.generateContent(buildPrompt(op, idea, score)), TIMEOUT_MS)
+    const timeoutMs = op === 'roadmap' ? TIMEOUT_MS_ROADMAP : TIMEOUT_MS_VALIDATE
+    const result = await withTimeout(model.generateContent(buildPrompt(op, idea, score)), timeoutMs)
     return { status: 200, body: { text: result.response.text().trim() } }
   } catch (e) {
     console.error('[rate-idea]', e)

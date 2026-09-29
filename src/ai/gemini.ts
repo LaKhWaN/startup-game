@@ -98,12 +98,16 @@ function writeCache<T>(key: string, data: T): void {
  * in which case the caller uses its local fallback.
  */
 async function askModel(op: 'validate' | 'roadmap', idea: string, score = 5): Promise<string | null> {
+  // Roadmap generation (18 structured features) reliably takes ~20-25s
+  // server-side — give it real headroom above the server's own timeout
+  // instead of racing it and always losing.
+  const clientTimeoutMs = op === 'roadmap' ? 32_000 : 15_000
   try {
     const res = await withTimeout(fetch('/api/rate-idea', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ op, idea, score }),
-    }), 15_000)
+    }), clientTimeoutMs)
 
     if (res.status === 503) {
       console.warn('[gemini] /api/rate-idea has no GEMINI_API_KEY configured — using fallback')
