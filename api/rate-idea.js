@@ -1,3 +1,5 @@
+import { MongoClient } from 'mongodb'
+
 const GROQ_MODEL = 'openai/gpt-oss-120b'
 const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
 // The roadmap generation call (18 structured features) can take a while on a
@@ -143,6 +145,61 @@ async function callGroq(prompt, keys, timeoutMs) {
   throw lastError
 }
 
+// ─── Quota-exhausted alert ────────────────────────────────────────────────
+// Fires an email the first time all GROQ_API_KEYS fail in a rolling 6h
+// window, then stays quiet until the window passes — one email per sustained
+// outage, not one per failed request. Never throws; a failure here should
+// never affect the caller's own error response. Keep in step with
+// server/notifyQuotaExhausted.ts.
+const ALERT_COL = 'system_alerts'
+const ALERT_ID = 'groq-keys-exhausted'
+const ALERT_COOLDOWN_MS = 6 * 60 * 60 * 1000
+const RESEND_ENDPOINT = 'https://api.resend.com/emails'
+const NOTIFY_TIMEOUT_MS = 5_000
+
+let mongoClientPromise = null
+function getMongoClient(uri) {
+  if (!mongoClientPromise) mongoClientPromise = new MongoClient(uri).connect()
+  return mongoClientPromise
+}
+
+async function notifyQuotaExhausted(lastErrorMessage) {
+  try {
+    const { MONGODB_URI, MONGODB_DB_NAME, RESEND_API_KEY, ALERT_EMAIL } = process.env
+    if (!MONGODB_URI || !RESEND_API_KEY || !ALERT_EMAIL) return
+
+    const client = await withTimeout(getMongoClient(MONGODB_URI), NOTIFY_TIMEOUT_MS)
+    const db = client.db(MONGODB_DB_NAME || 'startup-game')
+    const col = db.collection(ALERT_COL)
+
+    const existing = await col.findOne({ _id: ALERT_ID })
+    const lastSentAt = existing?.lastSentAt ? new Date(existing.lastSentAt).getTime() : 0
+    if (Date.now() - lastSentAt < ALERT_COOLDOWN_MS) return // already alerted recently
+
+    await col.updateOne(
+      { _id: ALERT_ID },
+      { $set: { lastSentAt: new Date() } },
+      { upsert: true },
+    )
+
+    await withTimeout(fetch(RESEND_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: 'startup-game alerts <onboarding@resend.dev>',
+        to: [ALERT_EMAIL],
+        subject: '⚠️ startup-game: all GROQ_API_KEYS are failing',
+        text: `Every key in GROQ_API_KEYS just failed on the same request — idea rating and roadmap generation are falling back to the static defaults for every player right now.\n\nLast error: ${lastErrorMessage}\n\nAdd another key to GROQ_API_KEYS, or check quota at console.groq.com.\n\n(You won't get another one of these for at least 6 hours, even if it's still failing.)`,
+      }),
+    }), NOTIFY_TIMEOUT_MS)
+  } catch {
+    // Alerting is best-effort — never let it break the actual request.
+  }
+}
+
 function readBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = []
@@ -200,6 +257,7 @@ export default async function handler(req, res) {
     return json(res, 200, { text })
   } catch (e) {
     console.error('[rate-idea]', e)
+    await notifyQuotaExhausted(e instanceof Error ? e.message : String(e))
     return json(res, 502, { error: 'Model request failed' })
   }
 }
