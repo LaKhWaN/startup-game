@@ -4,7 +4,8 @@ import { claimFamilyMoney } from '../chapter'
 import { startTask } from '../founder'
 import type { FounderTaskType, Rng, V2GameState } from '../state'
 import { v2Tick } from '../v2Tick'
-import { makeState, seq, withChapter } from './fixtures'
+import { createInitialState } from '../../engine/gameEngine'
+import { makeConfig, makeState, seq, withChapter } from './fixtures'
 
 function start(s: V2GameState, type: FounderTaskType, featureId?: string): V2GameState {
   const r = startTask(s, type, featureId)
@@ -24,8 +25,16 @@ describe('v2Tick', () => {
     expect(v2Tick(s, 1).pendingEvent).toBeNull()
   })
 
-  it('keeps events after Chapter 1 and pauses the founder while one is pending', () => {
-    const s = start(withChapter(makeState(), { beat: 5, complete: true }), 'research')
+  it('keeps clearing $100k-scale legacy events while the founder is still solo after Chapter 1', () => {
+    const s = withChapter(makeState({ pendingEvent: EVENTS[0] }), { beat: 5, complete: true })
+    expect(s.employees).toHaveLength(0)
+    expect(v2Tick(s, 1).pendingEvent).toBeNull()
+  })
+
+  it('keeps events once there is a team and pauses the founder while one is pending', () => {
+    const hire = createInitialState(makeConfig()).candidates[0]
+    const employee = { ...hire, status: 'idle' as const, ideaProgress: 0, hiredAtDay: 0, morale: 70, stress: 10, xp: 0, level: 1 }
+    const s = start(withChapter(makeState({ employees: [employee] }), { beat: 5, complete: true }), 'research')
     const pending = { ...s, pendingEvent: EVENTS[0] }
     const next = v2Tick(pending, 1)
     expect(next.pendingEvent).toBe(EVENTS[0])

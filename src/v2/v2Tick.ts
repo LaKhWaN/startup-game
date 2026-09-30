@@ -11,8 +11,11 @@ export function v2Tick(state: V2GameState, hours: number, rng: Rng = Math.random
   if (state.phase !== 'playing') return state
 
   let s = state
-  // No crises during the tutorial. The legacy tick pauses on pendingEvent, so clear it here.
-  if (!s.v2.chapter.complete && s.pendingEvent) s = { ...s, pendingEvent: null }
+  // No crises during the tutorial, nor while the founder is still solo: legacy
+  // events are sized for a funded company with staff. The legacy tick pauses
+  // on pendingEvent, so clear it here.
+  const solo = !s.v2.chapter.complete || s.employees.length === 0
+  if (solo && s.pendingEvent) s = { ...s, pendingEvent: null }
   if (s.pendingEvent) return s
 
   const { state: advanced, completed } = advanceFounder(s, hours, rng)
