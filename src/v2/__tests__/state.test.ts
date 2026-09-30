@@ -1,0 +1,75 @@
+import { describe, expect, it } from 'vitest'
+import { createInitialState } from '../../engine/gameEngine'
+import { addStory, createV2State, createV2Slice, isV2Game, isValidV2Slice, FOUNDER_START_CASH } from '../state'
+import { makeConfig } from './fixtures'
+
+describe('createV2State', () => {
+  const s = createV2State(makeConfig())
+
+  it('starts the founder alone at home with $500 and no burn', () => {
+    expect(s.cash).toBe(FOUNDER_START_CASH)
+    expect(s.cash).toBe(500)
+    expect(s.infraCostMonthly).toBe(0)
+    expect(s.employees).toEqual([])
+    expect(s.candidates).toEqual([])
+    expect(s.deskCount).toBe(0)
+    expect(s.workspace).toBe('home')
+    expect(s.lastConfig?.workspace).toBe('home')
+    expect(s.phase).toBe('playing')
+  })
+
+  it('prefixes the game id with v2-', () => {
+    expect(s.gameId.startsWith('v2-')).toBe(true)
+  })
+
+  it('rewrites the day-0 metrics snapshot for the solo start', () => {
+    expect(s.metricsHistory).toHaveLength(1)
+    expect(s.metricsHistory[0].cash).toBe(500)
+    expect(s.metricsHistory[0].burn).toBe(0)
+    expect(s.fullMetricsHistory[0].cash).toBe(500)
+  })
+
+  it('creates a fresh v2 slice', () => {
+    expect(s.v2).toEqual(createV2Slice())
+    expect(s.v2.founder.skills).toEqual({ research: 4, build: 4, outreach: 4, sales: 4 })
+    expect(s.v2.chapter).toEqual({ beat: 0, complete: false, seenCards: [] })
+    expect(s.v2.leads).toBe(0)
+    expect(s.v2.firstSaleDone).toBe(false)
+  })
+})
+
+describe('isValidV2Slice', () => {
+  it('accepts a fresh slice', () => {
+    expect(isValidV2Slice(createV2Slice())).toBe(true)
+  })
+
+  it('rejects junk and partial slices', () => {
+    expect(isValidV2Slice(undefined)).toBe(false)
+    expect(isValidV2Slice({})).toBe(false)
+    const noSkills = { ...createV2Slice(), founder: { name: 'You', task: null } }
+    expect(isValidV2Slice(noSkills)).toBe(false)
+    const badBeat = { ...createV2Slice(), chapter: { beat: 7, complete: false, seenCards: [] } }
+    expect(isValidV2Slice(badBeat)).toBe(false)
+  })
+})
+
+describe('isV2Game', () => {
+  it('is true for a v2 game', () => {
+    expect(isV2Game(createV2State(makeConfig()))).toBe(true)
+  })
+
+  it('is false for a legacy game, even with a stale v2 slice left in the store', () => {
+    const legacy = createInitialState(makeConfig())
+    expect(isV2Game(legacy)).toBe(false)
+    expect(isV2Game({ ...legacy, v2: createV2Slice() })).toBe(false)
+  })
+})
+
+describe('addStory', () => {
+  it('prepends an entry for the current day and caps the log at 20', () => {
+    let s = createV2State(makeConfig())
+    for (let i = 0; i < 25; i++) s = addStory(s, [`line ${i}`])
+    expect(s.storyLog).toHaveLength(20)
+    expect(s.storyLog[0]).toEqual({ day: 0, lines: ['line 24'] })
+  })
+})
