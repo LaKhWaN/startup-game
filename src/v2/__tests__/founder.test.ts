@@ -1,0 +1,105 @@
+import { describe, expect, it } from 'vitest'
+import { FEATURE_TEMPLATES } from '../../data/featureTemplates'
+import { estimateFeatureEffects } from '../../engine/gameEngine'
+import { advanceFounder, FOUNDER_ID, pickResearchTemplates, startTask, type AdvanceResult } from '../founder'
+import type { V2GameState } from '../state'
+import { makeFeature, makeState, seq, withChapter, withFounder, withV2 } from './fixtures'
+
+const rng = seq(0)
+
+function started(state: V2GameState, type: Parameters<typeof startTask>[1], featureId?: string): V2GameState {
+  const r = startTask(state, type, featureId)
+  if (!r.ok) throw new Error(`startTask failed: ${r.reason}`)
+  return r.state
+}
+
+function advanceHours(state: V2GameState, hours: number): AdvanceResult {
+  let result: AdvanceResult = { state, completed: null }
+  for (let i = 0; i < hours; i++) {
+    result = advanceFounder(result.state, 1, rng)
+    if (result.completed) return result
+  }
+  return result
+}
+
+describe('startTask', () => {
+  it('refuses a second task while one is running', () => {
+    const s = started(makeState(), 'research')
+    expect(startTask(s, 'research')).toEqual({ ok: false, reason: 'busy' })
+  })
+
+  it('refuses locked tasks', () => {
+    expect(startTask(makeState(), 'emails')).toEqual({ ok: false, reason: 'locked' })
+  })
+
+  it('refuses sales with no leads', () => {
+    const s = withChapter(makeState(), { beat: 3 })
+    expect(startTask(s, 'sales')).toEqual({ ok: false, reason: 'no-leads' })
+  })
+
+  it('refuses develop without a proposed feature', () => {
+    const s = withChapter(makeState({ features: [makeFeature({ status: 'completed' })] }), { beat: 1 })
+    expect(startTask(s, 'develop', 'feat-test')).toEqual({ ok: false, reason: 'no-feature' })
+    expect(startTask(s, 'develop', 'missing')).toEqual({ ok: false, reason: 'no-feature' })
+  })
+
+  it('marks the chosen feature in development by the founder', () => {
+    const s = started(withChapter(makeState({ features: [makeFeature()] }), { beat: 1 }), 'develop', 'feat-test')
+    expect(s.features[0]).toMatchObject({ status: 'in_development', assignedToDevId: FOUNDER_ID, buildProgress: 0 })
+    expect(s.v2.founder.task).toEqual({ type: 'develop', featureId: 'feat-test', progress: 0 })
+  })
+})
+
+describe('advanceFounder + research', () => {
+  it('does nothing without a task or with zero hours', () => {
+    const idle = makeState()
+    expect(advanceFounder(idle, 1, rng)).toEqual({ state: idle, completed: null })
+    const busy = started(makeState(), 'research')
+    expect(advanceFounder(busy, 0, rng).state).toBe(busy)
+  })
+
+  it('completes research after exactly 72 game hours', () => {
+    const s = started(makeState(), 'research')
+    const almost = advanceHours(s, 71)
+    expect(almost.completed).toBeNull()
+    expect(almost.state.v2.founder.task?.progress).toBeCloseTo(71 / 72)
+    const done = advanceFounder(almost.state, 1, rng)
+    expect(done.completed).toBe('research')
+    expect(done.state.v2.founder.task).toBeNull()
+  })
+
+  it('reveals the next 2 roadmap features as proposed and advances the index', () => {
+    const done = advanceHours(started(makeState(), 'research'), 72).state
+    expect(done.features.map(f => f.title)).toEqual([FEATURE_TEMPLATES[0].title, FEATURE_TEMPLATES[1].title])
+    expect(done.features.every(f => f.status === 'proposed' && f.discoveredByPMId === FOUNDER_ID)).toBe(true)
+    expect(done.featureRoadmapIndex).toBe(2)
+    expect(done.v2.founder.skills.research).toBe(4.5)
+  })
+
+  it('skips titles that already exist', () => {
+    const s = makeState({ features: [makeFeature({ title: FEATURE_TEMPLATES[0].title, status: 'completed' })] })
+    const { templates, newIndex } = pickResearchTemplates(s, rng)
+    expect(templates.map(t => t.title)).toEqual([FEATURE_TEMPLATES[1].title, FEATURE_TEMPLATES[2].title])
+    expect(newIndex).toBe(3)
+  })
+
+  it('falls back to the template pool when the roadmap runs out', () => {
+    const s = makeState({ featureRoadmap: [FEATURE_TEMPLATES[0]], featureRoadmapIndex: 0 })
+    const { templates } = pickResearchTemplates(s, seq(0))
+    expect(templates.map(t => t.title)).toEqual([FEATURE_TEMPLATES[0].title, FEATURE_TEMPLATES[1].title])
+  })
+
+  it('completes with a "nothing new" story when every template is used', () => {
+    const everything = FEATURE_TEMPLATES.map((t, i) => makeFeature({ id: `f${i}`, title: t.title, status: 'completed' }))
+    const s = started(makeState({ features: everything, featureRoadmap: [] }), 'research')
+    const done = advanceHours(s, 72)
+    expect(done.completed).toBe('research')
+    expect(done.state.features).toHaveLength(everything.length)
+    expect(done.state.storyLog[0].lines[0]).toMatch(/nothing new/i)
+  })
+
+  it('caps skills at 8', () => {
+    const s = started(withFounder(makeState(), { skills: { research: 7.8, build: 4, outreach: 4, sales: 4 } }), 'research')
+    expect(advanceHours(s, 72).state.v2.founder.skills.research).toBe(8)
+  })
+})
