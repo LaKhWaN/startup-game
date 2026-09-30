@@ -103,3 +103,108 @@ describe('advanceFounder + research', () => {
     expect(advanceHours(s, 72).state.v2.founder.skills.research).toBe(8)
   })
 })
+
+describe('develop outcome', () => {
+  const base = withChapter(makeState({ features: [makeFeature()] }), { beat: 1 })
+
+  function estFor(s: V2GameState) {
+    const f = makeFeature()
+    return estimateFeatureEffects(f.effects, f.value, 5, s.arpu, s.customers, s.difficultyModifier!.featureImpactMultiplier)
+  }
+
+  it('takes baseDays / 0.6 days (3 → 5 days = 120 hours) and mirrors progress onto the feature', () => {
+    const s = started(base, 'develop', 'feat-test')
+    const half = advanceHours(s, 60)
+    expect(half.completed).toBeNull()
+    expect(half.state.features[0].buildProgress).toBeCloseTo(0.5)
+    expect(advanceHours(half.state, 60).completed).toBe('develop')
+  })
+
+  it('before the first sale, sends customer gains into leads', () => {
+    const done = advanceHours(started(base, 'develop', 'feat-test'), 120).state
+    const est = estFor(base)
+    expect(est.customers).toBeGreaterThan(0)
+    expect(done.v2.leads).toBe(est.customers)
+    expect(done.customers).toBe(0)
+    expect(done.features[0]).toMatchObject({ status: 'completed', buildProgress: 1 })
+    expect(done.recentFeatureResults[0]).toMatchObject({ featureTitle: 'Test Feature', devName: 'You', customerGain: 0 })
+    expect(done.v2.founder.skills.build).toBe(4.5)
+    expect(done.storyLog[0].lines[0]).toMatch(/leads, not paying customers/)
+  })
+
+  it('after the first sale, adds real customers', () => {
+    const s = withV2(base, { firstSaleDone: true })
+    const done = advanceHours(started(s, 'develop', 'feat-test'), 120).state
+    expect(done.customers).toBe(estFor(s).customers)
+    expect(done.mrr).toBe(done.customers * done.arpu)
+    expect(done.v2.leads).toBe(0)
+  })
+
+  it('never lets leads go negative on a feature that loses users', () => {
+    const neg = withChapter(makeState({ features: [makeFeature({ effects: { customers: -15, arpu: 18 } })] }), { beat: 1 })
+    const done = advanceHours(started(neg, 'develop', 'feat-test'), 120).state
+    expect(done.v2.leads).toBe(0)
+  })
+
+  it('cancels with no outcome if the feature disappeared mid-build', () => {
+    const s = started(base, 'develop', 'feat-test')
+    const gone: V2GameState = { ...s, features: [] }
+    const result = advanceHours(gone, 200)
+    expect(result.completed).toBeNull()
+    expect(result.state.v2.founder.task).toBeNull()
+    expect(result.state.v2.founder.skills.build).toBe(4)
+  })
+})
+
+describe('emails outcome', () => {
+  const at2 = withChapter(makeState(), { beat: 2 }) // home brand = 10
+
+  function emailsWith(state: V2GameState, r: number): V2GameState {
+    let result: AdvanceResult = { state: started(state, 'emails'), completed: null }
+    for (let i = 0; i < 48 && !result.completed; i++) result = advanceFounder(result.state, 1, seq(r))
+    return result.state
+  }
+
+  it('adds round((4 + outreach + rng*4) * (1 + brand/100)) leads', () => {
+    expect(emailsWith(at2, 0).v2.leads).toBe(9)     // (4+4+0)*1.1 = 8.8
+    expect(emailsWith(at2, 0.5).v2.leads).toBe(11)  // (4+4+2)*1.1 = 11
+    expect(emailsWith({ ...at2, brand: 0 }, 0).v2.leads).toBe(8)
+  })
+
+  it('grows outreach and completes in 2 days', () => {
+    const done = emailsWith(at2, 0)
+    expect(done.v2.founder.task).toBeNull()
+    expect(done.v2.founder.skills.outreach).toBe(4.5)
+  })
+})
+
+describe('sales outcome', () => {
+  const ready = withV2(withChapter(makeState(), { beat: 3 }), { leads: 10 })
+
+  function salesWith(state: V2GameState, r: number): V2GameState {
+    let result: AdvanceResult = { state: started(state, 'sales'), completed: null }
+    for (let i = 0; i < 48 && !result.completed; i++) result = advanceFounder(result.state, 1, seq(r))
+    return result.state
+  }
+
+  it('converts each lead with p = 0.25 + 0.03*sales and consumes all contacted leads', () => {
+    const done = salesWith(ready, 0.3) // 0.3 < 0.37 → every lead converts
+    expect(done.customers).toBe(10)
+    expect(done.v2.leads).toBe(0)
+    expect(done.v2.firstSaleDone).toBe(true)
+    expect(done.mrr).toBe(10 * done.arpu)
+    expect(done.v2.founder.skills.sales).toBe(4.5)
+  })
+
+  it('guarantees at least one conversion on the first-ever sales run', () => {
+    const done = salesWith(ready, 0.9)
+    expect(done.customers).toBe(1)
+    expect(done.v2.firstSaleDone).toBe(true)
+  })
+
+  it('has no guarantee after the first sale', () => {
+    const done = salesWith(withV2(ready, { firstSaleDone: true }), 0.9)
+    expect(done.customers).toBe(0)
+    expect(done.v2.leads).toBe(0)
+  })
+})

@@ -1,6 +1,6 @@
 import { FEATURE_TEMPLATES, type FeatureTemplate } from '../data/featureTemplates'
-import { totalDays } from '../engine/gameEngine'
-import type { Feature } from '../types'
+import { estimateFeatureEffects, totalDays } from '../engine/gameEngine'
+import type { Feature, FeatureResult } from '../types'
 import { isTaskUnlocked } from './chapter'
 import { addStory, type FounderSkill, type FounderTask, type FounderTaskType, type Rng, type V2GameState } from './state'
 
@@ -130,13 +130,107 @@ function applyResearch(state: V2GameState, rng: Rng): V2GameState {
   return addStory(next, [line])
 }
 
+// ── Develop ─────────────────────────────────────────────────────────────────
+
+function clamp100(n: number): number {
+  return Math.max(0, Math.min(100, n))
+}
+
+function applyDevelop(state: V2GameState, featureId: string | undefined): V2GameState | null {
+  const feature = state.features.find(f => f.id === featureId)
+  if (!feature) return null
+
+  const day = totalDays(state.gameTime)
+  const diffMult = state.difficultyModifier?.featureImpactMultiplier ?? 1
+  const churnFloor = state.difficultyModifier?.churnFloor ?? 3
+  const est = estimateFeatureEffects(feature.effects, feature.value, FOUNDER_ACCURACY, state.arpu, state.customers, diffMult)
+
+  const preSale = !state.v2.firstSaleDone
+  const customers = preSale ? state.customers : Math.max(0, state.customers + est.customers)
+  const leads = preSale ? Math.max(0, state.v2.leads + est.customers) : state.v2.leads
+  const arpu = Math.max(10, state.arpu + est.arpu)
+
+  const result: FeatureResult = {
+    featureTitle: feature.title,
+    value: feature.value,
+    devName: state.v2.founder.name,
+    customerGain: preSale ? 0 : est.customers,
+    arpuChange: est.arpu,
+    churnDrop: est.churnDrop,
+    brandChange: est.brand,
+    techDebtChange: est.techDebt,
+    cashBonus: est.cashBonus,
+    completedAtDay: day,
+  }
+
+  const next: V2GameState = {
+    ...state,
+    features: state.features.map(f =>
+      f.id === feature.id ? { ...f, status: 'completed' as const, buildProgress: 1, completedAtDay: day } : f,
+    ),
+    customers,
+    arpu,
+    mrr: customers * arpu,
+    churnRate: Math.max(churnFloor, state.churnRate - est.churnDrop),
+    cash: state.cash + est.cashBonus,
+    brand: clamp100(state.brand + est.brand),
+    techDebt: clamp100(state.techDebt + est.techDebt),
+    productProgress: Math.min(100, state.productProgress + est.productGain),
+    recentFeatureResults: [result, ...state.recentFeatureResults].slice(0, 3),
+    v2: { ...state.v2, leads },
+  }
+
+  let line: string
+  if (preSale && est.customers > 0) {
+    line = `You shipped "${feature.title}"! ${est.customers} people joined the beta — leads, not paying customers yet.`
+  } else if (preSale) {
+    line = `You shipped "${feature.title}".`
+  } else {
+    line = `You shipped "${feature.title}"! ${est.customers >= 0 ? '+' : ''}${est.customers} users.`
+  }
+  return addStory(next, [line])
+}
+
+// ── Emails ──────────────────────────────────────────────────────────────────
+
+function applyEmails(state: V2GameState, rng: Rng): V2GameState {
+  const outreach = state.v2.founder.skills.outreach
+  const gained = Math.round((4 + outreach + rng() * 4) * (1 + state.brand / 100))
+  const next: V2GameState = { ...state, v2: { ...state.v2, leads: state.v2.leads + gained } }
+  return addStory(next, [`You sent a round of cold emails. ${gained} new leads.`])
+}
+
+// ── Sales ───────────────────────────────────────────────────────────────────
+
+function applySales(state: V2GameState, rng: Rng): V2GameState {
+  const contacted = state.v2.leads
+  const p = 0.25 + 0.03 * state.v2.founder.skills.sales
+  let converted = 0
+  for (let i = 0; i < contacted; i++) if (rng() < p) converted++
+  if (!state.v2.firstSaleDone && contacted > 0) converted = Math.max(1, converted)
+
+  const customers = state.customers + converted
+  const next: V2GameState = {
+    ...state,
+    customers,
+    mrr: customers * state.arpu,
+    v2: { ...state.v2, leads: 0, firstSaleDone: state.v2.firstSaleDone || customers > 0 },
+  }
+  const line = converted > 0
+    ? `Sales calls done: ${converted} of ${contacted} leads became paying customers.`
+    : `Sales calls done: none of ${contacted} leads bought this time.`
+  return addStory(next, [line])
+}
+
 // ── Outcome dispatch ────────────────────────────────────────────────────────
 
 /** Returns null when the task has no outcome (e.g. develop on a feature that disappeared). */
 function applyOutcome(state: V2GameState, task: FounderTask, rng: Rng): V2GameState | null {
   switch (task.type) {
     case 'research': return applyResearch(state, rng)
-    default: return null // develop / emails / sales land in Task 4
+    case 'develop': return applyDevelop(state, task.featureId)
+    case 'emails': return applyEmails(state, rng)
+    case 'sales': return applySales(state, rng)
   }
 }
 
