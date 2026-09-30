@@ -260,3 +260,26 @@ export function advanceFounder(state: V2GameState, hours: number, rng: Rng): Adv
   if (!outcome) return { state: cleared, completed: null }
   return { state: growSkill(outcome, TASK_SKILL[task.type]), completed: task.type }
 }
+
+/**
+ * Repairs a state where the founder's task and features disagree (hand-edited
+ * or corrupted saves). An orphaned founder build goes back to "proposed" and a
+ * develop task pointing at a missing feature is dropped.
+ */
+export function reconcileFounderFeatures(state: V2GameState): V2GameState {
+  const task = state.v2.founder.task
+  const buildingId = task?.type === 'develop' ? task.featureId : undefined
+  const taskValid = !task || task.type !== 'develop' ||
+    state.features.some(f => f.id === buildingId && f.status === 'in_development')
+
+  let changed = false
+  const features = state.features.map(f => {
+    const orphaned = f.status === 'in_development' && f.assignedToDevId === FOUNDER_ID && (!taskValid || f.id !== buildingId)
+    if (!orphaned) return f
+    changed = true
+    return { ...f, status: 'proposed' as const, assignedToDevId: undefined, buildProgress: 0 }
+  })
+
+  if (!changed && taskValid) return state
+  return withTask({ ...state, features }, taskValid ? task : null)
+}
