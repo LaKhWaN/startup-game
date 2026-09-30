@@ -10,6 +10,9 @@ import { isMetricsUnlocked } from './chapter'
 import { FamilyMoneyModal } from './FamilyMoneyModal'
 import { FounderPanel } from './FounderPanel'
 import { RoomView } from './RoomView'
+import { useBackgroundMusic, useTypingLoop } from './audio'
+import { Founder, LaptopGlow } from './scene/Founder'
+import { founderPose } from './scene/founderPose'
 import { saveGameV2 } from './saveV2'
 import { isV2Game } from './state'
 import { TopBarV2 } from './TopBarV2'
@@ -24,6 +27,9 @@ export function GameScreenV2() {
   const pendingMilestoneToasts = useV2(s => s.pendingMilestoneToasts)
   const dismissMilestoneToast = useV2(s => s.dismissMilestoneToast)
   const [panel, setPanel] = useState<V2Panel>('founder')
+
+  useBackgroundMusic()
+  useTypingLoop(founderPose(v2.founder.task).typing && phase === 'playing' && gameSpeed > 0)
 
   const metricsUnlocked = isMetricsUnlocked({ v2 })
   const { chapter } = v2
@@ -51,7 +57,7 @@ export function GameScreenV2() {
       <RunwayBanner />
       <div className="game-main">
         <div className="game-canvas-area">
-          <RoomView />
+          <RoomView><Founder /><LaptopGlow /></RoomView>
           <BottomNavV2 active={panel} metricsUnlocked={metricsUnlocked} onTabClick={setPanel} />
         </div>
         {panel === 'metrics' && metricsUnlocked ? <RightPanel activePanel="metrics" /> : <FounderPanel />}
