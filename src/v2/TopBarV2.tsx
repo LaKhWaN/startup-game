@@ -131,7 +131,8 @@ function PillItem({ icon, value, label, rawValue, higherIsBetter = true, warn, d
   )
 }
 
-const SPEEDS: GameSpeed[] = [1, 2, 3, 5]
+// 10× is a local-dev convenience for playtesting; production builds keep the legacy set.
+const SPEEDS: GameSpeed[] = import.meta.env.DEV ? [1, 2, 3, 5, 10] : [1, 2, 3, 5]
 
 function SpeedControl() {
   const gameSpeed    = useGameStore(s => s.gameSpeed)
