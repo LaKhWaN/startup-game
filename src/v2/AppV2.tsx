@@ -5,6 +5,7 @@ import { resetStoreForV2, upgradeLegacyRestart, useV2 } from './actions'
 import { GameScreenV2 } from './GameScreenV2'
 import { OnboardingV2 } from './OnboardingV2'
 import { isV2Game } from './state'
+import { installDevHooks } from './devHooks'
 
 export default function AppV2() {
   const [ready, setReady] = useState(false)
@@ -14,6 +15,7 @@ export default function AppV2() {
 
   // Start clean and leave clean, so a game never leaks between / and /new.
   useEffect(() => {
+    if (import.meta.env.DEV) installDevHooks()
     resetStoreForV2()
     setReady(true)
     return () => resetStoreForV2()
