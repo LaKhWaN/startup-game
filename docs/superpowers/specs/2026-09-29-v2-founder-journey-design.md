@@ -209,3 +209,79 @@ Every random roll takes an `rng: () => number` parameter that defaults to `Math.
 ### 5.9 Out of scope for Phase 1
 
 Hiring and interns (Phase 3), map and locations (Phase 4), the R3F renderer and music in `/new` (Phase 2), v2 versions of the Team/Hire/GTM/Shop panels, sending leads/founder data to Mongo, and admin dashboard filtering by v2.
+
+---
+
+## 6. Phase 2 detailed design — renderer foundation (approved 2026-09-30)
+
+### 6.1 Decisions
+
+| Topic | Decision |
+|---|---|
+| Room | **Cozy bedroom-desk**: bed in one corner, desk by the window, warm lamp, plant, rug, bookshelf, posters/picture. Warm evening palette (cream walls, wood floor, amber lamp). |
+| Art | **Kenney Mini Characters** + **Kenney Furniture Kit**, both CC0 (the license text ships inside each zip). Direct-download zips, GLB-native. Chibi low-poly style is the look for the whole game. |
+| Renderer | R3F `<Canvas>` (three ^0.183, R3F ^8.18, drei ^9.122, React 18). WebGL renderer. |
+| Camera | Orthographic, fixed isometric angle (≈35° down, 45° around). Frames the room and refits on resize. No orbit controls. |
+| Lighting | Warm key light through the window with soft shadows, low hemisphere fill, warm point light at the desk lamp, contact-shadow plane, ACES tone mapping. |
+| Visual verification | Playwright (dev dependency) screenshot script rendering `/new` headless, used to tune camera, light and scale. |
+
+### 6.2 Module layout
+
+```
+src/v2/scene/
+  HomeScene.tsx      <Canvas>, camera, lights, Suspense (fallback = PlaceholderRoom)
+  Room.tsx           floor, 2 cut-away walls, window; furniture from layout.ts
+  Founder.tsx        Kenney mini character, AnimationMixer, walks between spots
+  layout.ts          pure: room bounds, furniture list {model, position, rotation, scale}, named spots
+  founderPose.ts     pure: (task, progress) → { spot, clip, motion, icon }
+  assets.ts          model URLs + preload list (manifest)
+  webgl.ts           pure-ish: WebGL support detection
+src/v2/audio.ts      useBackgroundMusic(), useTypingLoop(active)
+scripts/fetch-v2-assets.mjs   re-fetches the Kenney zips; extracts only the used GLBs + license
+scripts/v2-screenshot.mjs     Playwright: renders /new and saves PNGs
+public/assets/v2/    committed GLBs actually used (~15 furniture + 1 character) + LICENSE-kenney.txt
+```
+
+`GameScreenV2` swaps `<PlaceholderRoom />` for `<HomeScene />`. When WebGL is unavailable, it keeps rendering `PlaceholderRoom`.
+
+### 6.3 Founder behavior
+
+| Task | Spot | Clip | Extra |
+|---|---|---|---|
+| none (idle) | sitting on the bed | `sit` | slow breathing bob |
+| research | standing at the bookshelf | `interact-right` (loop) | — |
+| develop | desk chair | `sit` + procedural typing bob | laptop screen glows brighter |
+| emails | desk chair | `sit` + procedural typing bob | ✉️ floats up every few seconds |
+| sales | pacing by the window | `walk` between 2 points | 📞 above the head |
+
+- **Moving between spots:** when the spot changes, the founder walks there with `walk` at about 1.2 units/s of scene time. A trip is capped at around 2 real seconds and doesn't scale with game speed.
+- **Retargeting:** changing the task mid-walk retargets smoothly, with no teleporting.
+- **Progress:** shown as a thin ring on the floor under the founder.
+- **Task complete:** a short `emote-yes` plays before the next pose.
+- **Character model:** one constant (e.g. `character-male-a`). Letting the player choose one is out of scope.
+
+### 6.4 Data flow and loading
+
+- **Reading state:** the scene only reads the store through `useV2`, following the Phase 1 selector rule (stored refs or primitives only). Rendering never blocks the game loop.
+- **Loading:** GLBs are preloaded through `useGLTF.preload`. While loading, the Suspense fallback shows the Phase 1 `PlaceholderRoom`, so the canvas area is never blank.
+- **Bundle:** `/new` is already a lazy route. three/R3F end up in the v2 route chunk and never in the marketing pages.
+
+### 6.5 Audio
+
+- **Background music:** `useBackgroundMusic()` loops `/assets/music/bg_music.mp3` at `useAudioStore.musicVolume`. It starts on the first pointer or key event (browser autoplay policy) and stops on unmount.
+- **Typing loop:** `useTypingLoop(active)` loops `/assets/music/keyboard_typing.mp3` at `sfxVolume` while the task is develop or emails.
+- **Legacy:** the Phaser audio is unchanged.
+
+### 6.6 Testing and acceptance
+
+- **Unit tests (vitest):**
+  - `founderPose` maps every task, plus idle, to a spot that exists in `layout` and a clip from the character's known clip list.
+  - Every layout spot lies inside the room bounds, and no furniture footprint covers a spot.
+  - Every model path in the `assets` manifest exists under `public/assets/v2/`.
+  - `webgl` detection returns false when no context can be created.
+- **Screenshot check:** `scripts/v2-screenshot.mjs` starts from a fresh game, runs research (and a develop task, driving time via the dev-only 10× speed or store calls), and saves PNGs. The canvas must render non-blank pixels, and the images are reviewed for composition.
+- **Gates:** `tsc`, `npm test`, `npm run build` all pass. The legacy guard is unchanged: outside `src/v2/`, `scripts/`, `public/assets/v2/`, `docs/`, only `package.json`/lockfile may change.
+
+### 6.7 Out of scope for Phase 2
+
+Other rooms/locations (Phases 4–5), employees in the scene (Phase 5), clicking characters (Phase 5), postprocessing and adaptive quality (Phase 6), choosing a founder character.
