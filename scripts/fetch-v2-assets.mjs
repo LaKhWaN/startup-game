@@ -10,7 +10,7 @@ const CHARS_ZIP = 'https://kenney.nl/media/pages/assets/mini-characters/bfc7e272
 const FURN_ZIP = 'https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip'
 
 const FURNITURE = [
-  'floorFull', 'wall', 'wallWindow', 'desk', 'chairDesk', 'laptop', 'bedSingle', 'pillow', 'sideTable',
+  'floorFull', 'wall', 'wallWindow', 'desk', 'chairDesk', 'laptop', 'bedSingle', 'sideTable',
   'lampSquareTable', 'bookcaseOpen', 'books', 'pottedPlant', 'plantSmall1', 'lampRoundFloor', 'rugRectangle',
 ]
 const CHARACTER = 'character-male-a'

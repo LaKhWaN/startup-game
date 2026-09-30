@@ -28,7 +28,7 @@ export function footprint(p: Placement): { x0: number; x1: number; z0: number; z
 
 export const FLOOR: Placement[] = Array.from({ length: 16 }, (_, i) => ({
   model: 'floorFull' as const,
-  position: [i % 4, 0, -Math.floor(i / 4)] as [number, number, number],
+  position: [i % 4, -0.05, -Math.floor(i / 4)] as [number, number, number], // tile top sits at y = 0
   rotationY: 0 as const,
   size: [1, 1] as [number, number],
 }))
@@ -56,7 +56,6 @@ export const FURNITURE: Placement[] = [
   { model: 'chairDesk', position: [1.33, 0, -2.75], rotationY: 0, size: [0.479, 0.443] },
   { model: 'lampRoundFloor', position: [0.25, 0, -3.6], rotationY: 0, size: [0.152, 0.176] },
   { model: 'bedSingle', position: [0.08, 0, -0.05], rotationY: 0, size: [1.623, 1.892] },
-  { model: 'pillow', position: [0.35, 0.35, -1.7], rotationY: 0, size: [0.23, 0.088] },
   { model: 'sideTable', position: [0.3, 0, -2.1], rotationY: 90, size: [0.534, 0.22] },
   { model: 'lampSquareTable', position: [0.14, 0.384, -2.25], rotationY: 0, size: [0.12, 0.12] },
   { model: 'bookcaseOpen', position: [3.0, 0, -3.73], rotationY: 0, size: [0.4, 0.25] },

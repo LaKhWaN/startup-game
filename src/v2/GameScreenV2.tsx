@@ -9,7 +9,7 @@ import { BottomNavV2, type V2Panel } from './BottomNavV2'
 import { isMetricsUnlocked } from './chapter'
 import { FamilyMoneyModal } from './FamilyMoneyModal'
 import { FounderPanel } from './FounderPanel'
-import { PlaceholderRoom } from './PlaceholderRoom'
+import { RoomView } from './RoomView'
 import { saveGameV2 } from './saveV2'
 import { isV2Game } from './state'
 import { TopBarV2 } from './TopBarV2'
@@ -51,7 +51,7 @@ export function GameScreenV2() {
       <RunwayBanner />
       <div className="game-main">
         <div className="game-canvas-area">
-          <PlaceholderRoom />
+          <RoomView />
           <BottomNavV2 active={panel} metricsUnlocked={metricsUnlocked} onTabClick={setPanel} />
         </div>
         {panel === 'metrics' && metricsUnlocked ? <RightPanel activePanel="metrics" /> : <FounderPanel />}

@@ -1,7 +1,7 @@
 export const FURNITURE_MODELS = [
   'floorFull', 'wall', 'wallWindow',
   'desk', 'chairDesk', 'laptop',
-  'bedSingle', 'pillow', 'sideTable', 'lampSquareTable',
+  'bedSingle', 'sideTable', 'lampSquareTable',
   'bookcaseOpen', 'books', 'pottedPlant', 'plantSmall1',
   'lampRoundFloor', 'rugRectangle',
 ] as const

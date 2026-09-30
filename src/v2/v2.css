@@ -72,3 +72,6 @@
   .v2-task-grid { grid-template-columns: 1fr; }
   .v2-room-card { padding: 1.4rem; min-width: 0; }
 }
+
+.v2-scene { flex: 1; min-height: 0; position: relative; background: #2b2119; }
+.v2-scene canvas { display: block; }
