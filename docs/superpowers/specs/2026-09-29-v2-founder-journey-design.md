@@ -72,7 +72,8 @@ src/v2/
   v2Tick.ts            pure: v2Tick(state, rng) — runs after legacy tick()
   actions.ts           thin setState wrappers: startTask, dismissCard, claimFamilyMoney, newGameV2, loadV2
   saveV2.ts            own localStorage keys, 3 slots, slot 1 autosave every 30s
-  GameScreenV2.tsx     TopBar (legacy) + placeholder view + BottomNavV2 + panel area + overlays
+  GameScreenV2.tsx     TopBarV2 + placeholder view + BottomNavV2 + panel area + overlays
+  TopBarV2.tsx         copy of legacy TopBar using v2 saves and runway-based cash warnings
   BottomNavV2.tsx      shows unlocked tabs only
   FounderPanel.tsx     task picker, progress, feature list, funnel, skills, coach card
   PlaceholderRoom.tsx  Phase 1 CSS room card (replaced in Phase 2)
@@ -82,7 +83,7 @@ src/v2/
 
 **Legacy reused read-only:**
 - `tick`, `createInitialState`, `estimateFeatureEffects`, `totalDays`
-- `TopBar`, `RightPanel activePanel="metrics"`, overlays (`FeatureResultToast`, `MilestoneToast`, `RunwayBanner`, `PostMortem`)
+- `RightPanel activePanel="metrics"`, overlays (`FeatureResultToast`, `MilestoneToast`, `RunwayBanner`, `PostMortem`)
 - `generateRoadmap`/`validateIdea` (Groq)
 - `Onboarding.css`
 
@@ -147,7 +148,7 @@ Develop keeps the chosen feature id on the task. If that feature is gone, the ta
 |---|---|
 | **Onboarding** | idea → assessment → name → launch, then beat 0. The Continue screen lists v2 saves only. |
 | **Layout** | Same as the legacy game screen (`TopBar`, `.game-canvas-area` holding the placeholder + `BottomNavV2`, right panel area). |
-| **TopBar** | The legacy component, visible from the start. |
+| **TopBarV2** | A copy of the legacy TopBar, visible from the start. Two differences: the settings modal saves to **v2** slots (the legacy one would write v2 games into `/`'s saves), and cash warnings are runway-based (< 6 / < 3 months) instead of the legacy $50k/$20k thresholds, which would show a solo founder's $500 in red all game. |
 | **BottomNavV2** | Shows **Founder** from the start and **Metrics** from beat 4. Uses the legacy nav CSS classes. |
 | **FounderPanel** | Current task with a progress bar and ETA. Four task buttons, each either locked (with the reason) or available; buttons are disabled while a task is running. A proposed-features list with a Develop button on each. A leads → customers funnel. Skill bars. The current coach card. |
 | **PlaceholderRoom** | A centered card: 🏠 Home, founder avatar, a status line ("Researching your market…", "Building *Onboarding Flow*…", "Writing cold emails…", "On sales calls…", "Taking a breather" when idle), and a progress ring. |
