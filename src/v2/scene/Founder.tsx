@@ -6,6 +6,7 @@ import { useV2 } from '../actions'
 import { CHARACTER_URL, type CharacterClip } from './assets'
 import { founderPose } from './founderPose'
 import { SPOTS, type SpotId } from './layout'
+import { applyTypingMotion, frameIntent } from './animation'
 import { stepToward, tripSpeed, yawTowards } from './motion'
 
 const CHARACTER_SCALE = 0.85
@@ -34,6 +35,22 @@ export function Founder() {
   useEffect(() => {
     gltf.scene.traverse(o => { o.castShadow = true })
   }, [gltf.scene])
+
+  // Rest rotations for the procedural typing, taken from the 'sit' pose once.
+  const rest = useMemo(() => {
+    const sit = actions.get('sit')
+    const r = { head: 0, armL: 0, armR: 0 }
+    if (!sit) return r
+    const probe = new AnimationMixer(gltf.scene)
+    probe.clipAction(sit.getClip()).play()
+    probe.update(0)
+    r.head = bones.head?.rotation.x ?? 0
+    r.armL = bones.armL?.rotation.x ?? 0
+    r.armR = bones.armR?.rotation.x ?? 0
+    probe.stopAllAction()
+    probe.uncacheRoot(gltf.scene)
+    return r
+  }, [actions, bones, gltf.scene])
 
   // Walking state lives in refs: it's per-frame, not React state.
   const pos = useRef<[number, number]>([SPOTS.bed.position[0], SPOTS.bed.position[2]])
@@ -77,7 +94,9 @@ export function Founder() {
     const spot = SPOTS[target.current]
     const goal: [number, number] = [spot.position[0], spot.position[2]]
 
-    if (walking.current) {
+    const intent = frameIntent({ emoting, walking: walking.current, pace: pose.pace, poseClip: pose.clip })
+
+    if (walking.current && intent.move) {
       const dist = Math.hypot(goal[0] - pos.current[0], goal[1] - pos.current[1])
       const step = stepToward(pos.current, goal, tripSpeed(dist), dt)
       if (!step.arrived) g.rotation.y = yawTowards(pos.current, goal) + MODEL_YAW_OFFSET
@@ -97,18 +116,14 @@ export function Founder() {
     g.position.set(pos.current[0], y, pos.current[1])
     if (settled && !pose.pace) g.rotation.y = spot.yaw + MODEL_YAW_OFFSET
 
-    if (emoting) play('emote-yes', true)
-    else if (!settled || pose.pace) play('walk')
-    else play(pose.clip)
+    play(intent.clip, intent.once)
 
     mixer.update(dt)
 
     // Procedural motion on top of the clip (the clip rewrites bones each frame).
     const t = state.clock.elapsedTime
     if (settled && pose.typing) {
-      if (bones.armL) bones.armL.rotation.x += Math.sin(t * 14) * 0.12
-      if (bones.armR) bones.armR.rotation.x += Math.sin(t * 14 + Math.PI) * 0.12
-      if (bones.head) bones.head.rotation.x += 0.05 + Math.sin(t * 2.5) * 0.03
+      applyTypingMotion(bones, rest, t)
     } else if (settled && !task) {
       g.position.y = y + Math.sin(t * 1.6) * 0.006 // breathing
     }

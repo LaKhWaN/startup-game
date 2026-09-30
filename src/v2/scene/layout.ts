@@ -78,7 +78,7 @@ export interface Spot {
 export const SPOTS: Record<SpotId, Spot> = {
   bed: { position: [1.0, 0.3, -1.0], yaw: Math.PI / 2, seat: 'bedSingle' },
   bookshelf: { position: [3.2, 0, -3.4], yaw: Math.PI, seat: undefined },
-  desk: { position: [1.55, 0.22, -2.95], yaw: 0, seat: 'chairDesk' },
+  desk: { position: [1.55, 0.22, -2.95], yaw: Math.PI, seat: 'chairDesk' },
   paceA: { position: [2.6, 0, -2.6], yaw: Math.PI / 2 },
   paceB: { position: [3.5, 0, -2.0], yaw: -Math.PI / 2 },
 }
