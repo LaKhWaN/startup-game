@@ -14,7 +14,7 @@ const SKILL_LABEL: Record<FounderSkill, string> = {
   sales: 'Sales',
 }
 
-const TASK_BUTTONS: FounderTaskType[] = ['research', 'emails', 'sales']
+const TASK_BUTTONS: FounderTaskType[] = ['research', 'emails', 'sales', 'support', 'refactor']
 
 export function FounderPanel() {
   // Selectors return stored references only (see useV2 docs); derive below.
@@ -36,7 +36,8 @@ export function FounderPanel() {
     ? `Building ${features.find(f => f.id === task.featureId)?.title ?? 'a feature'}`
     : task ? TASK_INFO[task.type].name : ''
 
-  const reasonFor = (type: FounderTaskType) => taskReason(v2, type)
+  const techDebt = useV2(s => s.techDebt)
+  const reasonFor = (type: FounderTaskType) => taskReason(v2, type, { techDebt })
 
   return (
     <aside className="right-panel right-panel--open">

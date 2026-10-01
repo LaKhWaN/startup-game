@@ -5,6 +5,8 @@ const DOING: Record<FounderTaskType, string> = {
   develop: '🛠️ Building',
   emails: '✉️ Sending emails',
   sales: '📞 On sales calls',
+  support: '🎧 Answering tickets',
+  refactor: '🧹 Refactoring',
 }
 
 const WAITING: Record<Assignment, string> = {
@@ -12,6 +14,8 @@ const WAITING: Record<Assignment, string> = {
   develop: '⏳ Waiting for a feature to build',
   emails: '⏳ Waiting for work',
   sales: '⏳ Waiting for leads to call',
+  support: '⏳ No tickets to answer',
+  refactor: '⏳ No tech debt to fix',
   idle: '💤 Idle',
 }
 

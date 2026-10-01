@@ -13,6 +13,8 @@ const TASK_SKILL_OF: Record<FounderTaskType, FounderSkill> = {
   develop: 'build',
   emails: 'outreach',
   sales: 'sales',
+  support: 'outreach',
+  refactor: 'build',
 }
 
 export interface TierRule {

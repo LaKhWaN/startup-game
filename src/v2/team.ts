@@ -31,6 +31,8 @@ const SKILL_OF_TASK: Record<FounderTaskType, FounderSkill> = {
   develop: 'build',
   emails: 'outreach',
   sales: 'sales',
+  support: 'outreach',
+  refactor: 'build',
 }
 
 /** How many hires fit in the current space. */
@@ -202,6 +204,8 @@ export function chooseNextTask(member: TeamMember, state: V2GameState): FounderT
     }
     case 'emails': return { type: 'emails', progress: 0 }
     case 'sales': return state.v2.leads >= 1 ? { type: 'sales', progress: 0 } : null
+    case 'support': return (state.v2.tickets ?? 0) >= 1 ? { type: 'support', progress: 0 } : null
+    case 'refactor': return state.techDebt >= 5 ? { type: 'refactor', progress: 0 } : null
   }
 }
 

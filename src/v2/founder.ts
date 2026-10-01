@@ -23,7 +23,12 @@ export const TASK_SKILL: Record<FounderTaskType, FounderSkill> = {
   develop: 'build',
   emails: 'outreach',
   sales: 'sales',
+  support: 'outreach',
+  refactor: 'build',
 }
+
+export const SUPPORT_DAYS = 1
+export const REFACTOR_DAYS = 2
 
 /** Anyone who can do a task: the founder or a hire. */
 export interface Worker {
@@ -43,11 +48,11 @@ function founderWorker(state: V2GameState): Worker {
 
 const isFounder = (w: Worker) => w.id === FOUNDER_ID
 
-export type StartTaskError = 'busy' | 'locked' | 'no-feature' | 'no-leads'
+export type StartTaskError = 'busy' | 'locked' | 'no-feature' | 'no-leads' | 'nothing-to-do'
 export type StartTaskResult = { ok: true; state: V2GameState } | { ok: false; reason: StartTaskError }
 
 export function taskDurationDays(
-  state: Pick<V2GameState, 'features'>,
+  state: Pick<V2GameState, 'features'> & { techDebt?: number },
   type: FounderTaskType,
   featureId?: string,
 ): number {
@@ -55,9 +60,12 @@ export function taskDurationDays(
     case 'research': return RESEARCH_DAYS
     case 'emails': return EMAILS_DAYS
     case 'sales': return SALES_DAYS
+    case 'support': return SUPPORT_DAYS
+    case 'refactor': return REFACTOR_DAYS
     case 'develop': {
       const feature = state.features.find(f => f.id === featureId)
-      return (feature?.baseDays ?? 1) / FOUNDER_BUILD_SPEED
+      // Tech debt slows every build, up to twice as long (spec §4).
+      return ((feature?.baseDays ?? 1) / FOUNDER_BUILD_SPEED) * (1 + (state.techDebt ?? 0) / 100)
     }
   }
 }
@@ -70,6 +78,8 @@ export function startTask(state: V2GameState, type: FounderTaskType, featureId?:
   if (state.v2.founder.task) return { ok: false, reason: 'busy' }
   if (!isTaskUnlocked(state, type)) return { ok: false, reason: 'locked' }
   if (type === 'sales' && state.v2.leads < 1) return { ok: false, reason: 'no-leads' }
+  if (type === 'support' && (state.v2.tickets ?? 0) < 1) return { ok: false, reason: 'nothing-to-do' }
+  if (type === 'refactor' && state.techDebt < 1) return { ok: false, reason: 'nothing-to-do' }
 
   let features = state.features
   if (type === 'develop') {
@@ -273,6 +283,26 @@ function applySales(state: V2GameState, worker: Worker, rng: Rng, opts: OutcomeO
   return addStory(next, lines)
 }
 
+// ── Support & refactor ──────────────────────────────────────────────────────
+
+function applySupport(state: V2GameState, worker: Worker, opts: OutcomeOptions): V2GameState {
+  const capacity = 8 + 2 * worker.skills.outreach
+  const cleared = Math.min(state.v2.tickets ?? 0, Math.floor(opts.mistake ? capacity / 2 : capacity))
+  const next: V2GameState = { ...state, v2: { ...state.v2, tickets: (state.v2.tickets ?? 0) - cleared } }
+  const lines = [`${isFounder(worker) ? 'You' : worker.name} answered ${cleared} support ticket${cleared === 1 ? '' : 's'}.`]
+  if (opts.mistake) lines.push(`${worker.name} pasted the wrong macro into half the replies.`)
+  return addStory(next, lines)
+}
+
+function applyRefactor(state: V2GameState, worker: Worker, opts: OutcomeOptions): V2GameState {
+  const paid = 12 + 2 * worker.skills.build
+  const drop = Math.round(opts.mistake ? paid / 2 : paid)
+  const techDebt = Math.max(0, state.techDebt - drop)
+  const lines = [`${isFounder(worker) ? 'You' : worker.name} cleaned up the codebase: tech debt ${Math.round(state.techDebt)} → ${Math.round(techDebt)}.`]
+  if (opts.mistake) lines.push(`${worker.name} broke a test while refactoring and had to roll half of it back.`)
+  return addStory({ ...state, techDebt }, lines)
+}
+
 // ── Outcome dispatch ────────────────────────────────────────────────────────
 
 /** Returns null when the task has no outcome (e.g. develop on a feature that disappeared). */
@@ -289,6 +319,8 @@ export function applyOutcome(
     case 'develop': after = applyDevelop(state, worker, task.featureId, opts); break
     case 'emails': after = applyEmails(state, worker, rng, opts); break
     case 'sales': after = applySales(state, worker, rng, opts); break
+    case 'support': after = applySupport(state, worker, opts); break
+    case 'refactor': after = applyRefactor(state, worker, opts); break
   }
   return after && countStats(state, after, task.type, opts.mistake)
 }

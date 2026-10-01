@@ -25,11 +25,13 @@ const ASSIGNMENT_LABEL: Record<Assignment, string> = {
   develop: '🛠️ Develop',
   emails: '✉️ Emails',
   sales: '🤝 Sales',
+  support: '🎧 Support',
+  refactor: '🧹 Refactor',
   idle: '💤 Idle',
 }
 
 const SKILL_SHORT: Record<FounderSkill, string> = { research: 'Res', build: 'Build', outreach: 'Out', sales: 'Sales' }
-const ASSIGNMENTS: Assignment[] = ['research', 'develop', 'emails', 'sales', 'idle']
+const ASSIGNMENTS: Assignment[] = ['research', 'develop', 'emails', 'sales', 'support', 'refactor', 'idle']
 
 export function fmtMoney(n: number): string {
   return `$${Math.round(n).toLocaleString()}`

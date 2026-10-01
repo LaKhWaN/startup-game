@@ -8,6 +8,8 @@ const STATUS: Record<FounderTaskType, string> = {
   develop: 'Building…', // replaced with the feature title below
   emails: 'Writing cold emails…',
   sales: 'On sales calls…',
+  support: 'Answering support tickets…',
+  refactor: 'Cleaning up the code…',
 }
 
 const R = 34

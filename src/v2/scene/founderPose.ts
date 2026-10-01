@@ -16,6 +16,8 @@ export function founderPose(task: FounderTask | null): FounderPose {
     case 'develop': return { spot: 'desk', clip: 'sit', typing: true, pace: false, icon: '🛠️' }
     case 'emails': return { spot: 'desk', clip: 'sit', typing: true, pace: false, icon: '✉️' }
     case 'sales': return { spot: 'paceA', clip: 'walk', typing: false, pace: true, icon: '📞' }
+    case 'support': return { spot: 'desk', clip: 'sit', typing: true, pace: false, icon: '🎧' }
+    case 'refactor': return { spot: 'desk', clip: 'sit', typing: true, pace: false, icon: '🧹' }
     default: return { spot: 'bed', clip: 'sit', typing: false, pace: false, icon: '💤' }
   }
 }
@@ -29,6 +31,8 @@ export function hirePose(task: FounderTask | null): FounderPose<HireSpotId> {
     case 'develop': return { spot: 'seat', clip: 'sit', typing: true, pace: false, icon: '🛠️' }
     case 'emails': return { spot: 'seat', clip: 'sit', typing: true, pace: false, icon: '✉️' }
     case 'sales': return { spot: 'paceA', clip: 'walk', typing: false, pace: true, icon: '📞' }
+    case 'support': return { spot: 'seat', clip: 'sit', typing: true, pace: false, icon: '🎧' }
+    case 'refactor': return { spot: 'seat', clip: 'sit', typing: true, pace: false, icon: '🧹' }
     default: return { spot: 'seat', clip: 'sit', typing: false, pace: false, icon: null }
   }
 }

@@ -9,13 +9,15 @@ import { hireSpeed, MAIN_TASK, mainSkillOf, TIER_RULES, workerDurationDays } fro
 import { closeModal } from './ui'
 import './v2.css'
 
-const TASK_LABEL: Record<FounderTaskType, string> = { research: 'research', develop: 'building', emails: 'emails', sales: 'sales' }
+const TASK_LABEL: Record<FounderTaskType, string> = { research: 'research', develop: 'building', emails: 'emails', sales: 'sales', support: 'support', refactor: 'refactoring' }
 
 const ASSIGNMENTS: { id: Assignment; label: string }[] = [
   { id: 'research', label: '🔍 Research' },
   { id: 'develop', label: '🛠️ Develop' },
   { id: 'emails', label: '✉️ Emails' },
   { id: 'sales', label: '🤝 Sales' },
+  { id: 'support', label: '🎧 Support' },
+  { id: 'refactor', label: '🧹 Refactor' },
   { id: 'idle', label: '💤 Idle' },
 ]
 

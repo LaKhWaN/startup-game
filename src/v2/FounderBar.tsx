@@ -6,12 +6,13 @@ import type { FounderTaskType } from './state'
 import { openModal } from './ui'
 import './v2.css'
 
-const QUICK: FounderTaskType[] = ['research', 'emails', 'sales']
+const QUICK: FounderTaskType[] = ['research', 'emails', 'sales', 'support', 'refactor']
 
 /** The founder's controls, floating at the bottom of the room. */
 export function FounderBar() {
   const v2 = useV2(s => s.v2)
   const features = useV2(s => s.features)
+  const techDebt = useV2(s => s.techDebt)
   const [picking, setPicking] = useState(false)
 
   const task = v2.founder.task
@@ -21,7 +22,7 @@ export function FounderBar() {
 
   if (picking && buildReason !== null) setPicking(false)
 
-  const days = task ? taskDurationDays({ features }, task.type, task.featureId) : 0
+  const days = task ? taskDurationDays({ features, techDebt }, task.type, task.featureId) : 0
   const title = task?.type === 'develop'
     ? `Building ${features.find(f => f.id === task.featureId)?.title ?? 'a feature'}`
     : task ? TASK_INFO[task.type].name : 'Nothing in progress'
@@ -39,7 +40,7 @@ export function FounderBar() {
       </button>
       <div className="v2-fb-actions">
         {QUICK.map(type => {
-          const reason = taskReason(v2, type)
+          const reason = taskReason(v2, type, { techDebt })
           return (
             <button key={type} className="v2-fb-btn" disabled={reason !== null} title={reason ?? TASK_INFO[type].hint} onClick={() => startFounderTask(type)}>
               <span aria-hidden="true">{TASK_INFO[type].icon}</span> {TASK_INFO[type].name}

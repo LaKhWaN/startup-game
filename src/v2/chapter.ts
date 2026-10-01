@@ -5,6 +5,9 @@ export const TASK_UNLOCK_BEAT: Record<FounderTaskType, Beat> = {
   develop: 1,
   emails: 2,
   sales: 3,
+  // Unlocked with Chapter 1 (family money).
+  support: 5,
+  refactor: 5,
 }
 
 export function isTaskUnlocked(state: Pick<V2GameState, 'v2'>, type: FounderTaskType): boolean {

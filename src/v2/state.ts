@@ -5,7 +5,7 @@ import { totalDays } from './engine/clock'
 import { createCompany, type CompanyState } from './engine/company'
 import { LOCATIONS } from './locations'
 
-export type FounderTaskType = 'research' | 'develop' | 'emails' | 'sales'
+export type FounderTaskType = 'research' | 'develop' | 'emails' | 'sales' | 'support' | 'refactor'
 export type FounderSkill = 'research' | 'build' | 'outreach' | 'sales'
 export type Beat = 0 | 1 | 2 | 3 | 4 | 5
 export type Rng = () => number
