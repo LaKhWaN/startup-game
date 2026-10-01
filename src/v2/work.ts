@@ -6,6 +6,7 @@ export const MAIN_TASK: Record<TeamRole, FounderTaskType> = {
   product_manager: 'research',
   marketing: 'emails',
   sales: 'sales',
+  support: 'support',
 }
 
 const TASK_SKILL_OF: Record<FounderTaskType, FounderSkill> = {

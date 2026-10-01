@@ -11,7 +11,7 @@ const mistake = { mistake: true, firstSaleGuarantee: false }
 
 describe('hire speeds', () => {
   it('maps each role to its main task', () => {
-    expect(MAIN_TASK).toEqual({ developer: 'develop', product_manager: 'research', marketing: 'emails', sales: 'sales' })
+    expect(MAIN_TASK).toEqual({ developer: 'develop', product_manager: 'research', marketing: 'emails', sales: 'sales', support: 'support' })
   })
   it('is 0.8 on the main task and 0.4 elsewhere', () => {
     expect(hireSpeed('marketing', 'emails')).toBe(0.8)

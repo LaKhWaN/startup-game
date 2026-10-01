@@ -11,7 +11,7 @@ import { OUTAGE } from './infra'
 export interface EventEmployee {
   id: string
   name: string
-  role: 'developer' | 'product_manager' | 'marketing' | 'sales'
+  role: 'developer' | 'product_manager' | 'marketing' | 'sales' | 'support'
   salary: number
   level: number
   morale: number

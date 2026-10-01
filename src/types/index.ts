@@ -2,7 +2,7 @@ export type GamePhase = 'setup' | 'playing' | 'sold' | 'lost'
 
 export type EventCategory = 'crisis' | 'opportunity' | 'market'
 
-export type EmployeeRole = 'developer' | 'product_manager' | 'sales' | 'marketing'
+export type EmployeeRole = 'developer' | 'product_manager' | 'sales' | 'marketing' | 'support'
 
 export interface Employee {
   id: string

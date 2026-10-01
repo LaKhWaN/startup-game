@@ -12,6 +12,7 @@ export const ROLE_INFO: Record<TeamRole, { icon: string; label: string }> = {
   product_manager: { icon: '🔍', label: 'Product' },
   marketing: { icon: '✉️', label: 'Marketing' },
   sales: { icon: '🤝', label: 'Sales' },
+  support: { icon: '🎧', label: 'Support' },
 }
 
 const TIER_LABEL: Record<Tier, string> = { intern: 'Intern', fulltime: 'Full-time' }

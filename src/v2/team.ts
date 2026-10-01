@@ -27,7 +27,7 @@ export const INTERN_MODELS: Record<'male' | 'female', string[]> = {
   female: ['character-female-a', 'character-female-b', 'character-female-c', 'character-female-d', 'character-female-e', 'character-female-f'],
 }
 
-const ROLES: TeamRole[] = ['developer', 'product_manager', 'marketing', 'sales']
+const ROLES: TeamRole[] = ['developer', 'product_manager', 'marketing', 'sales', 'support']
 
 const SKILL_OF_TASK: Record<FounderTaskType, FounderSkill> = {
   research: 'research',
