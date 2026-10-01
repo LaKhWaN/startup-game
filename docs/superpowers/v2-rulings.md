@@ -218,3 +218,11 @@ Decisions made autonomously during the build, with what each costs if wrong, and
 
 ### Rulings
 - Added a fifth hire role, Support (intern and full-time): main task Support, main skill outreach, its own bios; candidate pools now draw from 5 roles (~1 in 5 is Support) — cost if wrong: slightly fewer of each other role in a pool (Refresh rerolls).
+
+## Pacing, night shift, auto skip, Metrics/rail redesign (user requests)
+
+### Rulings
+- Clock slowed to 1.5 s per game hour at 1× (a day lasts 36 s) and every task shortened (research 3→1.5 days, emails/sales 2→1, support 1→0.5, refactor 2→1, builds baseDays/0.6 → baseDays/1.2), so far fewer day/night cycles pass per piece of work; simulation now reaches Bigger home on days 126–160 and Co-working on 276–299, never broke — cost if wrong: per-day output roughly doubled, so the economy is a bit friendlier.
+- Night shift is a tool in 💻 Infra → Tools: office open 09:00–23:00 on weekdays, costs +50% of payroll, evening hours count double for stress — cost if wrong: none.
+- Auto skip to morning is an "Auto" toggle next to ⏭ Skip in the office-closed pill (saved with the game); it never skips while a popup is open, an event is pending, or the founder is working late — cost if wrong: one more toggle.
+- Metrics sheet rebuilt as spaced KPI cards (with colour-coded borders), a market bar, a "why customers leave" list showing only the parts that apply, and health bars; the stats rail became a funnel card, icon tiles (working/waiting/idle/stressed/ideas/building), three pressure gauges (market, hosting, support) and all-time tiles, with details in hover tooltips — cost if wrong: some numbers moved into tooltips.
