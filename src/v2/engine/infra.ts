@@ -72,18 +72,24 @@ export function outageChance(s: S & Pick<GameV2, 'customers'>): number {
   return Math.min(0.5, (load - 1) * 0.8 + 0.05) * toolEffects(s).incidentFactor
 }
 
-export type MigrateCheck = 'ok' | 'busy' | 'current-or-lower'
+export type MigrateCheck = 'ok' | 'busy' | 'current' | 'too-small'
 
-export function canMigrate(s: S, tier: number): MigrateCheck {
+export function canMigrate(s: S & { customers?: number }, tier: number): MigrateCheck {
   const i = infraOf(s)
   if (i.migratingTo !== undefined) return 'busy'
-  if (tier <= i.hosting) return 'current-or-lower'
+  if (tier === i.hosting) return 'current'
+  // Scaling down is fine while your customers still fit the smaller plan.
+  if (tier < i.hosting && (s.customers ?? 0) > plan(tier).cap) return 'too-small'
   return 'ok'
 }
 
 export function startMigration<T extends GameV2>(s: T, tier: number, day: number): T {
   if (canMigrate(s, tier) !== 'ok') return s
   const p = plan(tier)
+  if (tier < infraOf(s).hosting) {
+    // Downgrades are instant: just move to the smaller plan.
+    return addStory({ ...s, v2: { ...s.v2, infra: { ...infraOf(s), hosting: p.tier } } }, [`🖥️ Scaled hosting down to ${p.name} ($${p.price.toLocaleString()}/mo).`])
+  }
   const next = { ...s, v2: { ...s.v2, infra: { ...infraOf(s), migratingTo: p.tier, migrationDoneDay: day + p.migrationDays } } }
   return addStory(next, [`🖥️ Migrating to ${p.name} ($${p.price.toLocaleString()}/mo). Ready in ${p.migrationDays} day${p.migrationDays === 1 ? '' : 's'}.`])
 }

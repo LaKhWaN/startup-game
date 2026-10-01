@@ -34,6 +34,9 @@ const resting = new Set<string>()
 function manage(s: V2GameState): V2GameState {
   const burn = getMonthlyBurn(s)
   const spare = (price: number, months: number) => s.cash >= price + months * Math.max(burn - s.mrr, burn * 0.5)
+  // Upgrade hosting before it overloads.
+  const nextTier = s.v2.infra.hosting + 1
+  if (hostingLoad(s) > 0.75 && nextTier <= 5 && canMigrate(s, nextTier) === 'ok') s = startMigration(s, nextTier, totalDays(s.gameTime))
   // Rest people before they burn out; talk leavers into staying.
   for (const m of Object.values(s.v2.team)) {
     if (m.leavingOn !== undefined && !m.convinced) s = convinceToStay(s, m.id)
@@ -84,9 +87,6 @@ function play(s: V2GameState, rng: () => number, careful = false): V2GameState {
 
   if (!chapter.complete) return s
 
-  // Upgrade hosting before it overloads.
-  const nextTier = s.v2.infra.hosting + 1
-  if (hostingLoad(s) > 0.75 && canMigrate(s, nextTier) === 'ok' && nextTier <= 5) s = startMigration(s, nextTier, totalDays(s.gameTime))
 
   if (careful) s = manage(s)
 
@@ -129,6 +129,10 @@ describe('balance simulation', () => {
       if (process.env.SIM_DEBUG) console.log(`seed ${seed}:`, JSON.stringify(reached), `day ${totalDays(s.gameTime)}`, `mrr $${s.mrr}`, `cash $${Math.round(s.cash)}`, `team ${Object.keys(s.v2.team).length}`, s.phase)
       expect(s.phase).toBe('playing')
       expect(reached.coworking).toBeDefined()
+      // The manager really used the shop and infra (guards against them silently breaking).
+      expect(s.v2.perks.length).toBeGreaterThan(0)
+      expect(s.v2.setups.founder).toBeGreaterThanOrEqual(2)
+      expect(s.v2.infra.hosting).toBeGreaterThanOrEqual(3)
       expect(reached.coworking).toBeLessThanOrEqual(730)
       // …but not trivially: each rung takes real growth, not one windfall.
       expect(reached.biggerHome).toBeGreaterThanOrEqual(30)
@@ -154,7 +158,10 @@ describe('balance simulation', () => {
     const neglect = runFor(false)
     const careful = runFor(true)
     if (process.env.SIM_DEBUG) console.log('neglect', neglect.customers, Math.round(neglect.churnRate), neglect.v2.tickets, '| careful', careful.customers, Math.round(careful.churnRate), careful.v2.tickets)
+    expect(careful.phase).toBe('playing')
     expect(careful.customers).toBeGreaterThan(neglect.customers)
     expect(careful.v2.tickets).toBeLessThan(neglect.v2.tickets)
+    // Neglect never upgrades hosting, so it's stuck under the free tier's 20-customer cap with outages.
+    expect(neglect.v2.infra.hosting).toBe(1)
   }, 60_000)
 })

@@ -199,6 +199,7 @@ function applyDevelop(state: V2GameState, worker: Worker, featureId: string | un
   }
 
   const preSale = !state.v2.firstSaleDone
+  const newRelief = Math.min(MAX_CHURN_RELIEF, (state.churnRelief ?? 0) + Math.max(0, est.churnDrop))
   const gain = Math.min(est.customers, marketRoom(state))
   const customers = preSale ? state.customers : Math.max(0, state.customers + gain)
   const leads = preSale ? Math.max(0, state.v2.leads + est.customers) : state.v2.leads
@@ -210,7 +211,7 @@ function applyDevelop(state: V2GameState, worker: Worker, featureId: string | un
     devName: worker.name,
     customerGain: preSale ? 0 : Math.min(est.customers, marketRoom(state)),
     arpuChange: est.arpu,
-    churnDrop: est.churnDrop,
+    churnDrop: newRelief - (state.churnRelief ?? 0),
     brandChange: est.brand,
     techDebtChange: est.techDebt,
     cashBonus: est.cashBonus,
@@ -226,7 +227,7 @@ function applyDevelop(state: V2GameState, worker: Worker, featureId: string | un
     arpu,
     mrr: customers * arpu,
     // Retention is lasting relief on product-health churn (recomputed daily from churnBreakdown).
-    churnRelief: Math.min(MAX_CHURN_RELIEF, (state.churnRelief ?? 0) + Math.max(0, est.churnDrop)),
+    churnRelief: newRelief,
     churnRate: Math.max(churnFloor, state.churnRate - est.churnDrop),
     cash: state.cash + est.cashBonus,
     brand: clamp100(state.brand + est.brand),

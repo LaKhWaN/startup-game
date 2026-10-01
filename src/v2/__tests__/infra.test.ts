@@ -36,7 +36,7 @@ describe('hosting', () => {
     s = finishMigrations(s, 11)
     expect(hostingCap(s)).toBe(150)
     expect(s.v2.infra.migratingTo).toBeUndefined()
-    expect(canMigrate(s, 1)).toBe('current-or-lower')
+    expect(canMigrate(s, 2)).toBe('current')
   })
 
   it('an outage loses customers and pops up a decision', () => {

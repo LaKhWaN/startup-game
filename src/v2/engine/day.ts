@@ -5,7 +5,7 @@ import { EVENTS } from './eventData'
 import { pickEvent } from './events'
 import { churnBreakdown, fadeShock } from './churn'
 import { INCIDENT, INCIDENT_CUSTOMER_LOSS, INCIDENT_TICKETS_PER_CUSTOMER, incidentChance } from './incidents'
-import { finishMigrations, OUTAGE, OUTAGE_CUSTOMER_LOSS, OUTAGE_TICKETS_PER_CUSTOMER, outageChance, toolEffects } from './infra'
+import { infraServicesCost, finishMigrations, OUTAGE, OUTAGE_CUSTOMER_LOSS, OUTAGE_TICKETS_PER_CUSTOMER, outageChance, toolEffects } from './infra'
 import { monthlyBurn, valuation } from './money'
 import type { GameV2 } from './types'
 
@@ -40,7 +40,8 @@ export function processDay<T extends GameV2>(raw: T, day: number, rng: Rng): T {
   const customers = state.customers - lost
   const mrr = customers * state.arpu
   const burn = monthlyBurn({ ...state, mrr, customers })
-  const cash = state.cash + (mrr - burn) / DAYS_PER_MONTH
+  // Services are billed hourly in stepV2; everything else accrues daily.
+  const cash = state.cash + (mrr - (burn - infraServicesCost(state))) / DAYS_PER_MONTH
 
   // Investor interest (seed / Series A triggers, as in the legacy game)
   const rate = state.difficultyModifier?.investorInterestRate ?? 1
@@ -89,7 +90,7 @@ export function processDay<T extends GameV2>(raw: T, day: number, rng: Rng): T {
     phase: cash < 0 && state.phase === 'playing' ? 'lost' : state.phase,
   }
   const snapshot: MetricsSnapshot = {
-    day, mrr, customers, churnRate, cash, burn,
+    day, mrr: afterIncident.customers * next.arpu, customers: afterIncident.customers, churnRate, cash, burn,
     runway: burn - mrr <= 0 ? 999 : Math.min(999, Math.floor(cash / (burn - mrr))),
     arpu: next.arpu, brand: next.brand, techDebt: next.techDebt, productProgress: next.productProgress,
     teamSize: Object.keys(next.v2.team).length, culture: next.culture ?? 60, valuation: valuation(next),

@@ -50,7 +50,7 @@ export function MetricsPanel() {
       <div className="rpm-grid">
         <MetCell label="MRR" value={`$${state.mrr.toLocaleString()}`} color={mrrColor} />
         <MetCell label="Users" value={state.customers.toLocaleString()} color="purple" />
-        <MetCell label="Churn" value={`${state.churnRate.toFixed(1)}%`} color={churnColor} />
+        <MetCell label="Churn" value={`${churn.total.toFixed(1)}%`} color={churnColor} />
         <MetCell label="Cash" value={`$${Math.floor(state.cash).toLocaleString()}`} color={cashColor} />
         <MetCell label="Burn/mo" value={`$${burn.toLocaleString()}`} color="orange" />
         <MetCell label="Runway" value={runway >= 999 ? '∞' : `${runway} mo`} color={cashColor} />
@@ -76,6 +76,8 @@ export function MetricsPanel() {
           <span>📦 Thin product</span><strong>{churn.thin.toFixed(1)}%</strong>
           <span>🖥️ Slow app (hosting near capacity)</span><strong>{churn.slow.toFixed(1)}%</strong>
           <span>⚡ Recent events</span><strong>{churn.shock.toFixed(1)}%</strong>
+          <span>🔁 Retention features</span><strong>−{churn.relief.toFixed(1)}%</strong>
+          {churn.floor + churn.bugs + churn.support + churn.thin + churn.slow + churn.shock - churn.relief < churn.floor && <span className="v2-muted">Held at your idea's floor ({churn.floor.toFixed(1)}%)</span>}
         </div>
         <div className="v2-muted">Variable costs: ${variableCosts(state).toLocaleString()}/mo (3% payment fees + $1 per customer for tools)</div>
       </section>

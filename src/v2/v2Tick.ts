@@ -1,5 +1,6 @@
 import { DAYS_PER_MONTH, HOURS_PER_DAY, hourOfDay, isWeekend, isWorkHour } from './engine/clock'
 import { founderAwake, founderHour, peopleDay, peopleHour } from './engine/people'
+import { infraServicesCost } from './engine/infra'
 import { processDay, processMonth } from './engine/day'
 import { checkChapter2Complete, checkChapter3Complete, onTaskCompleted, onTeamProgress } from './chapter'
 import { filterPendingEvent } from './eventsV2'
@@ -45,7 +46,8 @@ export function stepV2<T extends V2GameState>(state: T, rng: Rng = Math.random):
   if (state.pendingEvent) return v2Tick(state, 0, rng) as T
   const prev = state.gameTime.totalHours
   const now = prev + 1
-  let s: T = { ...state, gameTime: { totalHours: now } }
+  // Services (hosting, Wi-Fi, tools) bill by the hour, so a short subscription still costs.
+  let s: T = { ...state, gameTime: { totalHours: now }, cash: state.cash - infraServicesCost(state) / (24 * DAYS_PER_MONTH) }
   const day = Math.floor(now / HOURS_PER_DAY)
   // People: hires tire/learn during work hours; the founder tires working and recovers sleeping.
   s = founderHour(peopleHour(s, isWorkHour(prev)), hourOfDay(prev))

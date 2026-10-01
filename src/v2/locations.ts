@@ -63,11 +63,14 @@ export function moveTo(state: V2GameState, id: LocationId): V2GameState {
   const def = locationDef(id)
   const ordered = Object.values(state.v2.team).sort((a, b) => a.seat - b.seat)
   const team = Object.fromEntries(ordered.map((m, seat) => [m.id, { ...m, seat }]))
+  // Computers travel with their people (setups are stored per seat).
+  const oldSeats = state.v2.setups?.seats ?? []
+  const setups = state.v2.setups ? { ...state.v2.setups, seats: ordered.map(m => oldSeats[m.seat] ?? 1) } : state.v2.setups
   const next: V2GameState = {
     ...state,
     cash: state.cash - def.moveIn,
     infraCostMonthly: def.rent,
-    v2: { ...state.v2, location: id, team },
+    v2: { ...state.v2, location: id, team, setups },
   }
   const cost = def.moveIn > 0 ? ` Move-in cost $${def.moveIn.toLocaleString()}, rent $${def.rent.toLocaleString()}/mo.` : ''
   return addStory(next, [`${def.icon} ${state.startupName} moved to: ${def.name}.${cost}`])

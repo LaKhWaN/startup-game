@@ -60,7 +60,7 @@ export function InfraDesktop({ onClose }: { onClose: () => void }) {
                           : pending ? <span className="v2-shop-tag">Migrating…</span>
                           : h.tier > infra.hosting
                             ? <button className="v2-btn" disabled={infra.migratingTo !== undefined} onClick={() => migrateHosting(h.tier)}>Migrate</button>
-                            : <span className="v2-muted">—</span>}
+                            : <button className="v2-btn v2-btn-ghost" disabled={infra.migratingTo !== undefined || customers > h.cap} onClick={() => migrateHosting(h.tier)} title={customers > h.cap ? 'Your customers no longer fit this plan' : 'Instant'}>Downgrade</button>}
                       </div>
                     )
                   })}

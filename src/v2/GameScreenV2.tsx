@@ -94,7 +94,8 @@ export function GameScreenV2() {
       </div>
       <ScreenModal modal={modal} />
       <FeatureResultToasts />
-      {chapter.complete && v2.chapter2.complete && <EventCard />}
+      {/* Always mounted: incidents/outages can happen before events unlock, and a hidden card would freeze time. */}
+      <EventCard />
       {showFamilyMoney && <FamilyMoneyModal />}
     </div>
   )

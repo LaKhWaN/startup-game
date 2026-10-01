@@ -58,7 +58,7 @@ export function ShopPanel() {
             <div key={String(desk)} className="v2-shop-desk">
               <div>
                 <div className="v2-shop-name">{label}: {now.name}</div>
-                <div className="v2-muted">{now.specs} · speed ×{now.speed} · mistakes ×{now.mistakes}</div>
+                <div className="v2-muted">{now.specs} · speed ×{now.speed}{desk === 'founder' ? '' : ` · mistakes ×${now.mistakes}`}</div>
               </div>
               {next
                 ? (
