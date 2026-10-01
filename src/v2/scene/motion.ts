@@ -25,3 +25,8 @@ export function stepToward(
 export function yawTowards(from: [number, number], to: [number, number]): number {
   return Math.atan2(to[0] - from[0], to[1] - from[1])
 }
+
+/** The step function to use: reduced motion snaps straight to the goal. */
+export function stepFor(reducedMotion: boolean): typeof stepToward {
+  return reducedMotion ? (_from, to) => ({ pos: [to[0], to[1]], arrived: true }) : stepToward
+}

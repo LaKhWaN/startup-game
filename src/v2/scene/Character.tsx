@@ -1,7 +1,7 @@
 import { Html, useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { AnimationMixer, LoopOnce, type AnimationAction, type Group, type Object3D } from 'three'
+import { AnimationMixer, LoopOnce, type AnimationAction, type Group, type Object3D, type SkinnedMesh } from 'three'
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js'
 import type { CharacterClip } from './assets'
 import type { FounderPose } from './founderPose'
@@ -51,7 +51,12 @@ export function Character<S extends string>({ url, spots, pose, startSpot, progr
 
   useEffect(() => {
     scene.traverse(o => { o.castShadow = true })
-    return () => { mixer.stopAllAction(); mixer.uncacheRoot(scene) }
+    return () => {
+      mixer.stopAllAction()
+      mixer.uncacheRoot(scene)
+      // Each clone owns its skeleton (and its bone texture); geometry/materials stay shared.
+      scene.traverse(o => { (o as SkinnedMesh).skeleton?.dispose() })
+    }
   }, [scene, mixer])
 
   // Rest rotations for the procedural typing, taken from the 'sit' pose once.

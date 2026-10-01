@@ -1,6 +1,6 @@
-import { ContactShadows, useGLTF } from '@react-three/drei'
+import { ContactShadows, PerformanceMonitor, useGLTF } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
-import { useEffect, useMemo, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { ACESFilmicToneMapping, Object3D } from 'three'
 import { useV2 } from '../actions'
 import { PRELOAD_URLS } from './assets'
@@ -72,15 +72,19 @@ function Lights({ room }: { room: RoomLayout }) {
 export default function HomeScene({ children }: { children?: ReactNode }) {
   const location = useV2(s => s.v2.location)
   const room = roomFor(location)
+  // Adaptive quality: on a sustained FPS drop, render at 1× DPR. Shadows stay on: toggling
+  // them live leaves already-compiled materials without their shadow maps (they vanish).
+  const [low, setLow] = useState(false)
   return (
     <div className="v2-scene">
       <Canvas
         orthographic
         shadows
-        dpr={[1, 2]}
+        dpr={low ? 1 : [1, 2]}
         gl={{ antialias: true, preserveDrawingBuffer: import.meta.env.DEV }}
         onCreated={({ gl }) => { gl.toneMapping = ACESFilmicToneMapping }}
       >
+        <PerformanceMonitor flipflops={3} onDecline={() => setLow(true)} onIncline={() => setLow(false)} onFallback={() => setLow(true)} />
         <color attach="background" args={[room.theme.background]} />
         <RoomContext.Provider value={room}>
           {/* Remount everything on a move so characters start at their new seats. */}
