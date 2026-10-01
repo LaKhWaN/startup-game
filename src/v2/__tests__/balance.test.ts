@@ -81,8 +81,10 @@ describe('balance simulation', () => {
       expect(s.phase).toBe('playing')
       expect(reached.coworking).toBeDefined()
       expect(reached.coworking).toBeLessThanOrEqual(730)
-      // …but not trivially: the bedroom and the climb should take a while.
-      expect(reached.coworking).toBeGreaterThanOrEqual(30)
+      // …but not trivially: each rung takes real growth, not one windfall.
+      expect(reached.biggerHome).toBeGreaterThanOrEqual(30)
+      expect(reached.coworking - reached.biggerHome).toBeGreaterThanOrEqual(30)
+      expect(Object.values(s.v2.team).some(m => m.tier === 'fulltime')).toBe(true)
     }, 60_000)
   }
 })

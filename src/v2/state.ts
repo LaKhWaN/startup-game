@@ -1,5 +1,6 @@
 import { createInitialState, totalDays } from '../engine/gameEngine'
 import type { EmployeeRole, GameState, MetricsSnapshot, OnboardingConfig } from '../types'
+import { LOCATIONS } from './locations'
 
 export type FounderTaskType = 'research' | 'develop' | 'emails' | 'sales'
 export type FounderSkill = 'research' | 'build' | 'outreach' | 'sales'
@@ -172,15 +173,19 @@ export function migrateV2Slice(v: unknown): V2Slice | null {
   if (!isValidV2Slice(v)) return null
   const s = v as Partial<V2Slice> & V2Slice
   const isLocation = (x: unknown): x is LocationId => LOCATION_IDS.includes(x as LocationId)
-  const unlocked = Array.isArray(s.unlockedLocations) ? s.unlockedLocations.filter(isLocation) : []
+  const chapter2 = s.chapter2 ?? { beat: 0, complete: false, firstMistake: false }
+  // A save from before the ladder that finished Chapter 2 had reached $1,000 MRR (the first rung).
+  const peakMrr = Math.max(typeof s.peakMrr === 'number' ? s.peakMrr : 0, chapter2.complete ? 1000 : 0)
+  const saved = Array.isArray(s.unlockedLocations) ? s.unlockedLocations.filter(isLocation) : []
+  const unlocked = LOCATIONS.filter(l => l.unlockMrr <= peakMrr || saved.includes(l.id)).map(l => l.id)
   return {
     ...s,
     team: s.team && typeof s.team === 'object' ? s.team : {},
     candidates: Array.isArray(s.candidates) ? s.candidates.map(c => ({ ...c, tier: c.tier ?? 'intern' })) : [],
-    chapter2: s.chapter2 ?? { beat: 0, complete: false, firstMistake: false },
+    chapter2,
     location: isLocation(s.location) ? s.location : 'home',
-    unlockedLocations: unlocked.includes('home') ? unlocked : ['home', ...unlocked],
-    peakMrr: typeof s.peakMrr === 'number' ? s.peakMrr : 0,
+    unlockedLocations: unlocked,
+    peakMrr,
     chapter3: s.chapter3 ?? { beat: 0, complete: false },
   }
 }

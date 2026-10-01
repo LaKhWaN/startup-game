@@ -94,9 +94,9 @@ describe('filterPendingEvent', () => {
 
   it('keeps payout events whole, and always', () => {
     for (const id of ['investor-seed', 'acquisition-premium', 'angel-meeting']) expect(EXEMPT_EVENTS.has(id)).toBe(true)
-    const s = at('home', { pendingEvent: ev('angel-meeting') })
+    const s = at('home', { pendingEvent: ev('acquisition-premium') })
     const out = filterPendingEvent(s, seq(0.99))
-    expect(out.pendingEvent?.description).toBe(ev('angel-meeting').description)
+    expect(out.pendingEvent?.description).toBe(ev('acquisition-premium').description)
     expect(isScaled(out.pendingEvent!)).toBe(true)
   })
 })
