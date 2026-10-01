@@ -1,11 +1,11 @@
-import { useEffect } from 'react'
-import { claimFamilyMoney, pauseForModal, useV2 } from './actions'
+import { claimFamilyMoney, useV2 } from './actions'
+import { usePauseWhile } from './pause'
 import './v2.css'
 
 export function FamilyMoneyModal() {
   const money = useV2(s => s.v2.chapter.familyMoney)
 
-  useEffect(() => { pauseForModal() }, [])
+  usePauseWhile(true, 'family-money')
 
   if (!money || money.claimed) return null
 

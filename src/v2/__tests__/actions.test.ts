@@ -4,8 +4,9 @@ vi.mock('../../audio/sfx', () => ({ playSfx: vi.fn() }))
 vi.mock('../analytics', () => ({ syncAnalytics: vi.fn() }))
 
 import { gameStore } from '../store'
+import { holdPause, releasePause } from '../pause'
 import {
-  claimFamilyMoney, getV2State, newGameV2, pauseForModal, resetStore,
+  claimFamilyMoney, getV2State, newGameV2, resetStore,
   startFounderTask, stepGame, quickRestart,
   assignTeamMember, ensureCandidates, fireTeamMember, hireCandidate, moveToLocation, promoteTeamMember,
 } from '../actions'
@@ -68,9 +69,10 @@ describe('family money modal', () => {
       gameSpeed: 3,
       v2: { ...s.v2, chapter: { ...s.v2.chapter, beat: 5, familyMoney: { giver: 'Your cousin', amount: 900, claimed: false } } },
     } as never)
-    pauseForModal()
+    holdPause('family-money') // the modal mounting
     expect(getV2State().gameSpeed).toBe(0)
     claimFamilyMoney()
+    releasePause('family-money') // the modal unmounting after the claim
     const after = getV2State()
     expect(after.gameSpeed).toBe(3)
     expect(after.cash).toBe(500 + 900)

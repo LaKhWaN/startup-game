@@ -85,19 +85,10 @@ export function reshowCoachCard(): void {
   setV2State(reshowCurrentCard(getV2State()))
 }
 
-let speedBeforeModal: GameSpeed | null = null
-
-export function pauseForModal(): void {
-  const s = getV2State()
-  if (speedBeforeModal === null) speedBeforeModal = s.gameSpeed === 0 ? 1 : s.gameSpeed
-  setV2State({ gameSpeed: 0 })
-}
-
 export function claimFamilyMoney(): void {
   const next = claimFamilyMoneyPure(getV2State())
   playSfx('cashCredit', 0.7)
-  setV2State({ ...next, gameSpeed: speedBeforeModal ?? 1 })
-  speedBeforeModal = null
+  setV2State(next)
 }
 
 /** ⏭ Skip to morning: run the closed hours until the office opens (stops on an event). */

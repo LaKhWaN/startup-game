@@ -1,6 +1,7 @@
 /** v2 copy of the legacy event card, on the v2 store. */
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { chooseEvent, useV2 } from '../actions'
+import { usePauseWhile } from '../pause'
 import { eventView } from '../engine/events'
 import type { EventPatch, EventView } from '../engine/eventData'
 import './EventCard.css'
@@ -86,13 +87,9 @@ export function EventCard() {
   const state        = useV2(s => s)
 
   const [outcome, setOutcome] = useState<Outcome | null>(null)
+  // Reading and deciding takes time: pause while the event or its outcome is up.
+  usePauseWhile(!!pendingEvent || !!outcome, 'event')
 
-  // Auto-dismiss outcome after 4s
-  useEffect(() => {
-    if (!outcome) return
-    const id = setTimeout(() => setOutcome(null), 4000)
-    return () => clearTimeout(id)
-  }, [outcome])
 
   function handleChoice(index: 0 | 1) {
     if (!pendingEvent) return

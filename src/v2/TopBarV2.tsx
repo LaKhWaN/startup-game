@@ -1,4 +1,5 @@
 import { setSpeed as setGameSpeed, useV2 } from './actions'
+import { useUi } from './ui'
 import type { GameSpeed } from './store'
 import { useRef, useState, useEffect } from 'react'
 import { useAudioStore } from '../audio/audioStore'
@@ -140,11 +141,13 @@ function SpeedControl() {
   const gameSpeed    = useV2(s => s.gameSpeed)
   const setSpeed     = (() => setGameSpeed)()
   const pendingEvent = useV2(s => s.pendingEvent)
+  // A game-raised popup (event, family money, check-in) is holding the game paused.
+  const held = useUi(s => s.pauseHolds.length > 0)
 
-  const isPaused = gameSpeed === 0 || !!pendingEvent
+  const isPaused = gameSpeed === 0 || !!pendingEvent || held
 
   function togglePause() {
-    if (pendingEvent) return
+    if (pendingEvent || held) return
     setSpeed(gameSpeed === 0 ? 1 : 0)
   }
 
@@ -154,7 +157,7 @@ function SpeedControl() {
         className={`tb-speed-pause ${isPaused ? 'tb-speed-pause--on' : ''}`}
         onClick={togglePause}
         title={gameSpeed === 0 ? 'Resume' : 'Pause'}
-        disabled={!!pendingEvent}
+        disabled={!!pendingEvent || held}
       >
         {isPaused ? '▶' : '⏸'}
       </button>
@@ -166,7 +169,7 @@ function SpeedControl() {
           key={s}
           className={`tb-speed-btn ${gameSpeed === s && !isPaused ? 'tb-speed-btn--active' : ''}`}
           onClick={() => setSpeed(s)}
-          disabled={!!pendingEvent}
+          disabled={!!pendingEvent || held}
         >
           {s}×
         </button>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { getV2State, useV2 } from '../actions'
 import { totalDays } from '../engine/clock'
 import { ingestFeedbackRemote } from '../../analytics/mongoIngest'
+import { usePauseWhile } from '../pause'
 import './InvestorCheckin.css'
 
 const STORAGE_KEY = 'investor-checkin-done'
@@ -44,6 +45,7 @@ export function InvestorCheckin() {
 
   const [step, setStep]       = useState<Step | null>(null)
   const [visible, setVisible] = useState(false)
+  usePauseWhile(visible, 'investor-checkin')
   const [snoozeCount, setSnoozeCount] = useState(0)
   const [feedback, setFeedback] = useState<FeedbackData>({
     mood: null, challenges: [], wishlist: '', day, mrr, customers,

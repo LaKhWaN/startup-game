@@ -12,15 +12,17 @@ interface UiState {
   view: 'office' | 'city'
   modal: Modal | null
   citySelection: LocationId | null
+  /** Game-raised popups currently pausing the game (see pause.ts). */
+  pauseHolds: string[]
 }
 
-export const uiStore = create<UiState>(() => ({ view: 'office', modal: null, citySelection: null }))
+export const uiStore = create<UiState>(() => ({ view: 'office', modal: null, citySelection: null, pauseHolds: [] }))
 
 /** Selector hook; like useV2, return stored refs or primitives only. */
 export const useUi = <T,>(selector: (s: UiState) => T): T => uiStore(selector)
 
 /** Back to the office with nothing open (new game, load). */
-export const resetUi = () => uiStore.setState(uiStore.getInitialState())
+export const resetUi = () => uiStore.setState({ ...uiStore.getInitialState(), pauseHolds: uiStore.getState().pauseHolds })
 
 export const openModal = (modal: Modal) => uiStore.setState({ modal })
 export const closeModal = () => uiStore.setState({ modal: null })
