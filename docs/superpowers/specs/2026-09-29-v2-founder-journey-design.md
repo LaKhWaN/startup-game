@@ -472,3 +472,41 @@ After Chapter 3 the founder panel shows a free-play banner: "Climb the ladder: n
 ### 8.8 Out of scope for Phase 4
 
 Per-location art and palettes, move transition, clicking characters (Phase 5); managers; mobile layout and performance work (Phase 6).
+
+## 9. Phase 5 detailed design — every room, more characters (autonomous, 2026-10-01)
+
+*Written under the same blanket approval as §8; every choice is logged as a ruling.*
+
+### 9.1 Decisions
+
+| Topic | Decision |
+|---|---|
+| Room identity | Each location gets a **theme**: background colour, floor and wall tints, sun/fill/hemisphere light colours, and a set of **amenities** (furniture from the Kenney Furniture Kit that says "this is a living room / villa / co-working / office"). The bedroom keeps its handcrafted look. |
+| Where amenities go | Generated rooms gain an **amenity strip** on the right side (2 tiles wide) next to the desk grid. Amenities never block desks, seats or walk lanes; layout tests enforce it. |
+| Characters | All 11 remaining Kenney Mini Characters are used for hires (male b–f, female a–f), picked by gender. The founder stays `character-male-a`. |
+| Mood | v2 hires have no morale system (v2 holds legacy morale fixed), so "variety by morale" becomes **in-scene reactions**: 😬 for 2.5 s after a mistake, 💤 while idle. |
+| Clicking people | Clicking a hire in the room opens the Team tab with that person highlighted and scrolled into view. Clicking the founder opens the Founder tab. Pointer cursor on hover. |
+| Moving | A short **move transition**: a full-scene fade with "Moving to <name>…" (≈1.2 s), shown whenever the location changes. |
+
+### 9.2 Themes
+
+| Location | Feel | Background | Floor / wall tint | Light | Amenities (strip) |
+|---|---|---|---|---|---|
+| Bigger home | Cosy living room | `#2b2119` | warm wood / cream | warm evening | sofa + coffee table, TV on a cabinet, round rug, potted plant |
+| Villa | Sunny, green | `#1f2a22` | light wood / white | bright warm | design sofa, glass coffee table, three plants, round rug |
+| Co-working | Café-industrial | `#22262b` | grey concrete / pale grey | neutral | kitchen bar with coffee machine, two bar stools, fridge, coat rack |
+| Small office | Clean startup office | `#1e2430` | light grey / soft blue | cool daylight | closed bookcase, coffee machine on a cabinet, plant, trash can |
+| Big office | Busy open-plan | `#1b1f27` | dark wood / white | cool | corner sofa + coffee table, TV, kitchen cabinet + fridge, plants |
+| Your own building | Polished HQ | `#15171c` | dark slate / warm white | crisp, slightly warm | design sofas, glass table, speakers, TV, plants |
+
+Exact colours live in `src/v2/scene/themes.ts`. Tints multiply the model's material colour (materials are cloned per tinted piece; geometry stays shared).
+
+### 9.3 Testing and acceptance
+
+- **Unit tests:** every location has a theme; amenities sit inside the room, inside the strip, and never overlap any furniture or cover a standing/pace spot; hire model pools contain only shipped models and exclude the founder's; the mistake-flash and idle icon rules (pure helper); the move-transition trigger (pure helper: shows on location change, not on first mount).
+- **Screenshot harness:** one screenshot per location with hires seated; a click on a hire opens the Team tab with them highlighted. No console errors from v2 code.
+- **Gates:** `tsc`, `npm test`, `npm run build`, legacy guard.
+
+### 9.4 Out of scope for Phase 5
+
+Postprocessing, adaptive quality, instancing, mobile layout (Phase 6); managers.
