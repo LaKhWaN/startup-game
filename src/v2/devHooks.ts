@@ -33,6 +33,8 @@ export function installDevHooks(): void {
       return c ? hireCandidate(c.id) : 'missing'
     },
     assignTeamMember,
+    /** Drop a pending random event (screenshots shouldn't depend on event luck). */
+    clearEvent: () => useGameStore.setState({ pendingEvent: null } as never),
     /** Jump to Chapter 3: Chapters 1–2 done, peak MRR $2,600 (unlocks up to the Villa). */
     skipToChapter3: (cash = 50_000) => {
       const s = getV2State()

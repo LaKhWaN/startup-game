@@ -67,10 +67,15 @@ async function shoot(viewport, tag) {
     return { moved, hired, location: window.__v2.getV2State().v2.location }
   })
   if (villa.moved !== 'ok' || villa.location !== 'villa') errors.push(`[${tag}] move failed: ${JSON.stringify(villa)}`)
+  await page.evaluate(() => window.__v2.clearEvent())
   await page.getByRole('button', { name: /team/i }).first().click().catch(() => {})
   await page.waitForTimeout(3500)
+  await page.evaluate(() => window.__v2.clearEvent())
   await page.screenshot({ path: join(out, `${tag}-6-villa.png`) })
+  await page.evaluate(() => window.__v2.clearEvent())
   await page.getByRole('button', { name: /map/i }).first().click().catch(() => errors.push(`[${tag}] no Map tab`))
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+  if (overflow > 0) errors.push(`[${tag}] horizontal overflow ${overflow}px`)
   await page.waitForTimeout(1000)
   await page.screenshot({ path: join(out, `${tag}-7-map.png`) })
 
@@ -78,6 +83,7 @@ async function shoot(viewport, tag) {
   for (const loc of ['biggerHome', 'coworking', 'smallOffice', 'bigOffice', 'building']) {
     const r = await page.evaluate((loc) => window.__v2.jumpTo(loc), loc)
     if (r !== 'ok') errors.push(`[${tag}] jumpTo ${loc}: ${r}`)
+    await page.evaluate(() => window.__v2.clearEvent())
     if (loc === 'smallOffice') {
       await page.waitForTimeout(500)
       await page.screenshot({ path: join(out, `${tag}-8-${loc}-moving.png`) })
@@ -108,9 +114,10 @@ async function shoot(viewport, tag) {
 
 const desktop = await shoot({ width: 1440, height: 900 }, 'desktop')
 const mobile = await shoot({ width: 820, height: 1180 }, 'portrait')
+const phone = await shoot({ width: 390, height: 844 }, 'phone')
 await browser.close()
 
 console.log(`screenshots → ${out}`)
-console.log(`distinct colors: desktop=${desktop} portrait=${mobile}`)
+console.log(`distinct colors: desktop=${desktop} portrait=${mobile} phone=${phone}`)
 if (errors.length) console.log(`console errors:\n${errors.join('\n')}`)
-if (desktop < 12 || mobile < 12) { console.error('Canvas area looks blank.'); process.exit(1) }
+if (desktop < 12 || mobile < 12 || phone < 12) { console.error('Canvas area looks blank.'); process.exit(1) }

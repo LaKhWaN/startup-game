@@ -60,7 +60,7 @@ export function GameScreenV2() {
   }, [phase])
 
   return (
-    <div className="game-root">
+    <div className="game-root v2-game">
       <TopBarV2 onShowTutorial={reshowCoachCard} />
       <div className="game-topbar-spacer" />
       <RunwayBanner />
