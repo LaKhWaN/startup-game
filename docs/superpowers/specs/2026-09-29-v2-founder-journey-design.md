@@ -533,3 +533,40 @@ Postprocessing, adaptive quality, instancing, mobile layout (Phase 6); managers.
 - **Unit tests:** occupied-seat bitmask; floor instancing matrices (one per tile, positions match the layout); reduced-motion step (snaps to goal); the remove-before-work ordering in `v2Tick`; the two-click confirm helper.
 - **Screenshot harness:** add a 390×844 phone viewport (room visible above the panel, nav visible, no horizontal scroll); every earlier shot still renders.
 - **Gates:** `tsc`, `npm test`, `npm run build`, legacy guard.
+
+## 11. Phase 7 — room-first UI, city map, hover cards, profit (approved 2026-10-01)
+
+User-approved design. The previous sidebar layout is kept only as git tag `v2-sidebar-layout` (no in-app switch): if the new layout doesn't work out, revert to it.
+
+### 11.1 Layout
+
+- The room canvas fills the full width; there is no permanent right sidebar.
+- **Founder bar** floating at the bottom of the room: current task + progress, and buttons Research · Emails · Sell · Build ▾ (a picker listing Build next, including features hires are building). Disabled buttons show their reason on hover.
+- **Coach card and chapter banner** float in the room's top-left corner.
+- **Bottom nav:** Founder · Team · Map · Metrics (same unlock rules). Founder, Team and Metrics open **modals**; Map switches the canvas to the city. On phones modals are full-screen sheets.
+- **Click a person:** a hire opens their card modal (assignment, progress, skills, salary, Promote, Let go); the founder opens the Founder modal.
+
+### 11.2 Hover cards
+
+Hovering a character shows a small card over their head: name, role/tier, current task + %, or why they're waiting. Touch devices skip hover; a tap opens the full card.
+
+### 11.3 Profit
+
+Top bar gains **Profit** = MRR − monthly burn, shown as `+$X/mo` (green) or `−$X/mo` (red). The Team summary shows it too.
+
+### 11.4 Emoji over every head
+
+🔍 research · 🛠️ building · ✉️ emails · 📞 sales · ⏳ waiting for work · 💤 idle (founder with no task, or a hire set to Idle) · 😬 just made a mistake. Applies to the founder and every hire.
+
+### 11.5 City map (same canvas)
+
+- The Map tab swaps the room for a 2.5D city in the same canvas: a green ground, a main road, trees and street lights, and one lot per location along the road in ladder order (left → right).
+- Buildings come from Kenney City Kit Suburban / Commercial (CC0): small house → bigger house → villa → shop-front co-working → small office → office tower → skyscraper.
+- Locked lots are greyed out with a 🔒 and "Reach $X MRR"; the current lot has a 📍 and a ring on the ground. Hover shows the name; click selects it and opens a card (seats, rent, move-in, Move button or the reason it's blocked).
+- "◀ Back to office" returns to the room. Moving returns to the office through the move transition.
+
+### 11.6 Testing and acceptance
+
+- **Unit tests:** UI store (open/close modals, view switch, person selection); city layout (one lot per location, ladder order, lots don't overlap the road or each other); emoji for every pose state; profit helper; founder-bar task reasons.
+- **Screenshot harness:** room-first layout at desktop/portrait/phone; each modal; city view with locked/unlocked lots; hover card.
+- **Gates:** `tsc`, `npm test`, `npm run build`, legacy guard.
