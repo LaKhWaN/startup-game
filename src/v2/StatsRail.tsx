@@ -1,19 +1,31 @@
 import { useV2 } from './actions'
-import { railStats } from './stats'
-import { marketCeiling } from './engine/market'
 import { hostingLoad } from './engine/infra'
+import { marketCeiling } from './engine/market'
+import { railStats } from './stats'
 import './v2.css'
 
-function Row({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
+function Tile({ icon, value, label, alert = false }: { icon: string; value: number | string; label: string; alert?: boolean }) {
   return (
-    <div className="v2-rail-row" title={hint}>
-      <span className="v2-rail-label">{label}</span>
-      <span className="v2-rail-value">{value}</span>
+    <div className={`v2-tile${alert ? ' v2-tile--alert' : ''}`} title={label}>
+      <span className="v2-tile-icon" aria-hidden="true">{icon}</span>
+      <span className="v2-tile-value">{value}</span>
+      <span className="v2-tile-label">{label}</span>
     </div>
   )
 }
 
-/** Read-only, at-a-glance numbers next to the room (spec §11 addendum). */
+function Gauge({ icon, label, value, tone, hint }: { icon: string; label: string; value: number; tone: 'good' | 'warn' | 'bad'; hint: string }) {
+  return (
+    <div className="v2-gauge" title={hint}>
+      <div className="v2-gauge-head"><span>{icon} {label}</span><strong>{Math.round(value * 100)}%</strong></div>
+      <div className={`v2-mbar-track v2-mbar-track--${tone}`}><div style={{ width: `${Math.min(100, value * 100)}%` }} /></div>
+    </div>
+  )
+}
+
+const tone = (v: number, warn: number, bad: number) => (v >= bad ? 'bad' : v >= warn ? 'warn' : 'good') as 'good' | 'warn' | 'bad'
+
+/** At-a-glance company status next to the room: funnel, who's doing what, pressure gauges, all-time counts. */
 export function StatsRail() {
   // Stored refs / primitives only; derive below.
   const v2 = useV2(s => s.v2)
@@ -24,46 +36,52 @@ export function StatsRail() {
 
   const r = railStats({ v2, features })
   const st = v2.stats
-  const shipped = features.filter(f => f.status === 'completed').length // includes pre-counter saves
-  const conversion = st.salesCalls > 0 && st.leadsFound > 0 ? Math.min(100, Math.round((st.customersWon / st.leadsFound) * 100)) : null
+  const team = Object.values(v2.team)
+  const stressed = team.filter(m => (m.stress ?? 0) > 75).length
+  const leaving = team.filter(m => m.leavingOn !== undefined).length
+  const market = customers / Math.max(1, marketCeiling({ difficultyModifier, features, brand }))
+  const load = hostingLoad({ v2, customers })
+  const backlog = Math.min(1, v2.tickets / Math.max(20, customers))
+  const shipped = features.filter(f => f.status === 'completed').length
 
   return (
-    <aside className="v2-rail" aria-label="Stats">
-      <section className="v2-rail-section">
-        <div className="v2-rail-title">Funnel</div>
-        <div className="v2-rail-funnel">
-          <div><span className="v2-rail-big">{v2.leads}</span><span className="v2-rail-small">leads</span></div>
-          <span className="v2-rail-arrow" aria-hidden="true">→</span>
-          <div><span className="v2-rail-big">{customers}</span><span className="v2-rail-small">customers</span></div>
-        </div>
-        {conversion !== null && <Row label="Lead → customer" value={`${conversion}%`} hint="Customers won from sales ÷ leads found" />}
-        <Row label="🌍 Market" value={`${customers}/${marketCeiling({ difficultyModifier, features, brand })}`} hint="Customers you can win; grows with shipped features and brand" />
-        <Row label="🎧 Open tickets" value={v2.tickets} hint="Unanswered tickets raise churn and scare off buyers" />
-        <Row label="🖥️ Hosting load" value={`${Math.round(hostingLoad({ v2, customers }) * 100)}%`} hint="Above 90% the app feels slow; above 100% it goes down. Upgrade in 💻 Infra" />
+    <aside className="v2-rail" aria-label="Company status">
+      <section className="v2-funnel-card">
+        <div><span className="v2-funnel-big">{v2.leads}</span><span className="v2-funnel-small">leads</span></div>
+        <span className="v2-funnel-arrow" aria-hidden="true">→</span>
+        <div><span className="v2-funnel-big">{customers}</span><span className="v2-funnel-small">customers</span></div>
       </section>
 
-      <section className="v2-rail-section">
+      <section>
         <div className="v2-rail-title">Right now</div>
-        <Row label="⚙️ Working" value={r.working} hint="Founder and hires with a task in progress" />
-        <Row label="⏳ Waiting" value={r.waiting} hint="Hires with nothing to do yet (e.g. no leads to call)" />
-        <Row label="💤 Idle" value={r.idle} />
-        <Row label="😫 Stressed" value={Object.values(v2.team).filter(m => (m.stress ?? 0) > 75).length} hint="Stress above 75. Give them idle time, a weekend, or perks" />
-        {Object.values(v2.team).some(m => m.leavingOn !== undefined) && (
-          <Row label="⚠️ Handed in notice" value={Object.values(v2.team).filter(m => m.leavingOn !== undefined).length} hint="Open their card to convince them to stay" />
-        )}
-        <Row label="💡 Ideas to build" value={r.ideas} />
-        <Row label="🛠️ Being built" value={r.building} />
+        <div className="v2-tiles">
+          <Tile icon="⚙️" value={r.working} label="working" />
+          <Tile icon="⏳" value={r.waiting} label="waiting" />
+          <Tile icon="💤" value={r.idle} label="idle" />
+          <Tile icon="😫" value={stressed} label="stressed" alert={stressed > 0} />
+          <Tile icon="💡" value={r.ideas} label="ideas" />
+          <Tile icon="🛠️" value={r.building} label="building" />
+        </div>
+        {leaving > 0 && <div className="v2-rail-alert">⚠️ {leaving} handed in notice. Open their card.</div>}
       </section>
 
-      <section className="v2-rail-section">
+      <section className="v2-gauges">
+        <div className="v2-rail-title">Pressure</div>
+        <Gauge icon="🌍" label="Market" value={market} tone={tone(market, 0.5, 0.85)} hint="Share of the customers your idea can reach. Grows with features and brand" />
+        <Gauge icon="🖥️" label="Hosting" value={load} tone={tone(load, 0.9, 1)} hint="Above 90% the app feels slow; above 100% it goes down. Upgrade in 💻 Infra" />
+        <Gauge icon="🎧" label="Support" value={backlog} tone={tone(backlog, 0.1, 0.3)} hint={`${v2.tickets} open tickets. A backlog raises churn and scares buyers`} />
+      </section>
+
+      <section>
         <div className="v2-rail-title">All time</div>
-        <Row label="✉️ Email rounds" value={st.emailRounds} />
-        <Row label="🎯 Leads found" value={st.leadsFound} />
-        <Row label="📞 Sales calls" value={st.salesCalls} />
-        <Row label="🤝 Customers won" value={st.customersWon} />
-        <Row label="🚀 Features shipped" value={shipped} />
-        <Row label="🔍 Research rounds" value={st.researchRounds} />
-        {st.mistakes > 0 && <Row label="😬 Mistakes" value={st.mistakes} />}
+        <div className="v2-tiles v2-tiles--small">
+          <Tile icon="✉️" value={st.emailRounds} label="emails" />
+          <Tile icon="🎯" value={st.leadsFound} label="leads" />
+          <Tile icon="📞" value={st.salesCalls} label="calls" />
+          <Tile icon="🤝" value={st.customersWon} label="won" />
+          <Tile icon="🚀" value={shipped} label="shipped" />
+          <Tile icon="😬" value={st.mistakes} label="mistakes" />
+        </div>
       </section>
     </aside>
   )

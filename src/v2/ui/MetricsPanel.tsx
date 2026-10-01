@@ -2,100 +2,92 @@ import { useV2 } from '../actions'
 import { churnBreakdown } from '../engine/churn'
 import { marketCeiling } from '../engine/market'
 import { monthlyBurn, runwayMonths, valuation, variableCosts } from '../engine/money'
-import './RightPanel.css'
+import { formatProfit } from '../finance'
+import '../v2.css'
 
-type CellColor = 'cyan' | 'purple' | 'green' | 'yellow' | 'orange' | 'red'
+type Tone = 'good' | 'warn' | 'bad' | 'plain'
 
-function MetCell({ label, value, color }: { label: string; value: string; color: CellColor }) {
+function Kpi({ icon, label, value, tone = 'plain' }: { icon: string; label: string; value: string; tone?: Tone }) {
   return (
-    <div className={`rpm-cell rpm-cell--${color}`}>
-      <span className="rpm-cell-label">{label}</span>
-      <span className={`rpm-cell-value rpm-${color}`}>{value}</span>
+    <div className={`v2-kpi v2-kpi--${tone}`}>
+      <span className="v2-kpi-label">{icon} {label}</span>
+      <span className="v2-kpi-value">{value}</span>
     </div>
   )
 }
 
-function CompanyBar({ label, value, color, warnBelow, warnAbove }: { label: string; value: number; color: string; warnBelow?: number; warnAbove?: number }) {
-  const isWarn = (warnBelow !== undefined && value < warnBelow) || (warnAbove !== undefined && value > warnAbove)
-  const isDanger = (warnBelow !== undefined && value < warnBelow * 0.5) || (warnAbove !== undefined && value > warnAbove * 1.3)
-  const barColor = isDanger ? 'var(--red)' : isWarn ? 'var(--yellow)' : color
+function Bar({ label, value, max = 100, tone = 'plain', right }: { label: string; value: number; max?: number; tone?: Tone; right: string }) {
   return (
-    <div className="rpm-company-bar">
-      <div className="rpm-cb-header">
-        <span className="rpm-cb-label">{label}</span>
-        <span className="rpm-cb-val" style={{ color: barColor }}>{Math.round(value)}</span>
-      </div>
-      <div className="rpm-cb-track">
-        <div className="rpm-cb-fill" style={{ width: `${value}%`, background: barColor }} />
-      </div>
+    <div className="v2-mbar">
+      <div className="v2-mbar-head"><span>{label}</span><strong>{right}</strong></div>
+      <div className={`v2-mbar-track v2-mbar-track--${tone}`}><div style={{ width: `${Math.max(0, Math.min(100, (value / max) * 100))}%` }} /></div>
     </div>
   )
 }
 
-/** v2 metrics: the numbers and company health bars (ported from the legacy metrics tab). */
+const usd = (n: number) => `$${Math.round(n).toLocaleString()}`
+
+/** Metrics sheet: headline numbers, market, why customers leave, company health. */
 export function MetricsPanel() {
   const state = useV2(s => s)
   const burn = monthlyBurn(state)
   const runway = runwayMonths(state)
+  const profit = state.mrr - burn
   const shipped = state.features.filter(f => f.status === 'completed').length
-  const netFlow = state.mrr - burn
   const team = Object.keys(state.v2.team).length
   const cap = marketCeiling(state)
   const churn = churnBreakdown(state)
-  const cashColor: CellColor = runway < 3 ? 'red' : runway < 6 ? 'yellow' : 'green'
-  const churnColor: CellColor = state.churnRate > 25 ? 'red' : state.churnRate > 12 ? 'yellow' : 'green'
-  const mrrColor: CellColor = state.mrr === 0 ? 'yellow' : netFlow > 0 ? 'green' : 'cyan'
+  const extras = [
+    { icon: '🐛', label: 'Bugs (tech debt)', v: churn.bugs },
+    { icon: '🎧', label: `Support backlog (${state.v2.tickets})`, v: churn.support },
+    { icon: '📦', label: 'Thin product', v: churn.thin },
+    { icon: '🐢', label: 'Slow app', v: churn.slow },
+    { icon: '⚡', label: 'Recent events', v: churn.shock },
+    { icon: '🔁', label: 'Retention features', v: -churn.relief },
+  ]
+
   return (
-    <div className="rp-content">
-      <div className="rpm-grid">
-        <MetCell label="MRR" value={`$${state.mrr.toLocaleString()}`} color={mrrColor} />
-        <MetCell label="Users" value={state.customers.toLocaleString()} color="purple" />
-        <MetCell label="Churn" value={`${churn.total.toFixed(1)}%`} color={churnColor} />
-        <MetCell label="Cash" value={`$${Math.floor(state.cash).toLocaleString()}`} color={cashColor} />
-        <MetCell label="Burn/mo" value={`$${burn.toLocaleString()}`} color="orange" />
-        <MetCell label="Runway" value={runway >= 999 ? '∞' : `${runway} mo`} color={cashColor} />
-        <MetCell label="Team" value={String(team)} color="purple" />
-        <MetCell label="Shipped" value={String(shipped)} color="cyan" />
-        <MetCell label="Valuation" value={`$${valuation(state).toLocaleString()}`} color="green" />
-        <MetCell label="Equity" value={`${state.equity}%`} color="green" />
+    <div className="v2-metrics">
+      <div className="v2-kpi-grid">
+        <Kpi icon="💹" label="MRR" value={usd(state.mrr)} tone={state.mrr > 0 ? 'good' : 'warn'} />
+        <Kpi icon="💰" label="Profit" value={formatProfit(profit)} tone={profit >= 0 ? 'good' : 'bad'} />
+        <Kpi icon="🏦" label="Cash" value={usd(state.cash)} tone={runway < 3 ? 'bad' : runway < 6 ? 'warn' : 'good'} />
+        <Kpi icon="⏳" label="Runway" value={runway >= 999 ? '∞' : `${runway} mo`} tone={runway < 3 ? 'bad' : runway < 6 ? 'warn' : 'good'} />
+        <Kpi icon="🔥" label="Burn" value={`${usd(burn)}/mo`} />
+        <Kpi icon="👥" label="Customers" value={state.customers.toLocaleString()} />
+        <Kpi icon="📉" label="Churn" value={`${churn.total.toFixed(1)}%/mo`} tone={churn.total > 15 ? 'bad' : churn.total > 9 ? 'warn' : 'good'} />
+        <Kpi icon="🧑‍💼" label="Team" value={String(team)} />
+        <Kpi icon="🚀" label="Shipped" value={String(shipped)} />
+        <Kpi icon="🏷️" label="Valuation" value={usd(valuation(state))} />
       </div>
-      <section className="rp-section" style={{ marginTop: '1.2rem' }}>
-        <div className="rp-section-label">Market</div>
-        <div className="v2-market">
-          <div className="v2-progress"><div className="v2-progress-fill" style={{ width: `${Math.min(100, (state.customers / cap) * 100)}%` }} /></div>
-          <span className="v2-muted">{state.customers.toLocaleString()} / {cap.toLocaleString()} customers · grows with features and brand</span>
-        </div>
+
+      <section className="v2-mcard">
+        <h3 className="v2-mcard-title">🌍 Market</h3>
+        <Bar label="Customers you've won of what your idea can reach" value={state.customers} max={cap} right={`${state.customers.toLocaleString()} / ${cap.toLocaleString()}`} tone="plain" />
+        <p className="v2-mcard-note">Grows with every shipped feature and with brand.</p>
       </section>
 
-      <section className="rp-section">
-        <div className="rp-section-label">Why customers leave · {churn.total.toFixed(1)}%/mo</div>
-        <div className="v2-churn">
-          <span>Baseline (your idea)</span><strong>{churn.floor.toFixed(1)}%</strong>
-          <span>🐛 Bugs (tech debt {Math.round(state.techDebt)})</span><strong>{churn.bugs.toFixed(1)}%</strong>
-          <span>🎧 Support backlog ({state.v2.tickets} tickets)</span><strong>{churn.support.toFixed(1)}%</strong>
-          <span>📦 Thin product</span><strong>{churn.thin.toFixed(1)}%</strong>
-          <span>🖥️ Slow app (hosting near capacity)</span><strong>{churn.slow.toFixed(1)}%</strong>
-          <span>⚡ Recent events</span><strong>{churn.shock.toFixed(1)}%</strong>
-          <span>🔁 Retention features</span><strong>−{churn.relief.toFixed(1)}%</strong>
-          {churn.floor + churn.bugs + churn.support + churn.thin + churn.slow + churn.shock - churn.relief < churn.floor && <span className="v2-muted">Held at your idea's floor ({churn.floor.toFixed(1)}%)</span>}
+      <section className="v2-mcard">
+        <h3 className="v2-mcard-title">🚪 Why customers leave <span className="v2-mcard-sub">{churn.total.toFixed(1)}% a month</span></h3>
+        <div className="v2-churn-rows">
+          <div className="v2-churn-row"><span>🧱 Your idea's baseline</span><strong>{churn.floor.toFixed(1)}%</strong></div>
+          {extras.filter(e => Math.abs(e.v) >= 0.05).map(e => (
+            <div key={e.label} className={`v2-churn-row${e.v < 0 ? ' v2-churn-row--good' : ''}`}>
+              <span>{e.icon} {e.label}</span><strong>{e.v > 0 ? '+' : '−'}{Math.abs(e.v).toFixed(1)}%</strong>
+            </div>
+          ))}
+          {extras.every(e => Math.abs(e.v) < 0.05) && <div className="v2-mcard-note">Nothing extra: your product is healthy.</div>}
         </div>
-        <div className="v2-muted">Variable costs: ${variableCosts(state).toLocaleString()}/mo (3% payment fees + $1 per customer for tools)</div>
+        <p className="v2-mcard-note">Variable costs: {usd(variableCosts(state))}/mo (3% payment fees + $1 per customer for tools).</p>
       </section>
 
-      <section className="rp-section">
-        <div className="rp-section-label">Company Health</div>
-        <CompanyBar label="Brand" value={state.brand} color="var(--accent)" warnBelow={20} />
-        <CompanyBar label="Product" value={state.productProgress} color="var(--accent)" />
-        <CompanyBar label="Tech Debt" value={state.techDebt} color="var(--green)" warnAbove={60} />
-        <div className="rpm-investor-row">
-          <span className="rpm-investor-label">Investor Interest</span>
-          <div className="rpm-investor-track">
-            <div className="rpm-investor-fill" style={{ width: `${state.investorInterest}%` }} />
-            <div className="rpm-investor-thresh" style={{ left: '70%' }} title="Seed trigger" />
-            <div className="rpm-investor-thresh" style={{ left: '85%' }} title="Series A trigger" />
-          </div>
-          <span className="rpm-investor-val">{Math.round(state.investorInterest)}</span>
-        </div>
+      <section className="v2-mcard">
+        <h3 className="v2-mcard-title">❤️ Company health</h3>
+        <Bar label="Brand" value={state.brand} right={String(Math.round(state.brand))} tone={state.brand < 20 ? 'warn' : 'good'} />
+        <Bar label="Product" value={state.productProgress} right={`${Math.round(state.productProgress)}%`} tone="good" />
+        <Bar label="Tech debt" value={state.techDebt} right={String(Math.round(state.techDebt))} tone={state.techDebt > 60 ? 'bad' : state.techDebt > 30 ? 'warn' : 'good'} />
+        <Bar label="Investor interest (seed at 70, Series A at 85)" value={state.investorInterest} right={String(Math.round(state.investorInterest))} />
+        <p className="v2-mcard-note">Equity left: {state.equity}%</p>
       </section>
     </div>
   )

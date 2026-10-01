@@ -285,3 +285,46 @@
 .v2-dock-app--on { background: rgba(255, 255, 255, 0.45); }
 .v2-dock-label { font-size: 0.66rem; font-weight: 600; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }
 @media (max-width: 768px) { .v2-desktop { width: 100%; height: 100%; border-radius: 0; } }
+
+/* ── Metrics sheet (redesign) ───────────────────────────────────────────── */
+.v2-metrics { display: flex; flex-direction: column; gap: 18px; padding: 20px 22px 24px; }
+.v2-kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+.v2-kpi { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); border-left-width: 4px; }
+.v2-kpi--good { border-left-color: var(--success); } .v2-kpi--warn { border-left-color: #e0a020; } .v2-kpi--bad { border-left-color: var(--error); } .v2-kpi--plain { border-left-color: var(--border); }
+.v2-kpi-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.v2-kpi-value { font-family: 'Roboto Mono', monospace; font-size: 1.05rem; font-weight: 700; color: var(--text); }
+.v2-mcard { display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); }
+.v2-mcard-title { margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text); display: flex; align-items: baseline; gap: 10px; }
+.v2-mcard-sub { font-size: 0.8rem; font-weight: 500; color: var(--muted); }
+.v2-mcard-note { margin: 0; font-size: 0.78rem; color: var(--muted); }
+.v2-mbar { display: flex; flex-direction: column; gap: 6px; }
+.v2-mbar-head { display: flex; justify-content: space-between; gap: 10px; font-size: 0.82rem; color: var(--text); }
+.v2-mbar-head strong { font-family: 'Roboto Mono', monospace; }
+.v2-mbar-track { height: 8px; border-radius: 999px; background: var(--surface2); overflow: hidden; }
+.v2-mbar-track > div { height: 100%; border-radius: 999px; background: var(--brand-primary); transition: width 0.4s ease; }
+.v2-mbar-track--good > div { background: var(--success); } .v2-mbar-track--warn > div { background: #e0a020; } .v2-mbar-track--bad > div { background: var(--error); }
+.v2-churn-rows { display: flex; flex-direction: column; gap: 8px; }
+.v2-churn-row { display: flex; justify-content: space-between; padding: 8px 12px; border-radius: 8px; background: var(--surface2); font-size: 0.84rem; color: var(--text); }
+.v2-churn-row strong { font-family: 'Roboto Mono', monospace; }
+.v2-churn-row--good strong { color: var(--success); }
+
+/* ── Stats rail (redesign) ──────────────────────────────────────────────── */
+.v2-rail { width: 236px; gap: 18px; padding: 16px 14px 22px; }
+.v2-rail-title { margin-bottom: 8px; }
+.v2-funnel-card { display: flex; align-items: center; justify-content: space-around; padding: 14px 10px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); }
+.v2-funnel-card > div { display: flex; flex-direction: column; align-items: center; }
+.v2-funnel-big { font-family: 'Roboto Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--text); line-height: 1.1; }
+.v2-funnel-small { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.v2-funnel-arrow { font-size: 1.2rem; color: var(--muted); }
+.v2-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.v2-tile { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 8px 4px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); cursor: default; }
+.v2-tile--alert { border-color: var(--error); background: rgba(158, 42, 43, 0.06); }
+.v2-tile-icon { font-size: 1rem; }
+.v2-tile-value { font-family: 'Roboto Mono', monospace; font-size: 1rem; font-weight: 700; color: var(--text); }
+.v2-tile-label { font-size: 0.64rem; color: var(--muted); }
+.v2-tiles--small .v2-tile-value { font-size: 0.86rem; }
+.v2-gauges { display: flex; flex-direction: column; gap: 10px; }
+.v2-gauge { display: flex; flex-direction: column; gap: 5px; cursor: default; }
+.v2-gauge-head { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text); }
+.v2-gauge-head strong { font-family: 'Roboto Mono', monospace; }
+.v2-rail-alert { margin-top: 8px; padding: 8px 10px; border-radius: 10px; font-size: 0.76rem; color: var(--text); background: rgba(158, 42, 43, 0.08); border: 1px solid var(--error); }
