@@ -213,3 +213,8 @@ Decisions made autonomously during the build, with what each costs if wrong, and
 - Good-news churn shocks can stack (clamped at the idea's floor).
 - FounderPanel "days left" ignores desk/Wi-Fi/CI/energy factors.
 - The simulation still never triggers a burnout notice (people care keeps stress low); burnout is covered by a deterministic unit test instead.
+
+## Support role (user request after testing)
+
+### Rulings
+- Added a fifth hire role, Support (intern and full-time): main task Support, main skill outreach, its own bios; candidate pools now draw from 5 roles (~1 in 5 is Support) — cost if wrong: slightly fewer of each other role in a pool (Refresh rerolls).
