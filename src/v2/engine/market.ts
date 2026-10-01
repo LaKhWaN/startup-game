@@ -35,3 +35,9 @@ export function salesBaseOf(s: Pick<GameV2, 'difficultyModifier'>): number {
 export function marketRoom(s: Pick<GameV2, 'difficultyModifier' | 'features' | 'brand' | 'customers'>): number {
   return Math.max(0, marketCeiling(s) - s.customers)
 }
+
+/** Bad reviews from an unanswered support queue scare buyers: conversion × (1 − backlog/customers × 0.5), floor 0.5. */
+export function reputationFactor(s: Pick<GameV2, 'customers' | 'v2'>): number {
+  const backlog = (s.v2.tickets ?? 0) / Math.max(1, s.customers)
+  return Math.max(0.5, 1 - backlog * 0.5)
+}

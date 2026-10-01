@@ -1,7 +1,7 @@
 import { FEATURE_TEMPLATES, type FeatureTemplate } from '../data/featureTemplates'
 import { totalDays } from './engine/clock'
 import { estimateFeatureEffects } from './engine/features'
-import { leadSaturation, marketRoom, salesBaseOf } from './engine/market'
+import { leadSaturation, marketRoom, reputationFactor, salesBaseOf } from './engine/market'
 import type { Feature, FeatureResult } from '../types'
 import { isTaskUnlocked } from './chapter'
 import { addStory, type FounderSkill, type FounderTask, type FounderTaskType, type Rng, type V2GameState } from './state'
@@ -261,7 +261,7 @@ function applyEmails(state: V2GameState, worker: Worker, rng: Rng, opts: Outcome
 
 function applySales(state: V2GameState, worker: Worker, rng: Rng, opts: OutcomeOptions): V2GameState {
   const contacted = state.v2.leads
-  const p = salesBaseOf(state) + 0.03 * worker.skills.sales
+  const p = (salesBaseOf(state) + 0.03 * worker.skills.sales) * reputationFactor(state)
   let converted = 0
   for (let i = 0; i < contacted; i++) if (rng() < p) converted++
   if (opts.firstSaleGuarantee && !state.v2.firstSaleDone && contacted > 0) converted = Math.max(1, converted)

@@ -19,7 +19,7 @@ describe('teamFinances', () => {
     let s = hire(ready(2000), cand({ id: 'a' }))
     s = hire(s, cand({ id: 'b' }))
     const f = teamFinances({ ...s, cash: 2000, mrr: 900 })
-    expect(f.burn).toBe(1600)
+    expect(f.burn).toBe(1600 + 27) // + 3% fees on $900 MRR
     expect(f.runwayMonths).toBe(2) // floor(2000 / 700)
   })
 

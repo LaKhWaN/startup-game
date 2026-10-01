@@ -1,5 +1,7 @@
 import { useV2 } from '../actions'
-import { monthlyBurn, runwayMonths, valuation } from '../engine/money'
+import { churnBreakdown } from '../engine/churn'
+import { marketCeiling } from '../engine/market'
+import { monthlyBurn, runwayMonths, valuation, variableCosts } from '../engine/money'
 import './RightPanel.css'
 
 type CellColor = 'cyan' | 'purple' | 'green' | 'yellow' | 'orange' | 'red'
@@ -38,6 +40,8 @@ export function MetricsPanel() {
   const shipped = state.features.filter(f => f.status === 'completed').length
   const netFlow = state.mrr - burn
   const team = Object.keys(state.v2.team).length
+  const cap = marketCeiling(state)
+  const churn = churnBreakdown(state)
   const cashColor: CellColor = runway < 3 ? 'red' : runway < 6 ? 'yellow' : 'green'
   const churnColor: CellColor = state.churnRate > 25 ? 'red' : state.churnRate > 12 ? 'yellow' : 'green'
   const mrrColor: CellColor = state.mrr === 0 ? 'yellow' : netFlow > 0 ? 'green' : 'cyan'
@@ -56,6 +60,26 @@ export function MetricsPanel() {
         <MetCell label="Equity" value={`${state.equity}%`} color="green" />
       </div>
       <section className="rp-section" style={{ marginTop: '1.2rem' }}>
+        <div className="rp-section-label">Market</div>
+        <div className="v2-market">
+          <div className="v2-progress"><div className="v2-progress-fill" style={{ width: `${Math.min(100, (state.customers / cap) * 100)}%` }} /></div>
+          <span className="v2-muted">{state.customers.toLocaleString()} / {cap.toLocaleString()} customers · grows with features and brand</span>
+        </div>
+      </section>
+
+      <section className="rp-section">
+        <div className="rp-section-label">Why customers leave · {churn.total.toFixed(1)}%/mo</div>
+        <div className="v2-churn">
+          <span>Baseline (your idea)</span><strong>{churn.floor.toFixed(1)}%</strong>
+          <span>🐛 Bugs (tech debt {Math.round(state.techDebt)})</span><strong>{churn.bugs.toFixed(1)}%</strong>
+          <span>🎧 Support backlog ({state.v2.tickets} tickets)</span><strong>{churn.support.toFixed(1)}%</strong>
+          <span>📦 Thin product</span><strong>{churn.thin.toFixed(1)}%</strong>
+          <span>⚡ Recent events</span><strong>{churn.shock.toFixed(1)}%</strong>
+        </div>
+        <div className="v2-muted">Variable costs: ${variableCosts(state).toLocaleString()}/mo (3% payment fees + $1 per customer for tools)</div>
+      </section>
+
+      <section className="rp-section">
         <div className="rp-section-label">Company Health</div>
         <CompanyBar label="Brand" value={state.brand} color="var(--accent)" warnBelow={20} />
         <CompanyBar label="Product" value={state.productProgress} color="var(--accent)" />

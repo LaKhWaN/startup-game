@@ -52,3 +52,12 @@ describe('sales', () => {
     expect(s.customers).toBe(cap)
   })
 })
+
+describe('reputation', () => {
+  it('an unanswered support queue halves conversion at worst', async () => {
+    const { reputationFactor } = await import('../engine/market')
+    expect(reputationFactor(withV2(makeState({ customers: 100 }), { tickets: 0 }))).toBe(1)
+    expect(reputationFactor(withV2(makeState({ customers: 100 }), { tickets: 50 }))).toBeCloseTo(0.75)
+    expect(reputationFactor(withV2(makeState({ customers: 100 }), { tickets: 500 }))).toBe(0.5)
+  })
+})

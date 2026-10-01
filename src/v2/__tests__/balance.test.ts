@@ -6,7 +6,7 @@ import { claimFamilyMoney, onMoved } from '../chapter'
 import { startTask } from '../founder'
 import { canMove, LOCATIONS, locationIndex, moveTo } from '../locations'
 import type { FounderTaskType, V2GameState } from '../state'
-import { canHire, canPromote, generateCandidates, hireIntern, isFullTimeUnlocked, promoteMember, teamCapacity } from '../team'
+import { canHire, canPromote, generateCandidates, hireIntern, isFullTimeUnlocked, promoteMember, setAssignment, teamCapacity } from '../team'
 import { stepV2 } from '../v2Tick'
 import { makeState } from './fixtures'
 
@@ -22,8 +22,8 @@ function seeded(seed: number): () => number {
   }
 }
 
-/** A sensible, not optimal, player. */
-function play(s: V2GameState, rng: () => number): V2GameState {
+/** A sensible, not optimal, player. `careful` also answers support and pays down debt. */
+function play(s: V2GameState, rng: () => number, careful = false): V2GameState {
   if (s.pendingEvent) s = applyEventChoice(s, 0)
   const { chapter } = s.v2
   if (chapter.beat === 5 && chapter.familyMoney && !chapter.familyMoney.claimed) s = claimFamilyMoney(s)
@@ -32,6 +32,8 @@ function play(s: V2GameState, rng: () => number): V2GameState {
     const proposed = s.features.find(f => f.status === 'proposed')
     // Keep the funnel moving (emails → sales); build and research in between.
     const order: [FounderTaskType, string | undefined][] = [
+      ...(careful && s.v2.tickets >= Math.max(5, s.customers * 0.05) ? [['support', undefined] as [FounderTaskType, undefined]] : []),
+      ...(careful && s.techDebt > 45 ? [['refactor', undefined] as [FounderTaskType, undefined]] : []),
       ...(s.v2.leads >= 6 ? [['sales', undefined] as [FounderTaskType, undefined]] : []),
       ...(s.v2.leads < 6 ? [['emails', undefined] as [FounderTaskType, undefined]] : []),
       ...(proposed ? [['develop', proposed.id] as [FounderTaskType, string]] : []),
@@ -44,6 +46,12 @@ function play(s: V2GameState, rng: () => number): V2GameState {
   }
 
   if (!chapter.complete) return s
+
+  // A careful player keeps one hire on support once the team has three people.
+  if (careful) {
+    const team = Object.values(s.v2.team)
+    if (team.length >= 3 && !team.some(m => m.assignment === 'support')) s = setAssignment(s, team[team.length - 1].id, 'support')
+  }
 
   // Promote anyone ready, then move up when it's safely affordable.
   for (const id of Object.keys(s.v2.team)) if (canPromote(s, id) === 'ok' && s.mrr > getMonthlyBurn(s)) s = promoteMember(s, id)
@@ -89,4 +97,24 @@ describe('balance simulation', () => {
       expect(Object.values(s.v2.team).some(m => m.tier === 'fulltime')).toBe(true)
     }, 60_000)
   }
+
+  it('answering support and paying down debt keeps more customers than neglecting them', () => {
+    const runFor = (careful: boolean) => {
+      const rng = seeded(11)
+      vi.spyOn(Math, 'random').mockImplementation(rng)
+      let s = makeState()
+      for (let h = 0; h < 200 * 24 && s.phase === 'playing'; h++) {
+        if (h % 6 === 0) s = play(s, rng, careful)
+        else if (s.pendingEvent) s = applyEventChoice(s, 0)
+        s = stepV2(s, rng)
+      }
+      vi.restoreAllMocks()
+      return s
+    }
+    const neglect = runFor(false)
+    const careful = runFor(true)
+    if (process.env.SIM_DEBUG) console.log('neglect', neglect.customers, Math.round(neglect.churnRate), neglect.v2.tickets, '| careful', careful.customers, Math.round(careful.churnRate), careful.v2.tickets)
+    expect(careful.churnRate).toBeLessThan(neglect.churnRate)
+    expect(careful.customers).toBeGreaterThan(neglect.customers)
+  }, 60_000)
 })

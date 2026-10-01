@@ -1,5 +1,6 @@
 import { useV2 } from './actions'
 import { railStats } from './stats'
+import { marketCeiling } from './engine/market'
 import './v2.css'
 
 function Row({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
@@ -17,6 +18,8 @@ export function StatsRail() {
   const v2 = useV2(s => s.v2)
   const features = useV2(s => s.features)
   const customers = useV2(s => s.customers)
+  const difficultyModifier = useV2(s => s.difficultyModifier)
+  const brand = useV2(s => s.brand)
 
   const r = railStats({ v2, features })
   const st = v2.stats
@@ -33,6 +36,8 @@ export function StatsRail() {
           <div><span className="v2-rail-big">{customers}</span><span className="v2-rail-small">customers</span></div>
         </div>
         {conversion !== null && <Row label="Lead → customer" value={`${conversion}%`} hint="Customers won from sales ÷ leads found" />}
+        <Row label="🌍 Market" value={`${customers}/${marketCeiling({ difficultyModifier, features, brand })}`} hint="Customers you can win; grows with shipped features and brand" />
+        <Row label="🎧 Open tickets" value={v2.tickets} hint="Unanswered tickets raise churn and scare off buyers" />
       </section>
 
       <section className="v2-rail-section">

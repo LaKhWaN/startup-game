@@ -56,7 +56,7 @@ describe('processDay', () => {
   it('accrues revenue minus burn daily and snapshots', () => {
     const s = processDay(makeState({ customers: 10, arpu: 50, cash: 1000, infraCostMonthly: 300, churnRate: 0 }), 1, () => 0.99)
     expect(s.mrr).toBe(500)
-    expect(s.cash).toBeCloseTo(1000 + (500 - 300) / 30)
+    expect(s.cash).toBeCloseTo(1000 + (500 - 300 - 25) / 30) // 3% fees + $1/customer
     expect(s.metricsHistory[s.metricsHistory.length - 1].day).toBe(1)
   })
   it('ends the game when cash goes below zero', () => {
@@ -77,5 +77,14 @@ describe('events', () => {
     expect(s.pendingEvent).toBeNull()
     expect(s.storyLog[0].lines.join(' ')).toMatch(/Dee left/)
     expect(pickEvent(makeState(), seq(0.5))).not.toBeNull()
+  })
+})
+
+describe('variable costs', () => {
+  it('burn adds 3% payment fees and $1 per customer for tools', async () => {
+    const { monthlyBurn, variableCosts } = await import('../engine/money')
+    const s = makeState({ infraCostMonthly: 300, mrr: 5000, customers: 100 })
+    expect(variableCosts(s)).toBe(150 + 100)
+    expect(monthlyBurn(s)).toBe(300 + 250)
   })
 })

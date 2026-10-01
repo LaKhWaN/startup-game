@@ -37,7 +37,7 @@ export function processDay<T extends GameV2>(state: T, day: number, rng: Rng): T
   const tickets = Math.min(Math.max(10, state.customers * 2), (state.v2.tickets ?? 0) + newTickets)
   const customers = state.customers - lost
   const mrr = customers * state.arpu
-  const burn = monthlyBurn(state)
+  const burn = monthlyBurn({ ...state, mrr, customers })
   const cash = state.cash + (mrr - burn) / DAYS_PER_MONTH
 
   // Investor interest (seed / Series A triggers, as in the legacy game)
