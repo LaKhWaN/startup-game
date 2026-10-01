@@ -1,5 +1,5 @@
 import { dismissCoachCard, startFounderTask, useV2 } from './actions'
-import { currentChapter2Card, currentCoachCard, isTaskUnlocked } from './chapter'
+import { currentCard, isTaskUnlocked } from './chapter'
 import { FOUNDER_BUILD_SPEED, taskDurationDays } from './founder'
 import type { FounderSkill, FounderTaskType } from './state'
 import '../components/RightPanel.css'
@@ -34,7 +34,7 @@ export function FounderPanel() {
   const features = useV2(s => s.features)
   const customers = useV2(s => s.customers)
 
-  const card = v2.chapter.complete ? currentChapter2Card({ v2 }) : currentCoachCard({ v2 })
+  const card = currentCard({ v2 })
   const task = v2.founder.task
   const busy = task !== null
   const proposed = features.filter(f => f.status === 'proposed')

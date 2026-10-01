@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { assignTeamMember, ensureCandidates, fireTeamMember, hireCandidate, refreshCandidates, useV2 } from './actions'
 import { MAIN_TASK } from './work'
-import { teamCapacity } from './team'
+import { teamCapacity, teamFinances } from './team'
 import type { Assignment, FounderSkill, TeamRole, V2GameState } from './state'
 import '../components/RightPanel.css'
 import './v2.css'
@@ -42,6 +42,7 @@ export function TeamPanel() {
   const cash = useV2(s => s.cash)
   const employees = useV2(s => s.employees)
   const infra = useV2(s => s.infraCostMonthly)
+  const mrr = useV2(s => s.mrr)
   const features = useV2(s => s.features)
 
   useEffect(() => { ensureCandidates() }, [])
@@ -49,8 +50,7 @@ export function TeamPanel() {
   const members = Object.values(v2.team).sort((a, b) => a.seat - b.seat)
   const capacity = teamCapacity({ v2 } as V2GameState)
   const full = members.length >= capacity
-  const burn = infra + employees.reduce((sum, e) => sum + e.salary, 0)
-  const runway = burn > 0 ? cash / burn : Infinity
+  const { burn, runwayMonths: runway } = teamFinances({ v2, cash, employees, infraCostMonthly: infra, mrr } as V2GameState)
 
   return (
     <aside className="right-panel right-panel--open">
@@ -64,7 +64,7 @@ export function TeamPanel() {
               <span><strong>{members.length}/{capacity}</strong> seats</span>
               <span>burn <strong>{fmtMoney(burn)}/mo</strong></span>
               <span className={runway < 3 ? 'v2-warn' : undefined}>
-                runway <strong>{Number.isFinite(runway) ? `~${Math.max(0, Math.floor(runway))} mo` : '∞'}</strong>
+                runway <strong>{Number.isFinite(runway) ? `~${Math.max(0, runway)} mo` : '∞'}</strong>
               </span>
             </div>
 

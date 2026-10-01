@@ -68,9 +68,23 @@ export function dismissCard(state: V2GameState, id: string): V2GameState {
   return { ...state, v2: { ...state.v2, chapter: { ...chapter, seenCards: [...chapter.seenCards, id] } } }
 }
 
+/** The card the player is on right now, seen or not (what Settings re-shows). */
+export function currentCardId(state: Pick<V2GameState, 'v2'>): string {
+  const { chapter, chapter2 } = state.v2
+  if (!chapter.complete || !chapter.seenCards.includes('beat-4')) return cardIdFor(chapter.beat)
+  if (chapter2.complete) return 'c2-done'
+  if (chapter2.firstMistake && !chapter.seenCards.includes('c2-mistake')) return 'c2-mistake'
+  return `c2-${chapter2.beat}`
+}
+
+/** The coach card to show: Chapter 1 cards first (until dismissed), then Chapter 2. */
+export function currentCard(state: Pick<V2GameState, 'v2'>): CoachCard | null {
+  return currentCoachCard(state) ?? currentChapter2Card(state)
+}
+
 export function reshowCurrentCard(state: V2GameState): V2GameState {
   const { chapter } = state.v2
-  const id = cardIdFor(chapter.beat)
+  const id = currentCardId(state)
   return { ...state, v2: { ...state.v2, chapter: { ...chapter, seenCards: chapter.seenCards.filter(c => c !== id) } } }
 }
 

@@ -1,5 +1,5 @@
 import { generateCandidate, ROLE_LABELS } from '../data/candidates'
-import { totalDays } from '../engine/gameEngine'
+import { getMonthlyBurn, getRunwayMonths, totalDays } from '../engine/gameEngine'
 import type { Employee } from '../types'
 import { applyOutcome, pickResearchTemplates } from './founder'
 import { currentLocation } from './locations'
@@ -227,6 +227,11 @@ export function advanceTeam(state: V2GameState, hours: number, rng: Rng): TeamTi
     }
 
     const cleared = withMember(s, { ...m, task: null })
+    // Someone else (e.g. the founder) already called every lead: nothing to do or learn.
+    if (task.type === 'sales' && s.v2.leads < 1) {
+      s = addStory(cleared, [`${m.name} picked up the phone, but those leads were already called.`])
+      continue
+    }
     const mistake = rng() < mistakeChance(m)
     const outcome = applyOutcome(cleared, { id, name: m.name, skills: m.skills }, task, rng, { mistake, firstSaleGuarantee: false })
     if (!outcome) { s = cleared; continue }
@@ -256,8 +261,14 @@ export function syncPayroll(state: V2GameState): V2GameState {
   for (const m of Object.values(s.v2.team)) {
     if (!onPayroll.has(m.id)) s = addStory(removeMember(s, m.id), [`${m.name} left the company.`])
   }
-  const team = s.v2.team
-  if (Object.keys(team).length === 0) return s
+  if (Object.keys(s.v2.team).length === 0) return s
+  // The mirror's salary is the one legacy actually pays (events can change it).
+  let team = s.v2.team
+  for (const e of s.employees) {
+    const m = team[e.id]
+    if (m && m.salary !== e.salary) team = { ...team, [e.id]: { ...m, salary: e.salary } }
+  }
+  if (team !== s.v2.team) s = { ...s, v2: { ...s.v2, team } }
   return {
     ...s,
     employees: s.employees.map(e => {
@@ -266,4 +277,10 @@ export function syncPayroll(state: V2GameState): V2GameState {
       return { ...e, role: 'developer' as const, status: m.task ? 'busy' as const : 'idle' as const, currentFeatureId: undefined, isRefactoring: false, morale: 72, stress: 15, xp: 0, level: 1 }
     }),
   }
+}
+
+/** Monthly burn and runway the way the legacy banner counts it (net of MRR). */
+export function teamFinances(state: V2GameState): { burn: number; runwayMonths: number } {
+  const runway = getRunwayMonths(state)
+  return { burn: getMonthlyBurn(state), runwayMonths: runway >= 999 ? Infinity : runway }
 }
