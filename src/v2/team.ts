@@ -20,8 +20,8 @@ const EPSILON = 1e-9
 
 /** Kenney minis used for interns (the founder is character-male-a). */
 export const INTERN_MODELS: Record<'male' | 'female', string[]> = {
-  male: ['character-male-c', 'character-male-e'],
-  female: ['character-female-b', 'character-female-d'],
+  male: ['character-male-b', 'character-male-c', 'character-male-d', 'character-male-e', 'character-male-f'],
+  female: ['character-female-a', 'character-female-b', 'character-female-c', 'character-female-d', 'character-female-e', 'character-female-f'],
 }
 
 const ROLES: TeamRole[] = ['developer', 'product_manager', 'marketing', 'sales']

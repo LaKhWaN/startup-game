@@ -7,7 +7,7 @@ export interface FounderPose<S extends string = SpotId> {
   clip: CharacterClip
   typing: boolean
   pace: boolean
-  icon: '✉️' | '📞' | '🔍' | null
+  icon: string | null
 }
 
 export function founderPose(task: FounderTask | null): FounderPose {

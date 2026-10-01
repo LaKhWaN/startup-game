@@ -18,7 +18,8 @@ export function furnitureUrl(name: FurnitureModel): string {
 
 /** Founder first, then the intern looks (src/v2/team.ts INTERN_MODELS). */
 export const CHARACTER_MODELS = [
-  'character-male-a', 'character-male-c', 'character-male-e', 'character-female-b', 'character-female-d',
+  'character-male-a', 'character-male-b', 'character-male-c', 'character-male-d', 'character-male-e', 'character-male-f',
+  'character-female-a', 'character-female-b', 'character-female-c', 'character-female-d', 'character-female-e', 'character-female-f',
 ] as const
 
 export function characterUrl(name: string): string {
