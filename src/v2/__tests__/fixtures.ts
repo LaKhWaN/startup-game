@@ -60,7 +60,8 @@ export function member(over: Partial<TeamMember> = {}): TeamMember {
   return {
     id: 'm1', name: 'Sam', gender: 'male', role: 'developer', tier: 'intern',
     skills: { research: 1, build: 3, outreach: 1, sales: 1 }, assignment: 'develop', task: null,
-    mistakes: 0, seat: 0, characterModel: 'character-male-b', salary: 700, ...over,
+    mistakes: 0, seat: 0, characterModel: 'character-male-b', salary: 700,
+    energy: 100, stress: 10, morale: 70, context: 0, burnoutDays: 0, ...over,
   }
 }
 

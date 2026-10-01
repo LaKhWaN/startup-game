@@ -76,12 +76,12 @@ Fresh launch: the save shape changes, so old v2 saves and the old leaderboard ar
 ## 5. Sub-project C — people (built autonomously after the user asked for B→F in one go)
 
 Each hire has **energy, stress, morale, context** (0–100):
-- **Energy:** −7 per busy work hour, −2 per idle work hour; +45 overnight, full on weekend days. Below 30 the person is "running on empty": +1 stress per work hour.
+- **Energy:** −5 per busy work hour, −1 per idle work hour; +50 overnight, full on weekend days. Below 30 the person is "running on empty": +1 stress per work hour.
 - **Stress:** +0.35 per busy work hour, −1 per idle work hour, −2 overnight, −8 per weekend day, +2 per mistake. Perks (sub-project D) lower it.
 - **Morale:** drifts 10%/day toward `75 − stress/2` (+ perk bonus in D); −2 per mistake.
 - **Context** (company experience): +0.25 per busy work hour (≈50 work days to 100). Leaving loses it; a new hire starts at 0.
 - **Effects:** work speed × (0.55 + 0.45·energy/100) × (0.8 + 0.4·morale/100) × (0.7 + 0.5·context/100); mistake chance × (1 + stress/100).
 - **Burnout → notice → resignation:** stress ≥ 90 at the end of 3 work days in a row → they hand in notice and leave 5 days later. The person card offers **"Convince them to stay"**: +20% salary, stress → 40, notice withdrawn (once per person).
-- **Founder energy:** −4 per working hour (any hour), +12 per hour sleeping (no task at night, in bed), +3 per idle day hour. Founder speed × (0.5 + 0.5·energy/100). Working nights is possible but you pay for it the next day.
+- **Founder energy:** −3 per working hour (any hour), +15 per hour sleeping (no task at night, in bed), +3 per idle day hour. Founder speed × (0.5 + 0.5·energy/100). Working nights is possible but you pay for it the next day.
 - **UI:** person card bars (energy, stress, morale, context) and notice warning; hover card mood; head emoji 😫 (stress > 75) / 🥱 (energy < 25) override the task icon; founder energy in the founder bar; stats rail "stressed" count.
 - Saves: older team members default to energy 100, stress 10, morale 70, context 0.

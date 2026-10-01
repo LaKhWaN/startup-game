@@ -8,17 +8,21 @@ import { founderPose } from './founderPose'
 import { useRoom } from './RoomContext'
 import { isNight } from '../engine/clock'
 import { founderStatusText } from './hoverText'
+import { founderAwake } from '../engine/people'
+import { hourOfDay } from '../engine/clock'
 
 export function Founder({ onSelect }: { onSelect?: () => void }) {
   const task = useV2(s => s.v2.founder.task)
   const features = useV2(s => s.features)
   const room = useRoom()
+  // Asleep (23–07 unless working late): in bed even mid-task.
+  const asleep = useV2(s => !founderAwake(s.v2.founder, hourOfDay(s.gameTime.totalHours)))
   const featureTitle = task?.type === 'develop' ? features.find(f => f.id === task.featureId)?.title : undefined
   return (
     <Character
       url={CHARACTER_URL}
       spots={room.spots}
-      pose={founderPose(task)}
+      pose={asleep ? founderPose(null) : founderPose(task)}
       startSpot="bed"
       progress={task ? task.progress : null}
       onSelect={onSelect}

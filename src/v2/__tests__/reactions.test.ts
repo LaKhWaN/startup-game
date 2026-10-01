@@ -30,3 +30,12 @@ describe('hire looks', () => {
     expect([...INTERN_MODELS.male, ...INTERN_MODELS.female]).not.toContain('character-male-a')
   })
 })
+
+describe('mood reactions', () => {
+  it('burnout and exhaustion override the task icon (a mistake still wins)', () => {
+    expect(reactionIcon({ idle: false, taskIcon: '✉️', mistakeAt: null, now: 0, stress: 80, energy: 90 })).toBe('😫')
+    expect(reactionIcon({ idle: false, taskIcon: '✉️', mistakeAt: null, now: 0, stress: 20, energy: 20 })).toBe('🥱')
+    expect(reactionIcon({ idle: false, taskIcon: '✉️', mistakeAt: 0, now: 1, stress: 80, energy: 20 })).toBe('😬')
+    expect(reactionIcon({ idle: false, taskIcon: '✉️', mistakeAt: null, now: 0, stress: 20, energy: 90 })).toBe('✉️')
+  })
+})

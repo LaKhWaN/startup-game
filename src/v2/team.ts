@@ -1,6 +1,7 @@
 import { generateCandidate, ROLE_LABELS } from '../data/candidates'
 import { totalDays } from './engine/clock'
 import { monthlyBurn, runwayMonths } from './engine/money'
+import { FRESH_MOOD, mistakeFactor, workFactor } from './engine/people'
 import { applyOutcome, pickResearchTemplates } from './founder'
 import { currentLocation, locationIndex } from './locations'
 import { addStory, type Assignment, type FounderSkill, type FounderTask, type FounderTaskType, type InternCandidate, type Rng, type TeamMember, type TeamRole, type Tier, type V2GameState } from './state'
@@ -116,6 +117,8 @@ export function hireIntern(state: V2GameState, candidateId: string): V2GameState
     salary: c.salary,
     bio: c.bio,
     hiredAtDay: totalDays(state.gameTime),
+    ...FRESH_MOOD,
+    burnoutDays: 0,
   }
   const chapter2 = state.v2.chapter2.beat === 0 ? { ...state.v2.chapter2, beat: 1 as const } : state.v2.chapter2
   const next: V2GameState = {
@@ -244,7 +247,7 @@ export function advanceTeam(state: V2GameState, hours: number, rng: Rng): TeamTi
     if (hours <= 0 || !m.task) continue
 
     const task = m.task
-    const days = workerDurationDays(s, task.type, task.featureId, hireSpeed(m.role, task.type, m.tier))
+    const days = workerDurationDays(s, task.type, task.featureId, hireSpeed(m.role, task.type, m.tier) * workFactor(m))
     // Hires count work hours: one work day = WORK_DAY_HOURS.
     const progress = Math.min(1, task.progress + hours / (WORK_DAY_HOURS * days))
     if (progress < 1 - EPSILON) {
@@ -261,7 +264,7 @@ export function advanceTeam(state: V2GameState, hours: number, rng: Rng): TeamTi
       s = addStory(cleared, [`${m.name} picked up the phone, but those leads were already called.`])
       continue
     }
-    const mistake = rng() < mistakeChance(m)
+    const mistake = rng() < mistakeChance(m) * mistakeFactor(m.stress ?? 10)
     const outcome = applyOutcome(cleared, { id, name: m.name, skills: m.skills }, task, rng, { mistake, firstSaleGuarantee: false })
     if (!outcome) { s = cleared; continue }
 
@@ -271,6 +274,8 @@ export function advanceTeam(state: V2GameState, hours: number, rng: Rng): TeamTi
       ...outcome.v2.team[id],
       skills: { ...m.skills, [skill]: Math.min(rule.cap, m.skills[skill] + rule.gain) },
       mistakes: m.mistakes + (mistake ? 1 : 0),
+      // A mistake stings: a bit more stress, a bit less morale.
+      ...(mistake ? { stress: Math.min(100, (m.stress ?? 10) + 2), morale: Math.max(0, (m.morale ?? 70) - 2) } : {}),
     }
     s = withMember(outcome, grown)
     completedBy.push(id)
@@ -284,4 +289,13 @@ export function advanceTeam(state: V2GameState, hours: number, rng: Rng): TeamTi
 export function teamFinances(state: Pick<V2GameState, 'infraCostMonthly' | 'v2' | 'cash' | 'mrr'>): { burn: number; runwayMonths: number } {
   const runway = runwayMonths(state)
   return { burn: monthlyBurn(state), runwayMonths: runway >= 999 ? Infinity : runway }
+}
+
+/** "Convince them to stay": +20% salary, stress back to 40, notice withdrawn. Works once per person. */
+export function convinceToStay(state: V2GameState, id: string): V2GameState {
+  const m = state.v2.team[id]
+  if (!m || m.leavingOn === undefined || m.convinced) return state
+  const salary = Math.round(m.salary * 1.2)
+  const next = withMember(state, { ...m, salary, stress: 40, leavingOn: undefined, burnoutDays: 0, convinced: true })
+  return addStory(next, [`🤝 You talked ${m.name} into staying: a raise to $${salary.toLocaleString()}/mo and a lighter load.`])
 }

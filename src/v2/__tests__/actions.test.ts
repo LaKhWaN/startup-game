@@ -209,3 +209,16 @@ describe('skipNight stops for family money', () => {
     expect(getV2State().gameTime.totalHours).toBe(20)
   })
 })
+
+describe('people actions', () => {
+  it('toggles working late and convinces a leaver to stay', async () => {
+    const { toggleWorkLate, convinceTeamMemberToStay } = await import('../actions')
+    newGameV2(makeConfig())
+    toggleWorkLate()
+    expect(getV2State().v2.founder.workLate).toBe(true)
+    const s = getV2State()
+    gameStore.setState({ v2: { ...s.v2, team: { x: { id: 'x', name: 'X', gender: 'male', role: 'sales', tier: 'intern', skills: { research: 1, build: 1, outreach: 1, sales: 3 }, assignment: 'sales', task: null, mistakes: 0, seat: 0, characterModel: 'character-male-b', salary: 1000, stress: 95, leavingOn: 20 } } } })
+    convinceTeamMemberToStay('x')
+    expect(getV2State().v2.team.x.leavingOn).toBeUndefined()
+  })
+})

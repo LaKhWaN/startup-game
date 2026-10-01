@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { assignTeamMember, fireTeamMember, promoteTeamMember, useV2 } from './actions'
+import { assignTeamMember, convinceTeamMemberToStay, fireTeamMember, promoteTeamMember, useV2 } from './actions'
 import { armedNow, CONFIRM_MS, type Armed } from './confirm'
 import { fmtMoney, ROLE_INFO, TierBadge } from './MemberCard'
 import { statusText } from './scene/hoverText'
@@ -20,6 +20,13 @@ const ASSIGNMENTS: { id: Assignment; label: string }[] = [
   { id: 'refactor', label: '🧹 Refactor' },
   { id: 'idle', label: '💤 Idle' },
 ]
+
+const MOOD = [
+  { id: 'energy', label: '⚡ Energy', fallback: 100, badHigh: false, hint: 'Drains while working; a night or a weekend restores it. Tired people are slower.' },
+  { id: 'stress', label: '😰 Stress', fallback: 10, badHigh: true, hint: 'Grinding raises it, idle time and weekends lower it. Too high for 3 days → they hand in notice.' },
+  { id: 'morale', label: '😊 Morale', fallback: 70, badHigh: false, hint: 'Follows stress. Happier people work faster.' },
+  { id: 'context', label: '🧠 Context', fallback: 0, badHigh: false, hint: 'Experience at this company. Makes them faster; leaves with them.' },
+] as const
 
 const SKILLS: { id: FounderSkill; label: string }[] = [
   { id: 'research', label: 'Research' },
@@ -86,6 +93,32 @@ export function PersonCard({ m }: { m: TeamMember }) {
             <div className="v2-person-meta">~{daysLeft}d left</div>
           </>
         )}
+      </section>
+
+      {m.leavingOn !== undefined && (
+        <div className="v2-person-notice">
+          <span>😫 Burnt out: handed in notice. Leaves on day {m.leavingOn}.</span>
+          {!m.convinced && (
+            <button className="v2-btn v2-btn-primary" onClick={() => convinceTeamMemberToStay(m.id)}>
+              Convince them to stay (+20% salary)
+            </button>
+          )}
+        </div>
+      )}
+
+      <section className="v2-person-section">
+        <div className="v2-person-label">How they're doing</div>
+        {MOOD.map(k => {
+          const v = Math.round((m as unknown as Record<string, number | undefined>)[k.id] ?? k.fallback)
+          const bad = k.badHigh ? v > 70 : v < 30
+          return (
+            <div key={k.id} className={`v2-skill${bad ? ' v2-skill--bad' : ''}`} title={k.hint}>
+              <span className="v2-skill-name">{k.label}</span>
+              <div className="v2-progress"><div className="v2-progress-fill" style={{ width: `${v}%` }} /></div>
+              <span className="v2-skill-val">{v}</span>
+            </div>
+          )
+        })}
       </section>
 
       <section className="v2-person-section">

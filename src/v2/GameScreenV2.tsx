@@ -7,6 +7,8 @@ import { getV2State, reshowCoachCard, stepGame, useV2 } from './actions'
 import { BottomNavV2, type V2Panel } from './BottomNavV2'
 import { isMapUnlocked, isMetricsUnlocked, isTeamUnlocked } from './chapter'
 import { MoveTransition } from './MoveTransition'
+import { founderAwake } from './engine/people'
+import { hourOfDay } from './engine/clock'
 import { NightBanner } from './NightBanner'
 import { TeamPanel } from './TeamPanel'
 import { FamilyMoneyModal } from './FamilyMoneyModal'
@@ -42,8 +44,9 @@ export function GameScreenV2() {
   }
   const active: V2Panel | null = view === 'city' ? 'map' : modal && modal.kind !== 'person' ? modal.kind : null
 
+  const founderAwakeNow = useV2(s => founderAwake(s.v2.founder, hourOfDay(s.gameTime.totalHours)))
   useBackgroundMusic()
-  useTypingLoop(founderPose(v2.founder.task).typing && phase === 'playing' && gameSpeed > 0 && view === 'office')
+  useTypingLoop(founderPose(v2.founder.task).typing && founderAwakeNow && phase === 'playing' && gameSpeed > 0 && view === 'office')
 
   const metricsUnlocked = isMetricsUnlocked({ v2 })
   const teamUnlocked = isTeamUnlocked({ v2 })

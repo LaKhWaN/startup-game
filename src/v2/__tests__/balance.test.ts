@@ -28,7 +28,10 @@ function play(s: V2GameState, rng: () => number, careful = false): V2GameState {
   const { chapter } = s.v2
   if (chapter.beat === 5 && chapter.familyMoney && !chapter.familyMoney.claimed) s = claimFamilyMoney(s)
 
-  if (!s.v2.founder.task) {
+  // Sleep when tired at night instead of grinding (a tired founder works at half speed).
+  const hour = s.gameTime.totalHours % 24
+  const resting = (hour >= 22 || hour < 7) && (s.v2.founder.energy ?? 100) < 70
+  if (!s.v2.founder.task && !resting) {
     const proposed = s.features.find(f => f.status === 'proposed')
     // Keep the funnel moving (emails → sales); build and research in between.
     const order: [FounderTaskType, string | undefined][] = [
@@ -84,6 +87,7 @@ describe('balance simulation', () => {
         else if (s.pendingEvent) s = applyEventChoice(s, 0)
         s = stepV2(s, rng)
         if (!(s.v2.location in reached)) reached[s.v2.location] = totalDays(s.gameTime)
+        if (process.env.SIM_TRACE && seed === 1 && h % (24 * 25) === 0) console.log(`d${totalDays(s.gameTime)} mrr ${s.mrr} cust ${s.customers} cash ${Math.round(s.cash)} burn ${getMonthlyBurn(s)} churn ${s.churnRate.toFixed(1)} tickets ${s.v2.tickets} debt ${Math.round(s.techDebt)} team ${Object.keys(s.v2.team).length} fE ${Math.round(s.v2.founder.energy ?? 100)} beat ${s.v2.chapter.beat}/${s.v2.chapter.complete} leads ${s.v2.leads}`)
         if (process.env.SIM_DEBUG && h % (24 * 15) === 0) console.log(`d${totalDays(s.gameTime)} h${s.gameTime.totalHours} mrr ${s.mrr} cust ${s.customers} cash ${Math.round(s.cash)} leads ${s.v2.leads} beat ${s.v2.chapter.beat} task ${s.v2.founder.task?.type} team ${Object.keys(s.v2.team).length} loc ${s.v2.location} :: ${s.storyLog[0]?.lines[0]}`)
         if (reached.coworking !== undefined) break
       }
@@ -103,7 +107,7 @@ describe('balance simulation', () => {
       const rng = seeded(11)
       vi.spyOn(Math, 'random').mockImplementation(rng)
       let s = makeState()
-      for (let h = 0; h < 200 * 24 && s.phase === 'playing'; h++) {
+      for (let h = 0; h < 300 * 24 && s.phase === 'playing'; h++) {
         if (h % 6 === 0) s = play(s, rng, careful)
         else if (s.pendingEvent) s = applyEventChoice(s, 0)
         s = stepV2(s, rng)

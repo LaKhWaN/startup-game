@@ -1,4 +1,5 @@
-import { DAYS_PER_MONTH, HOURS_PER_DAY, isWorkHour } from './engine/clock'
+import { DAYS_PER_MONTH, HOURS_PER_DAY, hourOfDay, isWeekend, isWorkHour } from './engine/clock'
+import { founderAwake, founderHour, peopleDay, peopleHour } from './engine/people'
 import { processDay, processMonth } from './engine/day'
 import { checkChapter2Complete, checkChapter3Complete, onTaskCompleted, onTeamProgress } from './chapter'
 import { filterPendingEvent } from './eventsV2'
@@ -24,7 +25,9 @@ export function v2Tick(state: V2GameState, hours: number, rng: Rng = Math.random
   s = filterPendingEvent(s, rng)
   if (s.pendingEvent) return s
 
-  const { state: advanced, completed } = advanceFounder(s, hours, rng)
+  // The founder only works while awake (sleeps 23–07 unless working late).
+  const founderHours = founderAwake(s.v2.founder, hourOfDay(s.gameTime.totalHours - 1 + 24)) ? hours : 0
+  const { state: advanced, completed } = advanceFounder(s, founderHours, rng)
   s = completed ? onTaskCompleted(advanced, completed, rng) : advanced
 
   // Hires only work office hours (teamHours = 0 outside them); the founder works any time.
@@ -44,7 +47,9 @@ export function stepV2<T extends V2GameState>(state: T, rng: Rng = Math.random):
   const now = prev + 1
   let s: T = { ...state, gameTime: { totalHours: now } }
   const day = Math.floor(now / HOURS_PER_DAY)
-  if (day > Math.floor(prev / HOURS_PER_DAY)) s = processDay(s, day, rng)
+  // People: hires tire/learn during work hours; the founder tires working and recovers sleeping.
+  s = founderHour(peopleHour(s, isWorkHour(prev)), hourOfDay(prev))
+  if (day > Math.floor(prev / HOURS_PER_DAY)) s = peopleDay(processDay(s, day, rng), day, isWeekend(now))
   const month = Math.floor(day / DAYS_PER_MONTH)
   if (month > Math.floor(Math.floor(prev / HOURS_PER_DAY) / DAYS_PER_MONTH)) s = processMonth(s, month)
   if (s.phase !== 'playing') return s

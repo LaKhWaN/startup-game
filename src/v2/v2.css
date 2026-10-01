@@ -250,3 +250,7 @@
 .v2-market { display: flex; flex-direction: column; gap: 6px; }
 .v2-churn { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 0.82rem; color: var(--text); margin-bottom: 6px; }
 .v2-churn strong { font-family: 'Roboto Mono', monospace; }
+.v2-person-notice { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 10px; background: rgba(var(--error-rgb, 158, 42, 43), 0.1); border: 1px solid var(--error); font-size: 0.85rem; color: var(--text); }
+.v2-skill--bad .v2-skill-name, .v2-skill--bad .v2-skill-val { color: var(--error); font-weight: 600; }
+.v2-fb-energy { display: flex; flex-direction: column; align-items: center; gap: 4px; font-family: 'Roboto Mono', monospace; font-size: 0.78rem; color: var(--text); }
+.v2-fb-energy .v2-chip { font-size: 0.7rem; padding: 3px 8px; }

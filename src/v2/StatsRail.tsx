@@ -45,6 +45,10 @@ export function StatsRail() {
         <Row label="⚙️ Working" value={r.working} hint="Founder and hires with a task in progress" />
         <Row label="⏳ Waiting" value={r.waiting} hint="Hires with nothing to do yet (e.g. no leads to call)" />
         <Row label="💤 Idle" value={r.idle} />
+        <Row label="😫 Stressed" value={Object.values(v2.team).filter(m => (m.stress ?? 0) > 75).length} hint="Stress above 75. Give them idle time, a weekend, or perks" />
+        {Object.values(v2.team).some(m => m.leavingOn !== undefined) && (
+          <Row label="⚠️ Handed in notice" value={Object.values(v2.team).filter(m => m.leavingOn !== undefined).length} hint="Open their card to convince them to stay" />
+        )}
         <Row label="💡 Ideas to build" value={r.ideas} />
         <Row label="🛠️ Being built" value={r.building} />
       </section>

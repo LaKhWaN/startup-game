@@ -30,7 +30,7 @@ function Hire({ m, spots, door, offHours, onSelect, featureTitle }: {
     const t = setTimeout(() => setMistakeAt(null), MISTAKE_FLASH_MS)
     return () => clearTimeout(t)
   }, [m.mistakes])
-  const icon = reactionIcon({ idle: m.assignment === 'idle', taskIcon: pose.icon, mistakeAt, now: Date.now() })
+  const icon = reactionIcon({ idle: m.assignment === 'idle', taskIcon: pose.icon, mistakeAt, now: Date.now(), stress: m.stress, energy: m.energy })
   return (
     <Character
       url={characterUrl(m.characterModel)}
@@ -42,7 +42,7 @@ function Hire({ m, spots, door, offHours, onSelect, featureTitle }: {
       onSelect={onSelect ? () => onSelect(m.id) : undefined}
       hoverCard={{
         title: m.name,
-        subtitle: `${ROLE_INFO[m.role].label} · ${m.tier === 'fulltime' ? 'Full-time' : 'Intern'}`,
+        subtitle: `${ROLE_INFO[m.role].label} · ${m.tier === 'fulltime' ? 'Full-time' : 'Intern'} · ⚡${Math.round(m.energy ?? 100)} 😰${Math.round(m.stress ?? 10)}${m.leavingOn !== undefined ? ' · leaving' : ''}`,
         status: statusText(m, featureTitle),
       }}
     />

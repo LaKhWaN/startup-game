@@ -41,6 +41,18 @@ export interface TeamMember {
   seat: number
   characterModel: string
   salary: number
+  /** Mood (spec §5): 0–100 each. Missing on older saves → see engine/people moodOf. */
+  energy?: number
+  stress?: number
+  morale?: number
+  /** Company experience: makes them faster; lost when they leave. */
+  context?: number
+  /** Work days in a row ending at burnout-level stress. */
+  burnoutDays?: number
+  /** Game day they leave (handed in notice). */
+  leavingOn?: number
+  /** Already talked out of leaving once. */
+  convinced?: boolean
   /** Game day they joined (missing on older saves). */
   hiredAtDay?: number
   /** Their one-liner from the hiring card (missing on saves from before it was kept). */
@@ -92,6 +104,10 @@ export interface V2Slice {
     name: string
     task: FounderTask | null
     skills: Record<FounderSkill, number>
+    /** 0–100; the founder tires too (spec §5). */
+    energy?: number
+    /** Keep working through 23:00–07:00 (costs energy). */
+    workLate?: boolean
   }
   chapter: {
     beat: Beat

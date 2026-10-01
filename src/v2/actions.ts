@@ -12,7 +12,7 @@ import { canMove, moveTo, type MoveCheck } from './locations'
 import { createSetupState, createV2State, type Assignment, type FounderTaskType, type LocationId, type V2GameState } from './state'
 import { gameStore, type GameSpeed, type V2Store } from './store'
 import {
-  canHire, canPromote, fireMember, generateCandidates, hireIntern, isFullTimeUnlocked, promoteMember, setAssignment,
+  canHire, canPromote, convinceToStay, fireMember, generateCandidates, hireIntern, isFullTimeUnlocked, promoteMember, setAssignment,
   type HireCheck, type PromoteCheck,
 } from './team'
 import { skipToMorning, stepV2 } from './v2Tick'
@@ -96,6 +96,16 @@ export function skipNight(): void {
   const familyMoneyUp = (s: V2GameState) => s.v2.chapter.beat === 5 && !!s.v2.chapter.familyMoney && !s.v2.chapter.familyMoney.claimed
   const next = skipToMorning(getV2State(), Math.random, familyMoneyUp, syncAnalytics)
   setV2State(next)
+}
+
+export function toggleWorkLate(): void {
+  const s = getV2State()
+  setV2State({ v2: { ...s.v2, founder: { ...s.v2.founder, workLate: !s.v2.founder.workLate } } })
+}
+
+export function convinceTeamMemberToStay(id: string): void {
+  playSfx('success1', 0.6)
+  setV2State(convinceToStay(getV2State(), id))
 }
 
 export function setSpeed(speed: GameSpeed): void {

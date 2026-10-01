@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { startFounderTask, useV2 } from './actions'
+import { startFounderTask, toggleWorkLate, useV2 } from './actions'
 import { FOUNDER_BUILD_SPEED, FOUNDER_ID, taskDurationDays } from './founder'
 import { TASK_INFO, taskReason } from './founderTasks'
 import type { FounderTaskType } from './state'
@@ -16,6 +16,7 @@ export function FounderBar() {
   const [picking, setPicking] = useState(false)
 
   const task = v2.founder.task
+  const energy = Math.round(v2.founder.energy ?? 100)
   const proposed = features.filter(f => f.status === 'proposed')
   const teamBuilds = features.filter(f => f.status === 'in_development' && f.assignedToDevId !== FOUNDER_ID)
   const buildReason = taskReason(v2, 'develop') ?? (proposed.length === 0 ? 'Nothing to build. Research first' : null)
@@ -38,6 +39,12 @@ export function FounderBar() {
           </>
         )}
       </button>
+      <div className="v2-fb-energy" title="Your energy: working drains it, sleep restores it. Tired = slower.">
+        <span>⚡ {energy}</span>
+        <button className={`v2-chip${v2.founder.workLate ? ' v2-chip--on' : ''}`} onClick={toggleWorkLate} title="Keep working 23:00–07:00 (costs energy)">
+          🌙 Work late
+        </button>
+      </div>
       <div className="v2-fb-actions">
         {QUICK.map(type => {
           const reason = taskReason(v2, type, { techDebt })
