@@ -285,3 +285,107 @@ public/assets/v2/    committed GLBs actually used (~15 furniture + 1 character) 
 ### 6.7 Out of scope for Phase 2
 
 Other rooms/locations (Phases 4–5), employees in the scene (Phase 5), clicking characters (Phase 5), postprocessing and adaptive quality (Phase 6), choosing a founder character.
+
+---
+
+## 7. Phase 3 detailed design — interns + Chapter 2 (approved 2026-10-01)
+
+### 7.1 Decisions
+
+| Topic | Decision |
+|---|---|
+| Hire model | Everyone (founder or hire) does the same four tasks (Research / Develop / Emails / Sales) through one shared task engine. Role decides what each person is good at. This replaces the earlier plan of handing off to legacy role systems; legacy campaigns and PM loops may come back later as "advanced" tasks. |
+| Assigning work | Each hire has a **standing assignment** that repeats until you change it. The founder stays one-task-at-a-time, as in Chapter 1. |
+| Scope | Interns only. Full-time hires arrive with the bigger locations in Phase 4. Managers come later; see 7.6. |
+| Home capacity | Founder + **2 interns**, both visible and animated in the room. |
+
+### 7.2 Intern rules
+
+| Role | Main task | Speed (× founder) on main / other tasks |
+|---|---|---|
+| developer | develop | 0.7 / 0.35 |
+| product_manager | research | 0.7 / 0.35 |
+| marketing | emails | 0.7 / 0.35 |
+| sales | sales | 0.7 / 0.35 |
+
+- **Duration:** a hire's task takes `founderDurationDays / speed` (Develop's founder duration is already `baseDays / 0.6`).
+- **Skills:** the same four skills as the founder (research/build/outreach/sales). They start at **3** in the main skill and **1** in the others. Each completed task adds **+0.25**, capped at **6**. Outcome formulas are exactly the founder's (Phase 1 §5.2), using the worker's own skills. The first-sale guarantee applies to the founder only.
+- **Mistakes:** chance = `max(0.05, 0.15 − 0.02 × (mainSkill − 3))`, rolled on each completed task. Effects:
+  - research → only 1 feature
+  - develop → effects ×0.5, +5 tech debt
+  - emails → leads ×0.5 (rounded down)
+  - sales → 1 extra lead lost (after conversion; leads floored at 0)
+  Each mistake writes a short story line. The founder never makes mistakes.
+- **Salary:** `600 + floor(rng·5)·100` ($600–$1,000/mo). No upfront cost. Burn comes from the legacy monthly salary deduction.
+- **Candidates:** a pool of 3 intern candidates of random roles, reusing the legacy name pools. Refreshing is free. **Hire** is blocked when `team.length ≥ capacity` (Home: 2) or `cash < salary` (they must be able to pay the first month).
+- **Firing:** "Let go" removes the hire from the team and from `employees`. A feature they were building goes back to `proposed`.
+- **Standing assignment** (`chooseNextTask`):
+  - research → repeats; stays idle while roadmap + fallback are exhausted.
+  - develop → takes the first `proposed` feature nobody is building; idle if none.
+  - emails → repeats.
+  - sales → runs when `leads ≥ 1`, otherwise waits.
+  - idle → nothing.
+- **One builder per feature:** a feature in development belongs to exactly one worker (`assignedToDevId`).
+
+### 7.3 Chapter 2
+
+| Beat | Trigger | Coach card |
+|---|---|---|
+| 0 | Family money claimed | "You can't do everything yourself. Hire an intern: cheap, eager, a bit messy." (unlocks the **Team** tab) |
+| 1 | First intern hired | "Give them a job. They'll keep doing it until you change it." |
+| 2 | Any intern finishes a task | "That's leverage: work happening without you." |
+| (extra) | First intern mistake | "Interns make mistakes. They get better with practice." (doesn't block progress) |
+| complete | **MRR ≥ $1,000** | "Chapter 2 done. Your bedroom is getting crowded… Chapter 3: a bigger space, coming soon." (banner) |
+
+**Events:** random events stay suppressed until Chapter 2 is complete. They're still sized for a $100k company and would bankrupt a $1k-MRR startup with interns. Scaling events to company size is Phase 4 work. *(This decision was made during spec writing; flagged for review.)*
+
+### 7.4 UI and room
+
+- **Team tab** (BottomNavV2):
+  - header: `Team n/cap · burn $X/mo · runway ~N mo`
+  - **Candidates:** cards showing role badge, skills, salary, bio and **Hire**, plus a disabled reason when needed. A **Refresh** button.
+  - **Your team:** one row per hire with a task dropdown (Research/Develop/Emails/Sales/Idle), progress, skills, salary and **Let go**.
+- **Room** (Home layout gains furniture as seats are filled):
+  - seat 1: beanbag + laptop by the bookshelf
+  - seat 2: small desk by the window
+  - Seated tasks (research/develop/emails) play `sit` + typing at the hire's seat.
+  - Sales paces on its own path.
+  - Idle hires sit at their seat.
+  - Interns use different Kenney characters from the founder, **cloned per person** (`SkeletonUtils.clone`). Task icons are shown in-scene.
+  - Furniture for a seat appears only when someone occupies it.
+
+### 7.5 Engine integration
+
+- **Hire record:** each hire lives in two places.
+  - Legacy `employees` as a payroll mirror: `role: 'developer'`, `status: 'busy' | 'idle'` (mirrors whether they have a task), `currentFeatureId` **unset**. This makes the legacy developer loop inert, so legacy produces no customers or features from hires.
+  - `v2.team[id]`: `{ role, tier: 'intern', skills, assignment, task, mistakes, seat, characterModel, reportsTo?: string }`.
+- **v2 owns morale/stress:** after each legacy tick, `v2Tick` resets every hire's legacy `morale`, `stress`, `xp` and `level` to fixed values (72 / 15 / 0 / 1). This neutralizes the legacy `cash < $10k` stress spiral, the stressed-developer tech-debt nudge, and legacy level-up messages.
+- **Generalized task engine:** the Phase 1 founder task logic becomes worker-based (founder or hire) with a per-worker speed, mistake rule and skill cap. `v2Tick` advances the founder and every hire each game hour; when a hire finishes a task, `chooseNextTask` gives them their next one.
+- **Saves:** `v2.team` is part of the v2 slice. Saves without `team` load with `team: {}` and `chapter2` defaults.
+
+### 7.6 Manager-ready shape (not built in Phase 3)
+
+`tier` (`'intern'` now; `'fulltime' | 'manager'` later) and an optional `reportsTo` exist on every team member. The decision of what a worker does next lives in a single function, `chooseNextTask(worker, state)`. Later, a manager can provide that function for the workers who report to them (auto-assigning interns, improving their speed or mistake rates) without changing the task engine or UI.
+
+### 7.7 Testing and acceptance
+
+- **Unit tests:**
+  - speed per role on main and other tasks
+  - each mistake effect at fixed rolls, and the mistake rate shrinking with skill
+  - skill growth and its cap
+  - standing assignment repeats and picks the next free proposed feature
+  - no two workers building one feature
+  - hire blocked when the room is full or the first month is unaffordable
+  - firing frees the feature
+  - salaries appear in burn
+  - the legacy tick produces no customers or features from hires
+  - the morale/stress reset
+  - Chapter 2 beats in order, and completion at $1k MRR
+  - events suppressed until Chapter 2 is complete
+  - saves round-trip with a team, and old saves load
+- **Screenshot harness:** founder + 2 interns visible at their seats, with no console errors.
+- **Gates:** `tsc`, `npm test`, `npm run build`. Legacy files unchanged.
+
+### 7.8 Out of scope for Phase 3
+
+Full-time hires, managers, the map and moving (Phase 4), resizing events, and morale effects on intern speed.
