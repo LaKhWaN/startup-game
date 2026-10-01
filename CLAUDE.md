@@ -58,4 +58,4 @@ Light theme — `--bg:#f7f8fa`, `--surface:#fff`, `--surface2:#f0f2f5`, `--borde
 Fonts: Roboto + Roboto Mono. Drop shadows only (no glow effects).
 
 ## GameSpeed Type
-`0 | 1 | 2 | 3 | 5` (10× and 50× removed)
+`0 | 1 | 2 | 3 | 5 | 10` in `src/v2/store.ts` (0 = paused; 10× only offered in dev builds)
