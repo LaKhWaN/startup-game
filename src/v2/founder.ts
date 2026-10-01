@@ -278,12 +278,26 @@ export function applyOutcome(
   rng: Rng,
   opts: OutcomeOptions,
 ): V2GameState | null {
+  let after: V2GameState | null
   switch (task.type) {
-    case 'research': return applyResearch(state, worker, rng, opts)
-    case 'develop': return applyDevelop(state, worker, task.featureId, opts)
-    case 'emails': return applyEmails(state, worker, rng, opts)
-    case 'sales': return applySales(state, worker, rng, opts)
+    case 'research': after = applyResearch(state, worker, rng, opts); break
+    case 'develop': after = applyDevelop(state, worker, task.featureId, opts); break
+    case 'emails': after = applyEmails(state, worker, rng, opts); break
+    case 'sales': after = applySales(state, worker, rng, opts); break
   }
+  return after && countStats(state, after, task.type, opts.mistake)
+}
+
+/** Lifetime counters for the stats rail, from the before/after of one finished task. */
+function countStats(before: V2GameState, after: V2GameState, type: FounderTaskType, mistake: boolean): V2GameState {
+  const s = { ...after.v2.stats }
+  const newLeads = Math.max(0, after.v2.leads - before.v2.leads)
+  if (type === 'research') s.researchRounds++
+  if (type === 'develop') { s.featuresShipped++; s.leadsFound += newLeads }
+  if (type === 'emails') { s.emailRounds++; s.leadsFound += newLeads }
+  if (type === 'sales') { s.salesCalls++; s.customersWon += Math.max(0, after.customers - before.customers) }
+  if (mistake) s.mistakes++
+  return { ...after, v2: { ...after.v2, stats: s } }
 }
 
 // ── Advance ─────────────────────────────────────────────────────────────────

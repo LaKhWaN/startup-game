@@ -67,6 +67,21 @@ export interface Chapter3State {
   complete: boolean
 }
 
+/** Lifetime counters for the stats rail. */
+export interface V2Stats {
+  researchRounds: number
+  featuresShipped: number
+  emailRounds: number
+  leadsFound: number
+  salesCalls: number
+  customersWon: number
+  mistakes: number
+}
+
+export const EMPTY_STATS: V2Stats = {
+  researchRounds: 0, featuresShipped: 0, emailRounds: 0, leadsFound: 0, salesCalls: 0, customersWon: 0, mistakes: 0,
+}
+
 export interface V2Slice {
   founder: {
     name: string
@@ -89,6 +104,7 @@ export interface V2Slice {
   /** Highest MRR ever reached; drives location unlocks. */
   peakMrr: number
   chapter3: Chapter3State
+  stats: V2Stats
 }
 
 export type V2GameState = GameState & { v2: V2Slice }
@@ -120,6 +136,7 @@ export function createV2Slice(): V2Slice {
     unlockedLocations: ['home'],
     peakMrr: 0,
     chapter3: { beat: 0, complete: false },
+    stats: { ...EMPTY_STATS },
   }
 }
 
@@ -189,6 +206,7 @@ export function migrateV2Slice(v: unknown): V2Slice | null {
     unlockedLocations: unlocked,
     peakMrr,
     chapter3: s.chapter3 ?? { beat: 0, complete: false },
+    stats: { ...EMPTY_STATS, ...(s.stats ?? {}) },
   }
 }
 

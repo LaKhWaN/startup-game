@@ -15,6 +15,7 @@ import { FounderPanel } from './FounderPanel'
 import { CoachOverlay } from './CoachOverlay'
 import { FounderBar } from './FounderBar'
 import { PersonCard } from './PersonCard'
+import { StatsRail } from './StatsRail'
 import { Modal } from './Modal'
 import { closeModal, openModal, useUi, type Modal as ModalState } from './ui'
 import { RoomView } from './RoomView'
@@ -80,6 +81,7 @@ export function GameScreenV2() {
           <MoveTransition />
           <BottomNavV2 active={active} metricsUnlocked={metricsUnlocked} teamUnlocked={teamUnlocked} mapUnlocked={mapUnlocked} onTabClick={onTab} />
         </div>
+        <StatsRail />
       </div>
       <ScreenModal modal={modal} />
       <FeatureResultToasts />

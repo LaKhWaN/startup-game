@@ -223,3 +223,16 @@
 .v2-chip--on { border-color: var(--brand-primary); background: var(--brand-primary); color: var(--surface); font-weight: 600; }
 .v2-person-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-top: 6px; border-top: 1px solid var(--border); }
 @media (max-width: 768px) { .v2-person-portrait { width: 80px; height: 80px; } }
+
+/* ── Stats rail (right side, read-only) ─────────────────────────────────── */
+.v2-rail { width: 220px; flex-shrink: 0; overflow-y: auto; padding: 14px 14px 20px; background: rgba(var(--bg-rgb), 0.97); border-left: 1px solid var(--border); display: flex; flex-direction: column; gap: 16px; }
+.v2-rail-section { display: flex; flex-direction: column; gap: 4px; }
+.v2-rail-title { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+.v2-rail-row { display: flex; justify-content: space-between; gap: 8px; font-size: 0.8rem; color: var(--text); padding: 2px 0; }
+.v2-rail-value { font-family: 'Roboto Mono', monospace; font-weight: 600; }
+.v2-rail-funnel { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 10px; background: var(--surface2); }
+.v2-rail-funnel > div { display: flex; flex-direction: column; align-items: center; }
+.v2-rail-big { font-family: 'Roboto Mono', monospace; font-size: 1.2rem; font-weight: 700; color: var(--text); }
+.v2-rail-small { font-size: 0.66rem; color: var(--muted); }
+.v2-rail-arrow { color: var(--muted); }
+@media (max-width: 768px) { .v2-rail { display: none; } }
