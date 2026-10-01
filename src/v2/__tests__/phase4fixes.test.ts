@@ -58,3 +58,18 @@ describe('migrating a Phase 3 save past Chapter 2', () => {
     expect(v.unlockedLocations).toEqual(['home', 'biggerHome'])
   })
 })
+
+describe('a hire a legacy event removed', () => {
+  it('is dropped before the team works that hour', async () => {
+    const { v2Tick } = await import('../v2Tick')
+    const { hireIntern } = await import('../team')
+    const { withChapter } = await import('./fixtures')
+    let s = withChapter(makeState({ cash: 5000 }), { beat: 5, complete: true })
+    s = withV2(s, { candidates: [{ id: 'c1', name: 'Sam', gender: 'male', role: 'marketing', tier: 'intern', skills: { research: 1, build: 1, outreach: 3, sales: 1 }, salary: 700, bio: '', characterModel: 'character-male-c' }] })
+    s = hireIntern(s, 'c1')
+    s = withV2(s, { leads: 0, team: { c1: { ...s.v2.team.c1, task: { type: 'emails', progress: 0.9999 } } } })
+    const out = v2Tick({ ...s, employees: [] }, 1, seq(0.99))
+    expect(out.v2.team.c1).toBeUndefined()
+    expect(out.v2.leads).toBe(0)
+  })
+})

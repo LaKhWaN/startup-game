@@ -23,6 +23,8 @@ export function v2Tick(state: V2GameState, hours: number, rng: Rng = Math.random
   s = filterPendingEvent(s, rng)
   if (s.pendingEvent) return syncPayroll(s)
 
+  // Drop anyone a legacy event removed before they get another hour of work.
+  s = syncPayroll(s)
   const { state: advanced, completed } = advanceFounder(s, hours, rng)
   s = completed ? onTaskCompleted(advanced, completed, rng) : advanced
 

@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { armedNow, CONFIRM_MS, type Armed } from './confirm'
 import { assignTeamMember, ensureCandidates, fireTeamMember, hireCandidate, promoteTeamMember, refreshCandidates, useV2 } from './actions'
 import { MAIN_TASK } from './work'
 import { canHire, canPromote, isFullTimeUnlocked, PROMOTE_SKILL, teamCapacity, teamFinances } from './team'
@@ -52,6 +53,17 @@ export function TeamPanel({ focusId = null }: { focusId?: string | null }) {
   const features = useV2(s => s.features)
 
   useEffect(() => { ensureCandidates() }, [])
+  // "Let go" needs a second click within CONFIRM_MS.
+  const [armed, setArmed] = useState<Armed | null>(null)
+  useEffect(() => {
+    if (!armed) return
+    const t = setTimeout(() => setArmed(null), CONFIRM_MS)
+    return () => clearTimeout(t)
+  }, [armed])
+  function letGo(id: string) {
+    if (armedNow(armed, id, Date.now())) { setArmed(null); fireTeamMember(id) }
+    else setArmed({ id, at: Date.now() })
+  }
   // Clicked in the room: bring that person into view.
   useEffect(() => {
     if (focusId) document.getElementById(`v2-member-${focusId}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' })
@@ -137,7 +149,9 @@ export function TeamPanel({ focusId = null }: { focusId?: string | null }) {
                           Promote
                         </button>
                       )}
-                      <button className="v2-btn v2-btn-ghost" onClick={() => fireTeamMember(m.id)}>Let go</button>
+                      <button className="v2-btn v2-btn-ghost" onClick={() => letGo(m.id)}>
+                        {armed?.id === m.id ? 'Sure?' : 'Let go'}
+                      </button>
                     </div>
                     <div className="v2-progress">
                       <div className="v2-progress-fill" style={{ width: `${Math.round((m.task?.progress ?? 0) * 100)}%` }} />
