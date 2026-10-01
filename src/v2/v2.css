@@ -196,3 +196,10 @@
   .v2-game .tb-pill-mini-label { display: none; }
   .v2-game .top-bar { gap: 1rem; padding: 0 1.2rem; }
 }
+
+/* ── Hover cards over characters (spec §11.2) ───────────────────────────── */
+.v2-hover-card { min-width: 150px; max-width: 220px; padding: 7px 10px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); white-space: nowrap; transform: translateY(-50%); }
+.v2-hover-title { font-weight: 700; font-size: 0.82rem; color: var(--text); }
+.v2-hover-sub { font-size: 0.7rem; color: var(--muted); }
+.v2-hover-status { margin-top: 3px; font-size: 0.76rem; color: var(--text); white-space: normal; }
+@media (prefers-reduced-motion: reduce) { .v2-scene-icon { animation: none; } }

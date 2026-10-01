@@ -1,5 +1,5 @@
 import { Html, useGLTF } from '@react-three/drei'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimationMixer, LoopOnce, type AnimationAction, type Group, type Object3D, type SkinnedMesh } from 'three'
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js'
@@ -8,6 +8,8 @@ import type { FounderPose } from './founderPose'
 import type { Spot } from './layout'
 import { applyTypingMotion, frameIntent } from './animation'
 import { stepFor, tripSpeed, yawTowards } from './motion'
+import { fitZoom, iconScale } from './camera'
+import { useRoom } from './RoomContext'
 
 const CHARACTER_SCALE = 0.85
 const FADE = 0.25
@@ -30,13 +32,21 @@ export interface CharacterProps<S extends string> {
   progress: number | null
   /** Clicking the character (e.g. opens their panel). */
   onSelect?: () => void
+  /** Shown over their head while hovered with a mouse. */
+  hoverCard?: { title: string; subtitle?: string; status: string }
 }
 
 /**
  * One animated Kenney mini character. Each instance clones the GLB's skinned
  * scene, so the founder and several hires can share a model.
  */
-export function Character<S extends string>({ url, spots, pose, startSpot, progress, onSelect }: CharacterProps<S>) {
+export function Character<S extends string>({ url, spots, pose, startSpot, progress, onSelect, hoverCard }: CharacterProps<S>) {
+  const [hovered, setHovered] = useState(false)
+  const room = useRoom()
+  const size = useThree(s => s.size)
+  const scale = iconScale(fitZoom(size, room.width, room.depth))
+  // A hovered character that unmounts (let go, moved) never gets pointerout.
+  useEffect(() => () => { document.body.style.cursor = '' }, [])
   const gltf = useGLTF(url)
   const reduced = useMemo(prefersReducedMotion, [])
   const step = useMemo(() => stepFor(reduced), [reduced])
@@ -166,8 +176,12 @@ export function Character<S extends string>({ url, spots, pose, startSpot, progr
       ref={root}
       scale={CHARACTER_SCALE}
       onClick={onSelect ? e => { e.stopPropagation(); onSelect() } : undefined}
-      onPointerOver={onSelect ? e => { e.stopPropagation(); document.body.style.cursor = 'pointer' } : undefined}
-      onPointerOut={onSelect ? () => { document.body.style.cursor = '' } : undefined}
+      onPointerOver={e => {
+        e.stopPropagation()
+        if (onSelect) document.body.style.cursor = 'pointer'
+        if (e.pointerType === 'mouse') setHovered(true)
+      }}
+      onPointerOut={() => { document.body.style.cursor = ''; setHovered(false) }}
     >
       <primitive object={scene} />
       {progress !== null && (
@@ -176,9 +190,18 @@ export function Character<S extends string>({ url, spots, pose, startSpot, progr
           <meshBasicMaterial color="#e9b872" transparent opacity={0.85} />
         </mesh>
       )}
-      {pose.icon && (
+      {pose.icon && !(hovered && hoverCard) && (
         <Html position={[0, 0.95, 0]} center zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
-          <div className="v2-scene-icon">{pose.icon}</div>
+          <div className="v2-scene-icon" style={{ fontSize: `${Math.round(28 * scale)}px` }}>{pose.icon}</div>
+        </Html>
+      )}
+      {hovered && hoverCard && (
+        <Html position={[0, 1.05, 0]} center zIndexRange={[25, 21]} style={{ pointerEvents: 'none' }}>
+          <div className="v2-hover-card">
+            <div className="v2-hover-title">{hoverCard.title}</div>
+            {hoverCard.subtitle && <div className="v2-hover-sub">{hoverCard.subtitle}</div>}
+            <div className="v2-hover-status">{hoverCard.status}</div>
+          </div>
         </Html>
       )}
     </group>

@@ -6,10 +6,13 @@ import { CHARACTER_URL } from './assets'
 import { Character } from './Character'
 import { founderPose } from './founderPose'
 import { useRoom } from './RoomContext'
+import { founderStatusText } from './hoverText'
 
 export function Founder({ onSelect }: { onSelect?: () => void }) {
   const task = useV2(s => s.v2.founder.task)
+  const features = useV2(s => s.features)
   const room = useRoom()
+  const featureTitle = task?.type === 'develop' ? features.find(f => f.id === task.featureId)?.title : undefined
   return (
     <Character
       url={CHARACTER_URL}
@@ -18,6 +21,7 @@ export function Founder({ onSelect }: { onSelect?: () => void }) {
       startSpot="bed"
       progress={task ? task.progress : null}
       onSelect={onSelect}
+      hoverCard={{ title: 'You', subtitle: 'Founder', status: founderStatusText(task, featureTitle) }}
     />
   )
 }

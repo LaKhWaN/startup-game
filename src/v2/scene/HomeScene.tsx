@@ -5,6 +5,7 @@ import { ACESFilmicToneMapping, Object3D } from 'three'
 import { useV2 } from '../actions'
 import { PRELOAD_URLS } from './assets'
 import { qualityHandlers } from './quality'
+import { fitZoom } from './camera'
 import { Room } from './Room'
 import { RoomContext } from './RoomContext'
 import { roomFor, type RoomLayout } from './rooms'
@@ -14,9 +15,6 @@ PRELOAD_URLS.forEach(url => useGLTF.preload(url))
 // Isometric direction: 45° around, ≈33° down.
 const CAMERA_DIR: [number, number, number] = [1, 0.9, 1]
 const CAMERA_DISTANCE = 40
-/** World units a 4×4 room needs horizontally / vertically on screen, with margin; scales with w + d. */
-const VIEW_SPAN_X = 6.6
-const VIEW_SPAN_Y = 5.0
 
 const centerOf = (room: RoomLayout): [number, number, number] => [room.width / 2, 0.45, -room.depth / 2]
 
@@ -24,7 +22,6 @@ function CameraRig({ room }: { room: RoomLayout }) {
   const { camera, size } = useThree()
   useEffect(() => {
     const CENTER = centerOf(room)
-    const k = (room.width + room.depth) / 8
     const len = Math.hypot(...CAMERA_DIR)
     camera.position.set(
       CENTER[0] + (CAMERA_DIR[0] / len) * CAMERA_DISTANCE,
@@ -32,7 +29,7 @@ function CameraRig({ room }: { room: RoomLayout }) {
       CENTER[2] + (CAMERA_DIR[2] / len) * CAMERA_DISTANCE,
     )
     camera.lookAt(...CENTER)
-    camera.zoom = Math.min(size.width / (VIEW_SPAN_X * k), size.height / (VIEW_SPAN_Y * k))
+    camera.zoom = fitZoom(size, room.width, room.depth)
     camera.updateProjectionMatrix()
   }, [camera, size, room])
   return null
