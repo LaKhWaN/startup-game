@@ -3,24 +3,37 @@ import type { Rng } from '../state'
 import { DAYS_PER_MONTH, totalDays } from './clock'
 import { EVENTS } from './eventData'
 import { pickEvent } from './events'
+import { churnBreakdown, SHOCK_FADE_PER_DAY } from './churn'
 import { monthlyBurn, valuation } from './money'
 import type { GameV2 } from './types'
 
 const EVENT_COOLDOWN_DAYS = 5
 const EVENT_DAILY_CHANCE = 0.55
 
-/** Whole customers lost today. Rounds probabilistically so small companies churn too. */
-function dailyChurn(customers: number, monthlyRatePct: number, rng: Rng): number {
-  const expected = customers * (monthlyRatePct / 100 / DAYS_PER_MONTH)
+/** Rounds an expected count probabilistically, so small numbers still happen. */
+function roundChance(expected: number, rng: Rng): number {
   const whole = Math.floor(expected)
-  return Math.min(customers, whole + (rng() < expected - whole ? 1 : 0))
+  return whole + (rng() < expected - whole ? 1 : 0)
 }
+
+/** Whole customers lost today. */
+function dailyChurn(customers: number, monthlyRatePct: number, rng: Rng): number {
+  return Math.min(customers, roundChance(customers * (monthlyRatePct / 100 / DAYS_PER_MONTH), rng))
+}
+
+export const LEAD_DECAY_PER_DAY = 0.08
+export const TICKETS_PER_CUSTOMER_DAY = 0.03
 
 /** Once per game day: churn, revenue − burn, investor interest, a possible event, a snapshot. */
 export function processDay<T extends GameV2>(state: T, day: number, rng: Rng): T {
-  const floor = state.difficultyModifier?.churnFloor ?? 3
-  const churnRate = Math.max(floor, state.churnRate - 0.08)
+  // Product-health churn: shocks fade, the rest follows the product (spec §4).
+  const churnShock = Math.max(0, (state.churnShock ?? 0) - SHOCK_FADE_PER_DAY)
+  const churnRate = churnBreakdown({ ...state, churnShock }).total
   const lost = dailyChurn(state.customers, churnRate, rng)
+  // Leads go cold; customers raise support tickets (more with tech debt).
+  const coldLeads = Math.min(state.v2.leads, roundChance(state.v2.leads * LEAD_DECAY_PER_DAY, rng))
+  const newTickets = roundChance(state.customers * TICKETS_PER_CUSTOMER_DAY * (1 + state.techDebt / 100), rng)
+  const tickets = Math.min(Math.max(10, state.customers * 2), (state.v2.tickets ?? 0) + newTickets)
   const customers = state.customers - lost
   const mrr = customers * state.arpu
   const burn = monthlyBurn(state)
@@ -46,6 +59,8 @@ export function processDay<T extends GameV2>(state: T, day: number, rng: Rng): T
 
   const next: T = {
     ...state,
+    v2: { ...state.v2, leads: state.v2.leads - coldLeads, tickets },
+    churnShock,
     churnRate,
     customers,
     customersLostThisMonth: (state.customersLostThisMonth ?? 0) + lost,

@@ -110,6 +110,8 @@ export interface V2Slice {
   peakMrr: number
   chapter3: Chapter3State
   stats: V2Stats
+  /** Open support tickets (spec §4). */
+  tickets: number
 }
 
 /** The whole v2 game: company state + the v2 slice. */
@@ -143,6 +145,7 @@ export function createV2Slice(): V2Slice {
     peakMrr: 0,
     chapter3: { beat: 0, complete: false },
     stats: { ...EMPTY_STATS },
+    tickets: 0,
   }
 }
 
@@ -206,6 +209,7 @@ export function migrateV2Slice(v: unknown): V2Slice | null {
     peakMrr,
     chapter3: s.chapter3 ?? { beat: 0, complete: false },
     stats: { ...EMPTY_STATS, ...(s.stats ?? {}) },
+    tickets: typeof s.tickets === 'number' ? s.tickets : 0,
   }
 }
 

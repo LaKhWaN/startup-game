@@ -23,8 +23,10 @@ export interface CompanyState {
   mrr: number
   arpu: number
   customers: number
-  /** Monthly churn %, applied a little every day. */
+  /** Monthly churn %, applied a little every day (recomputed daily from churnBreakdown). */
   churnRate: number
+  /** Temporary churn from events, fading daily. */
+  churnShock: number
   customersLostThisMonth: number
   brand: number
   techDebt: number
@@ -73,6 +75,7 @@ export function createCompany(config: OnboardingConfig, cash: number): CompanySt
     arpu: START_ARPU,
     customers: 0,
     churnRate: churn,
+    churnShock: 0,
     customersLostThisMonth: 0,
     brand: 10,
     techDebt: 0,
