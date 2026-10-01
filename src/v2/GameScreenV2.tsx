@@ -13,6 +13,7 @@ import { FounderPanel } from './FounderPanel'
 import { RoomView } from './RoomView'
 import { useBackgroundMusic, useTypingLoop } from './audio'
 import { Founder, LaptopGlow } from './scene/Founder'
+import { Hires } from './scene/Hires'
 import { founderPose } from './scene/founderPose'
 import { saveGameV2 } from './saveV2'
 import { isV2Game } from './state'
@@ -59,7 +60,7 @@ export function GameScreenV2() {
       <RunwayBanner />
       <div className="game-main">
         <div className="game-canvas-area">
-          <RoomView><Founder /><LaptopGlow /></RoomView>
+          <RoomView><Founder /><Hires /><LaptopGlow /></RoomView>
           <BottomNavV2 active={panel} metricsUnlocked={metricsUnlocked} teamUnlocked={teamUnlocked} onTabClick={setPanel} />
         </div>
         {panel === 'metrics' && metricsUnlocked

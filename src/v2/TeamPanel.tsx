@@ -24,6 +24,14 @@ const ASSIGNMENT_LABEL: Record<Assignment, string> = {
 const SKILL_SHORT: Record<FounderSkill, string> = { research: 'Res', build: 'Build', outreach: 'Out', sales: 'Sales' }
 const ASSIGNMENTS: Assignment[] = ['research', 'develop', 'emails', 'sales', 'idle']
 
+const WAITING: Record<Assignment, string> = {
+  research: 'Nothing left to research',
+  develop: 'Waiting for a feature to build',
+  emails: 'Waiting for work…',
+  sales: 'Waiting for leads to call',
+  idle: 'Idle',
+}
+
 function fmtMoney(n: number): string {
   return `$${Math.round(n).toLocaleString()}`
 }
@@ -90,7 +98,7 @@ export function TeamPanel() {
                       <div className="v2-progress-fill" style={{ width: `${Math.round((m.task?.progress ?? 0) * 100)}%` }} />
                     </div>
                     <div className="v2-member-status">
-                      {m.task ? (building ? `Building ${building}` : ASSIGNMENT_LABEL[m.task.type]) : m.assignment === 'idle' ? 'Idle' : 'Waiting for work…'}
+                      {m.task ? (building ? `Building ${building}` : ASSIGNMENT_LABEL[m.task.type]) : WAITING[m.assignment]}
                     </div>
                     <div className="v2-member-skills">
                       {(Object.keys(SKILL_SHORT) as FounderSkill[]).map(k => (

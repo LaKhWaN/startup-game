@@ -39,6 +39,25 @@ async function shoot(viewport, tag) {
   await page.waitForTimeout(2500)
   await page.screenshot({ path: join(out, `${tag}-3-develop.png`) })
 
+  // Phase 3: two interns in the room, and the Team tab.
+  await page.evaluate(() => {
+    window.__v2.skipChapter1()
+    window.__v2.hireFirst()
+    window.__v2.hireFirst()
+    window.__v2.fastForward(6)
+  })
+  await page.getByRole('button', { name: /team/i }).first().click().catch(() => errors.push(`[${tag}] no Team tab`))
+  await page.waitForTimeout(3000)
+  await page.screenshot({ path: join(out, `${tag}-4-team.png`) })
+
+  await page.evaluate(() => {
+    const ids = Object.keys(window.__v2.getV2State().v2.team)
+    if (ids[0]) window.__v2.assignTeamMember(ids[0], 'sales')
+    window.__v2.fastForward(2)
+  })
+  await page.waitForTimeout(2500)
+  await page.screenshot({ path: join(out, `${tag}-5-team-sales.png`) })
+
   // Blank check: sample the canvas-area pixels from a real screenshot of that element.
   const area = page.locator('.game-canvas-area')
   const png = await area.screenshot()

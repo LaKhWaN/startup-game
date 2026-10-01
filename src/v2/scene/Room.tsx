@@ -1,6 +1,7 @@
 import { Clone, useGLTF } from '@react-three/drei'
+import { useV2 } from '../actions'
 import { furnitureUrl } from './assets'
-import { FLOOR, FURNITURE, WALLS, type Placement } from './layout'
+import { FLOOR, FURNITURE, SEAT_FURNITURE, WALLS, type Placement } from './layout'
 
 function Piece({ p }: { p: Placement }) {
   const { scene } = useGLTF(furnitureUrl(p.model))
@@ -33,11 +34,14 @@ function PictureFrame() {
 }
 
 export function Room() {
+  const team = useV2(s => s.v2.team)
+  const taken = new Set(Object.values(team).map(m => m.seat))
   return (
     <group>
       {FLOOR.map((p, i) => <Piece key={`f${i}`} p={p} />)}
       {WALLS.map((p, i) => <Piece key={`w${i}`} p={p} />)}
       {FURNITURE.map((p, i) => <Piece key={`${p.model}-${i}`} p={p} />)}
+      {SEAT_FURNITURE.map((seat, i) => taken.has(i) && seat.map((p, j) => <Piece key={`seat${i}-${j}`} p={p} />))}
       <PictureFrame />
     </group>
   )

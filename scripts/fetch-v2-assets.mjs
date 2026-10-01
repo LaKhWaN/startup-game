@@ -12,8 +12,10 @@ const FURN_ZIP = 'https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-
 const FURNITURE = [
   'floorFull', 'wall', 'wallWindow', 'desk', 'chairDesk', 'laptop', 'bedSingle', 'sideTable',
   'lampSquareTable', 'bookcaseOpen', 'books', 'pottedPlant', 'plantSmall1', 'lampRoundFloor', 'rugRectangle',
+  'loungeChair', 'tableCoffee',
 ]
-const CHARACTER = 'character-male-a'
+// Founder + the intern looks (src/v2/team.ts INTERN_MODELS)
+const CHARACTERS = ['character-male-a', 'character-male-c', 'character-male-e', 'character-female-b', 'character-female-d']
 
 const OUT = join(process.cwd(), 'public', 'assets', 'v2')
 const work = mkdtempSync(join(tmpdir(), 'kenney-'))
@@ -36,8 +38,8 @@ for (const name of FURNITURE) {
   copyFileSync(join(work, 'furn', 'Models', 'GLTF format', `${name}.glb`), join(OUT, 'furniture', `${name}.glb`))
 }
 const charDir = join(work, 'chars', 'Models', 'GLB format')
-copyFileSync(join(charDir, `${CHARACTER}.glb`), join(OUT, 'characters', `${CHARACTER}.glb`))
+for (const name of CHARACTERS) copyFileSync(join(charDir, `${name}.glb`), join(OUT, 'characters', `${name}.glb`))
 copyFileSync(join(charDir, 'Textures', 'colormap.png'), join(OUT, 'characters', 'Textures', 'colormap.png'))
 copyFileSync(join(work, 'furn', 'License.txt'), join(OUT, 'LICENSE-kenney.txt'))
 
-console.log(`Wrote ${FURNITURE.length} furniture models + ${CHARACTER} to ${OUT}`)
+console.log(`Wrote ${FURNITURE.length} furniture models + ${CHARACTERS.length} characters to ${OUT}`)

@@ -4,6 +4,7 @@ export const FURNITURE_MODELS = [
   'bedSingle', 'sideTable', 'lampSquareTable',
   'bookcaseOpen', 'books', 'pottedPlant', 'plantSmall1',
   'lampRoundFloor', 'rugRectangle',
+  'loungeChair', 'tableCoffee',
 ] as const
 
 export type FurnitureModel = typeof FURNITURE_MODELS[number]
@@ -12,7 +13,16 @@ export function furnitureUrl(name: FurnitureModel): string {
   return `/assets/v2/furniture/${name}.glb`
 }
 
-export const CHARACTER_URL = '/assets/v2/characters/character-male-a.glb'
+/** Founder first, then the intern looks (src/v2/team.ts INTERN_MODELS). */
+export const CHARACTER_MODELS = [
+  'character-male-a', 'character-male-c', 'character-male-e', 'character-female-b', 'character-female-d',
+] as const
+
+export function characterUrl(name: string): string {
+  return `/assets/v2/characters/${name}.glb`
+}
+
+export const CHARACTER_URL = characterUrl('character-male-a')
 
 /** Clip names read from the Kenney Mini Characters GLB (all 12 characters share them). */
 export const CHARACTER_CLIPS = [
@@ -26,4 +36,4 @@ export const CHARACTER_CLIPS = [
 
 export type CharacterClip = typeof CHARACTER_CLIPS[number]
 
-export const PRELOAD_URLS: string[] = [...FURNITURE_MODELS.map(furnitureUrl), CHARACTER_URL]
+export const PRELOAD_URLS: string[] = [...FURNITURE_MODELS.map(furnitureUrl), ...CHARACTER_MODELS.map(characterUrl)]

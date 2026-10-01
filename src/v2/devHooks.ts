@@ -1,6 +1,7 @@
 import { scoreToDifficulty } from '../ai/gemini'
 import { FEATURE_TEMPLATES } from '../data/featureTemplates'
-import { getV2State, newGameV2, startFounderTask, stepGame } from './actions'
+import { assignTeamMember, ensureCandidates, getV2State, hireCandidate, newGameV2, startFounderTask, stepGame } from './actions'
+import { useGameStore } from '../store/gameStore'
 
 /** Dev-only helpers so scripts/v2-screenshot.mjs can drive /new without the Groq onboarding. */
 export function installDevHooks(): void {
@@ -18,5 +19,17 @@ export function installDevHooks(): void {
     startFounderTask,
     fastForward: (hours: number) => { for (let i = 0; i < hours; i++) stepGame() },
     getV2State,
+    /** Skip Chapter 1 (complete, with cash) so the Team tab and hiring are open. */
+    skipChapter1: (cash = 5000) => {
+      const s = getV2State()
+      useGameStore.setState({ cash, v2: { ...s.v2, chapter: { ...s.v2.chapter, beat: 5, complete: true } } } as never)
+    },
+    /** Hire the first available candidate; returns the hire check result. */
+    hireFirst: () => {
+      ensureCandidates()
+      const c = getV2State().v2.candidates[0]
+      return c ? hireCandidate(c.id) : 'missing'
+    },
+    assignTeamMember,
   }
 }

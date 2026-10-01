@@ -11,19 +11,27 @@ export interface Placement {
   scale?: number
   /** Footprint width (x) × depth (z) before rotation, from the model's measured bounds. */
   size: [number, number]
+  /** Local [min x, max z] of the model when its pivot isn't the usual corner. Default [0, 0]. */
+  origin?: [number, number]
 }
 
-/** Kenney pivots sit at a corner: footprint extends +x and −z from the pivot at rotation 0. */
+/**
+ * World-space floor rectangle. Kenney pivots usually sit at a corner: at rotation 0
+ * the footprint extends +x and −z from the pivot (override with `origin`).
+ */
 export function footprint(p: Placement): { x0: number; x1: number; z0: number; z1: number } {
   const s = p.scale ?? 1
   const [w, d] = [p.size[0] * s, p.size[1] * s]
+  const [ox, oz] = (p.origin ?? [0, 0]).map(v => v * s)
   const [x, , z] = p.position
-  switch (p.rotationY) {
-    case 0: return { x0: x, x1: x + w, z0: z - d, z1: z }
-    case 90: return { x0: x - d, x1: x, z0: z - w, z1: z }
-    case 180: return { x0: x - w, x1: x, z0: z, z1: z + d }
-    case 270: return { x0: x, x1: x + d, z0: z, z1: z + w }
-  }
+  const a = (p.rotationY * Math.PI) / 180
+  const [cos, sin] = [Math.round(Math.cos(a)), Math.round(Math.sin(a))]
+  // Three.js Y rotation: (lx, lz) → (lx·cos + lz·sin, −lx·sin + lz·cos)
+  const corners = [[ox, oz], [ox + w, oz], [ox, oz - d], [ox + w, oz - d]]
+    .map(([lx, lz]) => [x + lx * cos + lz * sin, z - lx * sin + lz * cos])
+  const xs = corners.map(c => c[0])
+  const zs = corners.map(c => c[1])
+  return { x0: Math.min(...xs), x1: Math.max(...xs), z0: Math.min(...zs), z1: Math.max(...zs) }
 }
 
 export const FLOOR: Placement[] = Array.from({ length: 16 }, (_, i) => ({
@@ -79,6 +87,39 @@ export const SPOTS: Record<SpotId, Spot> = {
   bed: { position: [1.0, 0.3, -1.0], yaw: Math.PI / 2, seat: 'bedSingle' },
   bookshelf: { position: [3.2, 0, -3.4], yaw: Math.PI, seat: undefined },
   desk: { position: [1.55, 0.22, -2.95], yaw: Math.PI, seat: 'chairDesk' },
-  paceA: { position: [2.6, 0, -2.6], yaw: Math.PI / 2 },
+  paceA: { position: [2.9, 0, -2.35], yaw: Math.PI / 2 },
   paceB: { position: [3.5, 0, -2.0], yaw: -Math.PI / 2 },
 }
+
+// ── Hire seats (Phase 3) ────────────────────────────────────────────────────
+// Seat furniture only renders while that seat is taken (Room.tsx).
+
+export const SEAT_FURNITURE: Placement[][] = [
+  // Seat 0: lounge chair facing the coffee table, front of the room
+  [
+    { model: 'loungeChair', position: [2.25, 0, -0.3], rotationY: 90, size: [0.49, 0.41] },
+    { model: 'tableCoffee', position: [2.75, 0, -0.45], rotationY: 0, size: [0.661, 0.4], origin: [-0.461, 0.1] },
+    { model: 'laptop', position: [2.4, 0.23, -0.72], rotationY: 270, scale: 0.55, size: [0.6, 0.546] },
+  ],
+  // Seat 1: a second desk on the back wall, right of the founder's
+  [
+    { model: 'desk', position: [2.2, 0, -3.42], rotationY: 0, size: [0.734, 0.556] },
+    { model: 'laptop', position: [2.37, 0.384, -3.5], rotationY: 0, scale: 0.55, size: [0.6, 0.546] },
+    { model: 'chairDesk', position: [2.4, 0, -2.75], rotationY: 0, size: [0.479, 0.443] },
+  ],
+]
+
+export interface HireSpots { seat: Spot; paceA: Spot; paceB: Spot }
+
+export const HIRE_SPOTS: HireSpots[] = [
+  {
+    seat: { position: [2.03, 0.16, -0.55], yaw: Math.PI / 2, seat: 'loungeChair' },
+    paceA: { position: [2.4, 0, -1.55], yaw: Math.PI / 2 },
+    paceB: { position: [3.3, 0, -1.55], yaw: -Math.PI / 2 },
+  },
+  {
+    seat: { position: [2.62, 0.22, -2.95], yaw: Math.PI, seat: 'chairDesk' },
+    paceA: { position: [3.75, 0, -3.1], yaw: 0 },
+    paceB: { position: [3.75, 0, -2.55], yaw: Math.PI },
+  },
+]
