@@ -1,5 +1,5 @@
 import { dismissCoachCard, startFounderTask, useV2 } from './actions'
-import { currentCoachCard, isTaskUnlocked } from './chapter'
+import { currentChapter2Card, currentCoachCard, isTaskUnlocked } from './chapter'
 import { FOUNDER_BUILD_SPEED, taskDurationDays } from './founder'
 import type { FounderSkill, FounderTaskType } from './state'
 import '../components/RightPanel.css'
@@ -34,7 +34,7 @@ export function FounderPanel() {
   const features = useV2(s => s.features)
   const customers = useV2(s => s.customers)
 
-  const card = currentCoachCard({ v2 })
+  const card = v2.chapter.complete ? currentChapter2Card({ v2 }) : currentCoachCard({ v2 })
   const task = v2.founder.task
   const busy = task !== null
   const proposed = features.filter(f => f.status === 'proposed')
@@ -62,9 +62,14 @@ export function FounderPanel() {
       <div className="rp-body">
         <div className="rp-scroll">
           <div className="rp-content v2-founder">
-            {v2.chapter.complete && (
+            {v2.chapter.complete && !v2.chapter2.complete && (
               <div className="v2-banner">
-                Chapter 1 complete. <strong>Chapter 2: your first hire</strong> is coming soon. Keep growing on your own until then.
+                <strong>Chapter 2: build a team.</strong> Hire interns in the Team tab and grow to $1,000 MRR.
+              </div>
+            )}
+            {v2.chapter2.complete && (
+              <div className="v2-banner">
+                Chapter 2 complete. <strong>Chapter 3: a bigger space</strong> is coming soon.
               </div>
             )}
 

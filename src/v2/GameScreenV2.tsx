@@ -6,7 +6,8 @@ import { RightPanel } from '../components/RightPanel'
 import { RunwayBanner } from '../components/RunwayBanner'
 import { getV2State, reshowCoachCard, stepGame, useV2 } from './actions'
 import { BottomNavV2, type V2Panel } from './BottomNavV2'
-import { isMetricsUnlocked } from './chapter'
+import { isMetricsUnlocked, isTeamUnlocked } from './chapter'
+import { TeamPanel } from './TeamPanel'
 import { FamilyMoneyModal } from './FamilyMoneyModal'
 import { FounderPanel } from './FounderPanel'
 import { RoomView } from './RoomView'
@@ -32,6 +33,7 @@ export function GameScreenV2() {
   useTypingLoop(founderPose(v2.founder.task).typing && phase === 'playing' && gameSpeed > 0)
 
   const metricsUnlocked = isMetricsUnlocked({ v2 })
+  const teamUnlocked = isTeamUnlocked({ v2 })
   const { chapter } = v2
   const showFamilyMoney = chapter.beat === 5 && !!chapter.familyMoney && !chapter.familyMoney.claimed
 
@@ -58,13 +60,15 @@ export function GameScreenV2() {
       <div className="game-main">
         <div className="game-canvas-area">
           <RoomView><Founder /><LaptopGlow /></RoomView>
-          <BottomNavV2 active={panel} metricsUnlocked={metricsUnlocked} onTabClick={setPanel} />
+          <BottomNavV2 active={panel} metricsUnlocked={metricsUnlocked} teamUnlocked={teamUnlocked} onTabClick={setPanel} />
         </div>
-        {panel === 'metrics' && metricsUnlocked ? <RightPanel activePanel="metrics" /> : <FounderPanel />}
+        {panel === 'metrics' && metricsUnlocked
+          ? <RightPanel activePanel="metrics" />
+          : panel === 'team' && teamUnlocked ? <TeamPanel /> : <FounderPanel />}
       </div>
       <FeatureResultToasts />
       <MilestoneToastQueue toasts={pendingMilestoneToasts} onDismiss={dismissMilestoneToast} />
-      {chapter.complete && <EventCard />}
+      {chapter.complete && v2.chapter2.complete && <EventCard />}
       {showFamilyMoney && <FamilyMoneyModal />}
     </div>
   )

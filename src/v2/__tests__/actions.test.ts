@@ -7,6 +7,7 @@ import { useGameStore } from '../../store/gameStore'
 import {
   claimFamilyMoney, getV2State, newGameV2, pauseForModal, resetStoreForV2,
   startFounderTask, stepGame, upgradeLegacyRestart,
+  assignTeamMember, ensureCandidates, fireTeamMember, hireCandidate,
 } from '../actions'
 import { isV2Game } from '../state'
 import { makeConfig } from './fixtures'
@@ -93,5 +94,42 @@ describe('upgradeLegacyRestart', () => {
     useGameStore.getState().restartGame()
     upgradeLegacyRestart()
     expect(getV2State().phase).toBe('setup')
+  })
+})
+
+describe('team actions', () => {
+  function chapterOneDone() {
+    newGameV2(makeConfig())
+    const s = getV2State()
+    useGameStore.setState({ cash: 3000, v2: { ...s.v2, chapter: { ...s.v2.chapter, beat: 5, complete: true } } } as never)
+  }
+
+  it('fills candidates on demand and hires through the store', () => {
+    chapterOneDone()
+    ensureCandidates()
+    const c = getV2State().v2.candidates[0]
+    expect(getV2State().v2.candidates).toHaveLength(3)
+    expect(hireCandidate(c.id)).toBe('ok')
+    const s = getV2State()
+    expect(s.v2.team[c.id]).toBeDefined()
+    expect(s.employees.map(e => e.id)).toContain(c.id)
+  })
+
+  it('reports why a hire is blocked', () => {
+    chapterOneDone()
+    ensureCandidates()
+    useGameStore.setState({ cash: 100 } as never)
+    expect(hireCandidate(getV2State().v2.candidates[0].id)).toBe('cash')
+  })
+
+  it('reassigns and lets go', () => {
+    chapterOneDone()
+    ensureCandidates()
+    const c = getV2State().v2.candidates[0]
+    hireCandidate(c.id)
+    assignTeamMember(c.id, 'idle')
+    expect(getV2State().v2.team[c.id].assignment).toBe('idle')
+    fireTeamMember(c.id)
+    expect(getV2State().v2.team[c.id]).toBeUndefined()
   })
 })

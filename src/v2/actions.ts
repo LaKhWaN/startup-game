@@ -5,7 +5,8 @@ import type { OnboardingConfig } from '../types'
 import { claimFamilyMoney as claimFamilyMoneyPure, dismissCard, reshowCurrentCard } from './chapter'
 import { startTask, type StartTaskError } from './founder'
 import { loadGameV2, type SlotId } from './saveV2'
-import { createV2State, isV2Game, type FounderTaskType, type V2GameState, type V2Slice } from './state'
+import { createV2State, isV2Game, type Assignment, type FounderTaskType, type V2GameState, type V2Slice } from './state'
+import { canHire, fireMember, generateInternCandidates, hireIntern, setAssignment, type HireCheck } from './team'
 import { stepV2 } from './v2Tick'
 
 type LegacyStore = ReturnType<typeof useGameStore.getState>
@@ -100,4 +101,34 @@ export function upgradeLegacyRestart(): void {
   if (s.phase !== 'playing' || isV2Game(s)) return
   if (s.lastConfig) newGameV2(s.lastConfig)
   else resetStoreForV2()
+}
+
+// ── Team ────────────────────────────────────────────────────────────────────
+
+export function refreshCandidates(rng: () => number = Math.random): void {
+  const s = getV2State()
+  setV2State({ v2: { ...s.v2, candidates: generateInternCandidates(rng) } })
+}
+
+export function ensureCandidates(): void {
+  if (getV2State().v2.candidates.length === 0) refreshCandidates()
+}
+
+export function hireCandidate(id: string): HireCheck {
+  const s = getV2State()
+  const check = canHire(s, id)
+  if (check !== 'ok') return check
+  playSfx('success1', 0.6)
+  setV2State(hireIntern(s, id))
+  return 'ok'
+}
+
+export function fireTeamMember(id: string): void {
+  playSfx('fired', 0.6)
+  setV2State(fireMember(getV2State(), id))
+}
+
+export function assignTeamMember(id: string, assignment: Assignment): void {
+  playSfx('click', 0.4)
+  setV2State(setAssignment(getV2State(), id, assignment))
 }

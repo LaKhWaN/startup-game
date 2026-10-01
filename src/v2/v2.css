@@ -77,3 +77,16 @@
 .v2-scene canvas { display: block; }
 .v2-scene-icon { font-size: 28px; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.35)); animation: v2-float 2.4s ease-in-out infinite; }
 @keyframes v2-float { 0%, 100% { transform: translateY(0); opacity: 0.85; } 50% { transform: translateY(-8px); opacity: 1; } }
+
+.v2-team-summary { display: flex; flex-wrap: wrap; gap: 0.8rem; padding: 0.6rem 0.8rem; border-radius: 10px; background: var(--surface2); font-size: 0.8rem; color: var(--muted); }
+.v2-team-summary strong { color: var(--text); font-family: 'Roboto Mono', monospace; }
+.v2-warn, .v2-warn strong { color: var(--error) !important; }
+.v2-section-head { display: flex; align-items: center; justify-content: space-between; }
+.v2-member { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.7rem; margin-bottom: 0.5rem; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+.v2-member-top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
+.v2-member-name { font-weight: 600; font-size: 0.9rem; color: var(--text); }
+.v2-member-salary { font-family: 'Roboto Mono', monospace; font-size: 0.78rem; color: var(--muted); }
+.v2-member-role, .v2-member-bio, .v2-member-status { font-size: 0.76rem; color: var(--muted); }
+.v2-member-row { display: flex; align-items: center; gap: 0.5rem; }
+.v2-member-skills { display: flex; gap: 0.7rem; font-family: 'Roboto Mono', monospace; font-size: 0.72rem; color: var(--muted); }
+.v2-select { flex: 1; padding: 0.4rem 0.5rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font: inherit; font-size: 0.8rem; }
