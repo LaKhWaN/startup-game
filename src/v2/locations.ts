@@ -72,3 +72,8 @@ export function moveTo(state: V2GameState, id: LocationId): V2GameState {
   const cost = def.moveIn > 0 ? ` Move-in cost $${def.moveIn.toLocaleString()}, rent $${def.rent.toLocaleString()}/mo.` : ''
   return addStory(next, [`${def.icon} ${state.startupName} moved to: ${def.name}.${cost}`])
 }
+
+/** The next rung up from where you are, or null at the top. */
+export function nextLocation(state: Pick<V2GameState, 'v2'>): LocationDef | null {
+  return LOCATIONS[locationIndex(state.v2.location) + 1] ?? null
+}

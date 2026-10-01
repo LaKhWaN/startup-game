@@ -90,3 +90,16 @@
 .v2-member-row { display: flex; align-items: center; gap: 0.5rem; }
 .v2-member-skills { display: flex; gap: 0.7rem; font-family: 'Roboto Mono', monospace; font-size: 0.72rem; color: var(--muted); }
 .v2-select { flex: 1; padding: 0.4rem 0.5rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font: inherit; font-size: 0.8rem; }
+
+.v2-map { list-style: none; margin: 0.6rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0; position: relative; }
+.v2-map::before { content: ''; position: absolute; left: 1.35rem; top: 1rem; bottom: 1rem; border-left: 2px dashed var(--border); }
+.v2-map-node { position: relative; display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.6rem 0.7rem; margin-bottom: 0.5rem; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.v2-map-node--here { border-color: var(--brand-primary); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); }
+.v2-map-node--locked { opacity: 0.6; background: var(--surface2); }
+.v2-map-icon { position: relative; z-index: 1; width: 1.4rem; text-align: center; font-size: 1.3rem; line-height: 1.6rem; }
+.v2-map-info { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
+.v2-map-name { font-weight: 600; font-size: 0.9rem; color: var(--text); }
+.v2-map-meta, .v2-map-status { font-size: 0.76rem; color: var(--muted); }
+.v2-map-node--here .v2-map-status { color: var(--brand-primary); font-weight: 600; }
+.v2-tier { display: inline-block; margin-left: 0.4rem; padding: 0 0.4rem; border-radius: 6px; font-size: 0.66rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; background: var(--surface2); color: var(--muted); vertical-align: middle; }
+.v2-tier--fulltime { background: var(--brand-primary); color: var(--surface); }

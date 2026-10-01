@@ -7,7 +7,7 @@ import { useGameStore } from '../../store/gameStore'
 import {
   claimFamilyMoney, getV2State, newGameV2, pauseForModal, resetStoreForV2,
   startFounderTask, stepGame, upgradeLegacyRestart,
-  assignTeamMember, ensureCandidates, fireTeamMember, hireCandidate,
+  assignTeamMember, ensureCandidates, fireTeamMember, hireCandidate, moveToLocation, promoteTeamMember,
 } from '../actions'
 import { isV2Game } from '../state'
 import { makeConfig } from './fixtures'
@@ -131,5 +131,50 @@ describe('team actions', () => {
     expect(getV2State().v2.team[c.id].assignment).toBe('idle')
     fireTeamMember(c.id)
     expect(getV2State().v2.team[c.id]).toBeUndefined()
+  })
+})
+
+describe('location actions', () => {
+  function chapterTwoDone(cash = 50_000) {
+    newGameV2(makeConfig())
+    const s = getV2State()
+    useGameStore.setState({
+      cash,
+      v2: {
+        ...s.v2,
+        chapter: { ...s.v2.chapter, beat: 5, complete: true },
+        chapter2: { beat: 2, complete: true, firstMistake: false },
+        unlockedLocations: ['home', 'biggerHome', 'villa'],
+      },
+    } as never)
+  }
+
+  it('moves, starts Chapter 3 beat 1, and reports blocks', () => {
+    chapterTwoDone()
+    expect(moveToLocation('coworking')).toBe('locked')
+    expect(moveToLocation('biggerHome')).toBe('ok')
+    const s = getV2State()
+    expect(s.v2.location).toBe('biggerHome')
+    expect(s.v2.chapter3.beat).toBe(1)
+  })
+
+  it('adds full-time candidates when a move unlocks them', () => {
+    chapterTwoDone()
+    ensureCandidates()
+    expect(getV2State().v2.candidates.some(c => c.tier === 'fulltime')).toBe(false)
+    moveToLocation('villa')
+    expect(getV2State().v2.candidates.filter(c => c.tier === 'fulltime')).toHaveLength(2)
+  })
+
+  it('promotes through the store', () => {
+    chapterTwoDone()
+    moveToLocation('villa')
+    const c = getV2State().v2.candidates.find(x => x.tier === 'intern')!
+    hireCandidate(c.id)
+    const s = getV2State()
+    const m = s.v2.team[c.id]
+    useGameStore.setState({ v2: { ...s.v2, team: { [c.id]: { ...m, skills: { research: 5, build: 5, outreach: 5, sales: 5 } } } } } as never)
+    expect(promoteTeamMember(c.id)).toBe('ok')
+    expect(getV2State().v2.team[c.id].tier).toBe('fulltime')
   })
 })

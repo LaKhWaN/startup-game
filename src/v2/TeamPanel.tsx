@@ -1,16 +1,22 @@
 import { useEffect } from 'react'
-import { assignTeamMember, ensureCandidates, fireTeamMember, hireCandidate, refreshCandidates, useV2 } from './actions'
+import { assignTeamMember, ensureCandidates, fireTeamMember, hireCandidate, promoteTeamMember, refreshCandidates, useV2 } from './actions'
 import { MAIN_TASK } from './work'
-import { teamCapacity, teamFinances } from './team'
-import type { Assignment, FounderSkill, TeamRole, V2GameState } from './state'
+import { canHire, canPromote, isFullTimeUnlocked, PROMOTE_SKILL, teamCapacity, teamFinances } from './team'
+import type { Assignment, FounderSkill, InternCandidate, TeamRole, Tier, V2GameState } from './state'
 import '../components/RightPanel.css'
 import './v2.css'
 
 const ROLE_INFO: Record<TeamRole, { icon: string; label: string }> = {
-  developer: { icon: '🛠️', label: 'Dev intern' },
-  product_manager: { icon: '🔍', label: 'Product intern' },
-  marketing: { icon: '✉️', label: 'Marketing intern' },
-  sales: { icon: '🤝', label: 'Sales intern' },
+  developer: { icon: '🛠️', label: 'Developer' },
+  product_manager: { icon: '🔍', label: 'Product' },
+  marketing: { icon: '✉️', label: 'Marketing' },
+  sales: { icon: '🤝', label: 'Sales' },
+}
+
+const TIER_LABEL: Record<Tier, string> = { intern: 'Intern', fulltime: 'Full-time' }
+
+function TierBadge({ tier }: { tier: Tier }) {
+  return <span className={`v2-tier v2-tier--${tier}`}>{TIER_LABEL[tier]}</span>
 }
 
 const ASSIGNMENT_LABEL: Record<Assignment, string> = {
@@ -50,7 +56,38 @@ export function TeamPanel() {
   const members = Object.values(v2.team).sort((a, b) => a.seat - b.seat)
   const capacity = teamCapacity({ v2 } as V2GameState)
   const full = members.length >= capacity
-  const { burn, runwayMonths: runway } = teamFinances({ v2, cash, employees, infraCostMonthly: infra, mrr } as V2GameState)
+  const state = { v2, cash, employees, infraCostMonthly: infra, mrr } as V2GameState
+  const { burn, runwayMonths: runway } = teamFinances(state)
+  const fullTime = isFullTimeUnlocked(state)
+
+  function hireReason(c: InternCandidate): string | null {
+    switch (canHire(state, c.id)) {
+      case 'full': return `Room is full (${members.length}/${capacity}). Move somewhere bigger on the Map`
+      case 'cash': return `Need ${fmtMoney(c.salary)} for the first month`
+      case 'locked': return 'Full-time hires start at the Villa'
+      default: return null
+    }
+  }
+
+  function candidateCard(c: InternCandidate) {
+    const reason = hireReason(c)
+    return (
+      <div key={c.id} className="v2-member">
+        <div className="v2-member-top">
+          <span className="v2-member-name">{ROLE_INFO[c.role].icon} {c.name}<TierBadge tier={c.tier} /></span>
+          <span className="v2-member-salary">{fmtMoney(c.salary)}/mo</span>
+        </div>
+        <div className="v2-member-role">{ROLE_INFO[c.role].label}</div>
+        <div className="v2-member-bio">{c.bio}</div>
+        <div className="v2-member-row">
+          <button className="v2-btn v2-btn-primary" disabled={reason !== null} onClick={() => hireCandidate(c.id)}>
+            Hire
+          </button>
+          {reason && <span className="v2-muted">{reason}</span>}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <aside className="right-panel right-panel--open">
@@ -76,7 +113,7 @@ export function TeamPanel() {
                 return (
                   <div key={m.id} className="v2-member">
                     <div className="v2-member-top">
-                      <span className="v2-member-name">{ROLE_INFO[m.role].icon} {m.name}</span>
+                      <span className="v2-member-name">{ROLE_INFO[m.role].icon} {m.name}<TierBadge tier={m.tier} /></span>
                       <span className="v2-member-salary">{fmtMoney(m.salary)}/mo</span>
                     </div>
                     <div className="v2-member-role">
@@ -92,6 +129,11 @@ export function TeamPanel() {
                       >
                         {ASSIGNMENTS.map(a => <option key={a} value={a}>{ASSIGNMENT_LABEL[a]}</option>)}
                       </select>
+                      {canPromote(state, m.id) === 'ok' && (
+                        <button className="v2-btn v2-btn-primary" onClick={() => promoteTeamMember(m.id)} title={`Main skill ${PROMOTE_SKILL}+: make them full-time`}>
+                          Promote
+                        </button>
+                      )}
                       <button className="v2-btn v2-btn-ghost" onClick={() => fireTeamMember(m.id)}>Let go</button>
                     </div>
                     <div className="v2-progress">
@@ -115,26 +157,15 @@ export function TeamPanel() {
                 <div className="rp-section-label">Interns available</div>
                 <button className="v2-btn v2-btn-ghost" onClick={() => refreshCandidates()}>Refresh</button>
               </div>
-              {v2.candidates.map(c => {
-                const reason = full ? `Room is full (${members.length}/${capacity})` : cash < c.salary ? `Need ${fmtMoney(c.salary)} for the first month` : null
-                return (
-                  <div key={c.id} className="v2-member">
-                    <div className="v2-member-top">
-                      <span className="v2-member-name">{ROLE_INFO[c.role].icon} {c.name}</span>
-                      <span className="v2-member-salary">{fmtMoney(c.salary)}/mo</span>
-                    </div>
-                    <div className="v2-member-role">{ROLE_INFO[c.role].label}</div>
-                    <div className="v2-member-bio">{c.bio}</div>
-                    <div className="v2-member-row">
-                      <button className="v2-btn v2-btn-primary" disabled={reason !== null} onClick={() => hireCandidate(c.id)}>
-                        Hire
-                      </button>
-                      {reason && <span className="v2-muted">{reason}</span>}
-                    </div>
-                  </div>
-                )
-              })}
+              {v2.candidates.filter(c => c.tier === 'intern').map(candidateCard)}
             </section>
+
+            {fullTime && (
+              <section className="rp-section">
+                <div className="rp-section-label">Full-time candidates</div>
+                {v2.candidates.filter(c => c.tier === 'fulltime').map(candidateCard)}
+              </section>
+            )}
           </div>
         </div>
       </div>

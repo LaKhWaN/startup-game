@@ -2,11 +2,15 @@ import { playSfx } from '../audio/sfx'
 import { createDefaultState } from '../engine/gameEngine'
 import { useGameStore, type GameSpeed } from '../store/gameStore'
 import type { OnboardingConfig } from '../types'
-import { claimFamilyMoney as claimFamilyMoneyPure, dismissCard, reshowCurrentCard } from './chapter'
+import { claimFamilyMoney as claimFamilyMoneyPure, dismissCard, onMoved, reshowCurrentCard } from './chapter'
 import { startTask, type StartTaskError } from './founder'
 import { loadGameV2, type SlotId } from './saveV2'
-import { createV2State, isV2Game, type Assignment, type FounderTaskType, type V2GameState, type V2Slice } from './state'
-import { canHire, fireMember, generateInternCandidates, hireIntern, setAssignment, type HireCheck } from './team'
+import { canMove, moveTo, type MoveCheck } from './locations'
+import { createV2State, isV2Game, type Assignment, type FounderTaskType, type LocationId, type V2GameState, type V2Slice } from './state'
+import {
+  canHire, canPromote, fireMember, generateCandidates, hireIntern, isFullTimeUnlocked, promoteMember, setAssignment,
+  type HireCheck, type PromoteCheck,
+} from './team'
 import { stepV2 } from './v2Tick'
 
 type LegacyStore = ReturnType<typeof useGameStore.getState>
@@ -107,7 +111,7 @@ export function upgradeLegacyRestart(): void {
 
 export function refreshCandidates(rng: () => number = Math.random): void {
   const s = getV2State()
-  setV2State({ v2: { ...s.v2, candidates: generateInternCandidates(rng) } })
+  setV2State({ v2: { ...s.v2, candidates: generateCandidates(rng, { fullTime: isFullTimeUnlocked(s) }) } })
 }
 
 export function ensureCandidates(): void {
@@ -131,4 +135,27 @@ export function fireTeamMember(id: string): void {
 export function assignTeamMember(id: string, assignment: Assignment): void {
   playSfx('click', 0.4)
   setV2State(setAssignment(getV2State(), id, assignment))
+}
+
+export function promoteTeamMember(id: string): PromoteCheck {
+  const s = getV2State()
+  const check = canPromote(s, id)
+  if (check !== 'ok') return check
+  playSfx('success1', 0.6)
+  setV2State(promoteMember(s, id))
+  return 'ok'
+}
+
+// ── Map ─────────────────────────────────────────────────────────────────────
+
+export function moveToLocation(id: LocationId): MoveCheck {
+  const s = getV2State()
+  const check = canMove(s, id)
+  if (check !== 'ok') return check
+  playSfx('whoosh', 0.5)
+  const moved = onMoved(moveTo(s, id))
+  setV2State(moved)
+  // Moving into full-time territory opens a fresh hiring pool.
+  if (isFullTimeUnlocked(moved) && !moved.v2.candidates.some(c => c.tier === 'fulltime')) refreshCandidates()
+  return 'ok'
 }

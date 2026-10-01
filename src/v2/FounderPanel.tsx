@@ -1,5 +1,6 @@
 import { dismissCoachCard, startFounderTask, useV2 } from './actions'
 import { currentCard, isTaskUnlocked } from './chapter'
+import { nextLocation } from './locations'
 import { FOUNDER_BUILD_SPEED, taskDurationDays } from './founder'
 import type { FounderSkill, FounderTaskType } from './state'
 import '../components/RightPanel.css'
@@ -35,6 +36,7 @@ export function FounderPanel() {
   const customers = useV2(s => s.customers)
 
   const card = currentCard({ v2 })
+  const next = nextLocation({ v2 })
   const task = v2.founder.task
   const busy = task !== null
   const proposed = features.filter(f => f.status === 'proposed')
@@ -67,10 +69,18 @@ export function FounderPanel() {
                 <strong>Chapter 2: build a team.</strong> Hire interns in the Team tab and grow to $1,000 MRR.
               </div>
             )}
-            {v2.chapter2.complete && (
+            {v2.chapter2.complete && !v2.chapter3.complete && (
               <div className="v2-banner">
-                Chapter 2 complete. <strong>Chapter 3: a bigger space</strong> is coming soon.
+                <strong>Chapter 3: a bigger space.</strong> Move up from the Map tab and grow to $5,000 MRR.
               </div>
+            )}
+            {v2.chapter3.complete && next && (
+              <div className="v2-banner">
+                <strong>Climb the ladder:</strong> next stop {next.icon} {next.name} at ${next.unlockMrr.toLocaleString()} MRR.
+              </div>
+            )}
+            {v2.chapter3.complete && !next && (
+              <div className="v2-banner"><strong>🏙️ You made it:</strong> your own building.</div>
             )}
 
             {card && (

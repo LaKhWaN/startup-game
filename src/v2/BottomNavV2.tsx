@@ -1,10 +1,11 @@
 import '../components/BottomNav.css'
 
-export type V2Panel = 'founder' | 'team' | 'metrics'
+export type V2Panel = 'founder' | 'team' | 'map' | 'metrics'
 
 const TABS: { id: V2Panel; label: string; icon: string }[] = [
   { id: 'founder', label: 'Founder', icon: '🧑‍💻' },
   { id: 'team', label: 'Team', icon: '👥' },
+  { id: 'map', label: 'Map', icon: '🗺️' },
   { id: 'metrics', label: 'Metrics', icon: '📊' },
 ]
 
@@ -12,11 +13,13 @@ interface Props {
   active: V2Panel
   metricsUnlocked: boolean
   teamUnlocked: boolean
+  mapUnlocked: boolean
   onTabClick: (panel: V2Panel) => void
 }
 
-export function BottomNavV2({ active, metricsUnlocked, teamUnlocked, onTabClick }: Props) {
-  const tabs = TABS.filter(t => (t.id !== 'metrics' || metricsUnlocked) && (t.id !== 'team' || teamUnlocked))
+export function BottomNavV2({ active, metricsUnlocked, teamUnlocked, mapUnlocked, onTabClick }: Props) {
+  const unlocked: Record<V2Panel, boolean> = { founder: true, team: teamUnlocked, map: mapUnlocked, metrics: metricsUnlocked }
+  const tabs = TABS.filter(t => unlocked[t.id])
   return (
     <nav className="bottom-nav">
       {tabs.map(tab => (
