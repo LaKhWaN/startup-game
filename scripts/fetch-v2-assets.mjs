@@ -45,7 +45,11 @@ for (const name of FURNITURE) {
   copyFileSync(join(work, 'furn', 'Models', 'GLTF format', `${name}.glb`), join(OUT, 'furniture', `${name}.glb`))
 }
 const charDir = join(work, 'chars', 'Models', 'GLB format')
-for (const name of CHARACTERS) copyFileSync(join(charDir, `${name}.glb`), join(OUT, 'characters', `${name}.glb`))
+mkdirSync(join(OUT, 'portraits'), { recursive: true })
+for (const name of CHARACTERS) {
+  copyFileSync(join(charDir, `${name}.glb`), join(OUT, 'characters', `${name}.glb`))
+  copyFileSync(join(work, 'chars', 'Previews', `${name}.png`), join(OUT, 'portraits', `${name}.png`))
+}
 copyFileSync(join(charDir, 'Textures', 'colormap.png'), join(OUT, 'characters', 'Textures', 'colormap.png'))
 copyFileSync(join(work, 'furn', 'License.txt'), join(OUT, 'LICENSE-kenney.txt'))
 

@@ -38,6 +38,8 @@ export interface TeamMember {
   seat: number
   characterModel: string
   salary: number
+  /** Their one-liner from the hiring card (missing on saves from before it was kept). */
+  bio?: string
   /** Manager this member reports to (managers arrive in a later phase). */
   reportsTo?: string
 }

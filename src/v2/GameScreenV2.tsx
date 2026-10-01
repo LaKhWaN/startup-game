@@ -14,7 +14,7 @@ import { FamilyMoneyModal } from './FamilyMoneyModal'
 import { FounderPanel } from './FounderPanel'
 import { CoachOverlay } from './CoachOverlay'
 import { FounderBar } from './FounderBar'
-import { MemberCard } from './MemberCard'
+import { PersonCard } from './PersonCard'
 import { Modal } from './Modal'
 import { closeModal, openModal, useUi, type Modal as ModalState } from './ui'
 import { RoomView } from './RoomView'
@@ -103,7 +103,7 @@ function ScreenModal({ modal }: { modal: ModalState | null }) {
       const m = team[modal.id]
       // They left (fired, quit): nothing to show.
       if (!m) return null
-      return <Modal title={m.name} onClose={closeModal}><MemberCard m={m} /></Modal>
+      return <Modal title="Team member" onClose={closeModal} wide><PersonCard m={m} /></Modal>
     }
   }
 }

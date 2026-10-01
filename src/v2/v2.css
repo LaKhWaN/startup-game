@@ -203,3 +203,23 @@
 .v2-hover-sub { font-size: 0.7rem; color: var(--muted); }
 .v2-hover-status { margin-top: 3px; font-size: 0.76rem; color: var(--text); white-space: normal; }
 @media (prefers-reduced-motion: reduce) { .v2-scene-icon { animation: none; } }
+
+/* ── Person card (click a hire) ─────────────────────────────────────────── */
+.v2-person { display: flex; flex-direction: column; gap: 14px; padding: 18px 20px 20px; }
+.v2-person-head { display: flex; gap: 16px; align-items: center; }
+.v2-person-portrait { width: 104px; height: 104px; flex-shrink: 0; object-fit: contain; border-radius: 16px; background: var(--surface2); border: 1px solid var(--border); }
+.v2-person-id { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.v2-person-name { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+.v2-person-role { font-size: 0.85rem; color: var(--text); }
+.v2-person-meta { font-family: 'Roboto Mono', monospace; font-size: 0.74rem; color: var(--muted); }
+.v2-person-bio { margin: 0; padding: 10px 14px; border-left: 3px solid var(--brand-primary); border-radius: 0 10px 10px 0; background: var(--surface2); font-style: italic; font-size: 0.88rem; color: var(--text); }
+.v2-person-section { display: flex; flex-direction: column; gap: 8px; }
+.v2-person-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.v2-person-task { font-size: 0.95rem; font-weight: 600; color: var(--text); }
+.v2-person-progress { height: 8px; }
+.v2-skill--main .v2-skill-name { font-weight: 700; }
+.v2-person-assign { display: flex; flex-wrap: wrap; gap: 6px; }
+.v2-chip { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font: inherit; font-size: 0.8rem; color: var(--text); cursor: pointer; }
+.v2-chip--on { border-color: var(--brand-primary); background: var(--brand-primary); color: var(--surface); font-weight: 600; }
+.v2-person-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-top: 6px; border-top: 1px solid var(--border); }
+@media (max-width: 768px) { .v2-person-portrait { width: 80px; height: 80px; } }

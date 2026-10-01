@@ -112,6 +112,7 @@ export function hireIntern(state: V2GameState, candidateId: string): V2GameState
     seat: freeSeat(state),
     characterModel: c.characterModel,
     salary: c.salary,
+    bio: c.bio,
   }
   // Legacy payroll mirror: an idle "developer" with no feature is inert in the
   // legacy daily loop, so legacy only deducts salary and runs morale drift.

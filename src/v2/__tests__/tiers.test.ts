@@ -113,3 +113,10 @@ describe('promotion', () => {
     expect(promoteMember(s, 'c1').v2.team.c1.salary).toBe(2600)
   })
 })
+
+describe('person card data', () => {
+  it('keeps the candidate one-liner on the hire', () => {
+    const s = hire(ready(), cand({ bio: 'Ships on Fridays, apologises on Mondays.' }))
+    expect(s.v2.team.c1.bio).toBe('Ships on Fridays, apologises on Mondays.')
+  })
+})
