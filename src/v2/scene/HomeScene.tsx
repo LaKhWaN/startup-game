@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { ACESFilmicToneMapping, Object3D } from 'three'
 import { useV2 } from '../actions'
 import { PRELOAD_URLS } from './assets'
+import { qualityHandlers } from './quality'
 import { Room } from './Room'
 import { RoomContext } from './RoomContext'
 import { roomFor, type RoomLayout } from './rooms'
@@ -84,7 +85,7 @@ export default function HomeScene({ children }: { children?: ReactNode }) {
         gl={{ antialias: true, preserveDrawingBuffer: import.meta.env.DEV }}
         onCreated={({ gl }) => { gl.toneMapping = ACESFilmicToneMapping }}
       >
-        <PerformanceMonitor flipflops={3} onDecline={() => setLow(true)} onIncline={() => setLow(false)} onFallback={() => setLow(true)} />
+        <PerformanceMonitor {...qualityHandlers(setLow)} />
         <color attach="background" args={[room.theme.background]} />
         <RoomContext.Provider value={room}>
           {/* Remount everything on a move so characters start at their new seats. */}

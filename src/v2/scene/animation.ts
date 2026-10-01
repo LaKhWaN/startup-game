@@ -18,9 +18,11 @@ export function applyTypingMotion(bones: TypingBones, rest: Required<Record<keyo
 export interface FrameIntent { move: boolean; clip: CharacterClip; once: boolean }
 
 /** What the founder does this frame: whether to advance the walk, and which clip to play. */
-export function frameIntent(s: { emoting: boolean; walking: boolean; pace: boolean; poseClip: CharacterClip }): FrameIntent {
+export function frameIntent(s: { emoting: boolean; walking: boolean; pace: boolean; poseClip: CharacterClip; reduced?: boolean }): FrameIntent {
   // The nod plays in place, before walking to the next spot (spec §6.3).
   if (s.emoting) return { move: false, clip: 'emote-yes', once: true }
+  // Reduced motion: no pacing, so stand still instead of walking in place.
+  if (s.reduced && s.pace) return { move: true, clip: 'idle', once: false }
   if (s.walking || s.pace) return { move: true, clip: 'walk', once: false }
   return { move: true, clip: s.poseClip, once: false }
 }

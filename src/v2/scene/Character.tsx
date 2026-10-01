@@ -124,7 +124,7 @@ export function Character<S extends string>({ url, spots, pose, startSpot, progr
     const spot = spots[target.current]
     const goal: [number, number] = [spot.position[0], spot.position[2]]
 
-    const intent = frameIntent({ emoting, walking: walking.current, pace: pose.pace, poseClip: pose.clip })
+    const intent = frameIntent({ emoting, walking: walking.current, pace: pose.pace, poseClip: pose.clip, reduced })
 
     if (walking.current && intent.move) {
       const dist = Math.hypot(goal[0] - pos.current[0], goal[1] - pos.current[1])
@@ -144,7 +144,7 @@ export function Character<S extends string>({ url, spots, pose, startSpot, progr
     const settled = !walking.current
     const y = settled ? spot.position[1] : 0
     g.position.set(pos.current[0], y, pos.current[1])
-    if (settled && !pose.pace) g.rotation.y = spot.yaw + MODEL_YAW_OFFSET
+    if (settled && (!pose.pace || reduced)) g.rotation.y = spot.yaw + MODEL_YAW_OFFSET
 
     play(intent.clip, intent.once)
 
