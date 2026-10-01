@@ -55,7 +55,6 @@ export function TeamPanel() {
 
   const members = Object.values(v2.team).sort((a, b) => a.seat - b.seat)
   const capacity = teamCapacity({ v2 } as V2GameState)
-  const full = members.length >= capacity
   const state = { v2, cash, employees, infraCostMonthly: infra, mrr } as V2GameState
   const { burn, runwayMonths: runway } = teamFinances(state)
   const fullTime = isFullTimeUnlocked(state)

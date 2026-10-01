@@ -58,6 +58,22 @@ async function shoot(viewport, tag) {
   await page.waitForTimeout(2500)
   await page.screenshot({ path: join(out, `${tag}-5-team-sales.png`) })
 
+  // Phase 4: move to the Villa, fill it, and open the Map.
+  const villa = await page.evaluate(() => {
+    window.__v2.skipToChapter3()
+    const moved = window.__v2.moveToLocation('villa')
+    const hired = window.__v2.hireMany(4)
+    window.__v2.fastForward(3)
+    return { moved, hired, location: window.__v2.getV2State().v2.location }
+  })
+  if (villa.moved !== 'ok' || villa.location !== 'villa') errors.push(`[${tag}] move failed: ${JSON.stringify(villa)}`)
+  await page.getByRole('button', { name: /team/i }).first().click().catch(() => {})
+  await page.waitForTimeout(3500)
+  await page.screenshot({ path: join(out, `${tag}-6-villa.png`) })
+  await page.getByRole('button', { name: /map/i }).first().click().catch(() => errors.push(`[${tag}] no Map tab`))
+  await page.waitForTimeout(1000)
+  await page.screenshot({ path: join(out, `${tag}-7-map.png`) })
+
   // Blank check: sample the canvas-area pixels from a real screenshot of that element.
   const area = page.locator('.game-canvas-area')
   const png = await area.screenshot()

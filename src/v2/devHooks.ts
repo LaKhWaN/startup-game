@@ -1,6 +1,6 @@
 import { scoreToDifficulty } from '../ai/gemini'
 import { FEATURE_TEMPLATES } from '../data/featureTemplates'
-import { assignTeamMember, ensureCandidates, getV2State, hireCandidate, newGameV2, startFounderTask, stepGame } from './actions'
+import { assignTeamMember, ensureCandidates, getV2State, hireCandidate, moveToLocation, newGameV2, refreshCandidates, startFounderTask, stepGame } from './actions'
 import { useGameStore } from '../store/gameStore'
 
 /** Dev-only helpers so scripts/v2-screenshot.mjs can drive /new without the Groq onboarding. */
@@ -31,5 +31,33 @@ export function installDevHooks(): void {
       return c ? hireCandidate(c.id) : 'missing'
     },
     assignTeamMember,
+    /** Jump to Chapter 3: Chapters 1–2 done, peak MRR $2,600 (unlocks up to the Villa). */
+    skipToChapter3: (cash = 50_000) => {
+      const s = getV2State()
+      useGameStore.setState({
+        cash,
+        mrr: 2600,
+        v2: {
+          ...s.v2,
+          chapter: { ...s.v2.chapter, beat: 5, complete: true },
+          chapter2: { beat: 2, complete: true, firstMistake: false },
+          peakMrr: 2600,
+          unlockedLocations: ['home', 'biggerHome', 'villa'],
+        },
+      } as never)
+    },
+    moveToLocation,
+    /** Hire up to n candidates, rerolling the pool as needed; returns how many were hired. */
+    hireMany: (n: number) => {
+      let hired = 0
+      for (let tries = 0; hired < n && tries < n * 4; tries++) {
+        ensureCandidates()
+        const c = getV2State().v2.candidates[0]
+        if (!c) { refreshCandidates(); continue }
+        if (hireCandidate(c.id) === 'ok') hired++
+        else refreshCandidates()
+      }
+      return hired
+    },
   }
 }
