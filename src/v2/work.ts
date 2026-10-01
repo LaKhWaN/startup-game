@@ -28,7 +28,7 @@ export interface TierRule {
 
 /** Spec §7.2 (interns) and §8.3 (full-time). */
 export const TIER_RULES: Record<Tier, TierRule> = {
-  intern: { mainSpeed: 0.7, offSpeed: 0.35, skillMain: 3, skillOther: 1, gain: 0.25, cap: 6 },
+  intern: { mainSpeed: 0.8, offSpeed: 0.4, skillMain: 3, skillOther: 1, gain: 0.25, cap: 6 },
   fulltime: { mainSpeed: 1, offSpeed: 0.5, skillMain: 5, skillOther: 2, gain: 0.2, cap: 9 },
 }
 
@@ -40,7 +40,8 @@ export const INTERN_OFF_SPEED = TIER_RULES.intern.offSpeed
 
 export function hireSpeed(role: TeamRole, type: FounderTaskType, tier: Tier = 'intern'): number {
   const rule = TIER_RULES[tier]
-  return MAIN_TASK[role] === type ? rule.mainSpeed : rule.offSpeed
+  // Anyone can answer support well; it's not a specialist task.
+  return MAIN_TASK[role] === type || type === 'support' ? rule.mainSpeed : rule.offSpeed
 }
 
 export function mainSkillOf(role: TeamRole): FounderSkill {

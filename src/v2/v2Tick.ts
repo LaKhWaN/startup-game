@@ -49,7 +49,7 @@ export function stepV2<T extends V2GameState>(state: T, rng: Rng = Math.random):
   const day = Math.floor(now / HOURS_PER_DAY)
   // People: hires tire/learn during work hours; the founder tires working and recovers sleeping.
   s = founderHour(peopleHour(s, isWorkHour(prev)), hourOfDay(prev))
-  if (day > Math.floor(prev / HOURS_PER_DAY)) s = peopleDay(processDay(s, day, rng), day, isWeekend(now))
+  if (day > Math.floor(prev / HOURS_PER_DAY)) s = peopleDay(processDay(s, day, rng), day, isWeekend(now), isWeekend(prev))
   const month = Math.floor(day / DAYS_PER_MONTH)
   if (month > Math.floor(Math.floor(prev / HOURS_PER_DAY) / DAYS_PER_MONTH)) s = processMonth(s, month)
   if (s.phase !== 'playing') return s

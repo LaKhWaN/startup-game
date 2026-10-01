@@ -4,6 +4,7 @@ import { estimateFeatureEffects } from './engine/features'
 import { leadSaturation, marketRoom, reputationFactor, salesBaseOf } from './engine/market'
 import { founderSpeed } from './engine/people'
 import { deskSpeed } from './shop'
+import { MAX_CHURN_RELIEF } from './engine/churn'
 import { toolEffects, wifiSpeed } from './engine/infra'
 import type { Feature, FeatureResult } from '../types'
 import { isTaskUnlocked } from './chapter'
@@ -207,7 +208,7 @@ function applyDevelop(state: V2GameState, worker: Worker, featureId: string | un
     featureTitle: feature.title,
     value: feature.value,
     devName: worker.name,
-    customerGain: preSale ? 0 : est.customers,
+    customerGain: preSale ? 0 : Math.min(est.customers, marketRoom(state)),
     arpuChange: est.arpu,
     churnDrop: est.churnDrop,
     brandChange: est.brand,
@@ -224,6 +225,8 @@ function applyDevelop(state: V2GameState, worker: Worker, featureId: string | un
     customers,
     arpu,
     mrr: customers * arpu,
+    // Retention is lasting relief on product-health churn (recomputed daily from churnBreakdown).
+    churnRelief: Math.min(MAX_CHURN_RELIEF, (state.churnRelief ?? 0) + Math.max(0, est.churnDrop)),
     churnRate: Math.max(churnFloor, state.churnRate - est.churnDrop),
     cash: state.cash + est.cashBonus,
     brand: clamp100(state.brand + est.brand),
@@ -240,7 +243,7 @@ function applyDevelop(state: V2GameState, worker: Worker, featureId: string | un
   } else if (preSale) {
     line = `${who} shipped "${feature.title}".`
   } else {
-    line = `${who} shipped "${feature.title}"! ${est.customers >= 0 ? '+' : ''}${est.customers} users.`
+    line = `${who} shipped "${feature.title}"! ${gain >= 0 ? '+' : ''}${gain} users.`
   }
   const lines = [line]
   if (opts.mistake) lines.push(`${worker.name} rushed it: it shipped buggy, at half strength, and left tech debt behind.`)

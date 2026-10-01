@@ -83,7 +83,7 @@ export interface SetupDef {
 }
 
 export const SETUPS: SetupDef[] = [
-  { tier: 1, name: 'Old laptop', specs: 'Windows XP · 2 GB RAM · 500 GB HDD', price: 0, speed: 0.85, mistakes: 1.2 },
+  { tier: 1, name: 'Old laptop', specs: 'Windows XP · 2 GB RAM · 500 GB HDD', price: 0, speed: 0.9, mistakes: 1.2 },
   { tier: 2, name: 'Office laptop', specs: '8 GB RAM · SSD', price: 800, speed: 1, mistakes: 1 },
   { tier: 3, name: 'Dev workstation', specs: '16 GB RAM · SSD · second monitor', price: 2000, speed: 1.15, mistakes: 0.9 },
   { tier: 4, name: 'MacBook Pro', specs: 'Apple silicon · 32 GB · Retina', price: 3500, speed: 1.3, mistakes: 0.8 },

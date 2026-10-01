@@ -14,11 +14,12 @@ export function TeamPanel() {
   const cash = useV2(s => s.cash)
   const infra = useV2(s => s.infraCostMonthly)
   const mrr = useV2(s => s.mrr)
+  const customers = useV2(s => s.customers)
 
   useEffect(() => { ensureCandidates() }, [])
   const members = Object.values(v2.team).sort((a, b) => a.seat - b.seat)
   const capacity = teamCapacity({ v2 } as V2GameState)
-  const state = { v2, cash, infraCostMonthly: infra, mrr } as V2GameState
+  const state = { v2, cash, infraCostMonthly: infra, mrr, customers } as V2GameState
   const { burn, runwayMonths: runway } = teamFinances(state)
   const fullTime = isFullTimeUnlocked(state)
 

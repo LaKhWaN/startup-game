@@ -12,14 +12,14 @@ const team = (...ms: ReturnType<typeof member>[]) => withTeam(makeState(), ...ms
 describe('peopleHour (work hours)', () => {
   it('busy hours drain energy, add stress and context; idle hours recover stress', () => {
     const s = peopleHour(team({ ...busy, energy: 100, stress: 10, context: 0 }, { ...idle, energy: 100, stress: 10 }), true)
-    expect(s.v2.team.b).toMatchObject({ energy: 95, context: 0.25 })
-    expect(s.v2.team.b.stress).toBeCloseTo(10.35)
+    expect(s.v2.team.b).toMatchObject({ energy: 93, context: 0.25 })
+    expect(s.v2.team.b.stress).toBeCloseTo(10.45)
     expect(s.v2.team.i).toMatchObject({ energy: 99, stress: 9 })
   })
 
   it('running on empty adds stress', () => {
     const s = peopleHour(team({ ...busy, energy: 20, stress: 10 }), true)
-    expect(s.v2.team.b.stress).toBeCloseTo(11.35)
+    expect(s.v2.team.b.stress).toBeCloseTo(11.45)
   })
 
   it('off-hours change nothing for hires', () => {
@@ -29,16 +29,16 @@ describe('peopleHour (work hours)', () => {
 })
 
 describe('peopleDay', () => {
-  it('overnight: +50 energy, −2 stress; morale drifts toward 75 − stress/2', () => {
+  it('overnight: +45 energy, −1 stress; morale drifts toward 75 − stress/2', () => {
     const s = peopleDay(team({ ...busy, energy: 40, stress: 40, morale: 70 }), 1, false)
-    expect(s.v2.team.b.energy).toBe(90)
-    expect(s.v2.team.b.stress).toBe(38)
-    expect(s.v2.team.b.morale).toBeCloseTo(70 + (75 - 19 - 70) * 0.1)
+    expect(s.v2.team.b.energy).toBe(85)
+    expect(s.v2.team.b.stress).toBe(39)
+    expect(s.v2.team.b.morale).toBeCloseTo(70 + (75 - 19.5 - 70) * 0.1)
   })
 
   it('weekend days fully rest people', () => {
     const s = peopleDay(team({ ...busy, energy: 10, stress: 50 }), 5, true)
-    expect(s.v2.team.b).toMatchObject({ energy: 100, stress: 40 })
+    expect(s.v2.team.b).toMatchObject({ energy: 100, stress: 45 })
   })
 
   it(`stress ≥ 90 for ${BURNOUT_DAYS} work days → notice, then they leave after ${NOTICE_DAYS} days`, () => {

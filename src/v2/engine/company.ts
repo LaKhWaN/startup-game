@@ -25,8 +25,10 @@ export interface CompanyState {
   customers: number
   /** Monthly churn %, applied a little every day (recomputed daily from churnBreakdown). */
   churnRate: number
-  /** Temporary churn from events, fading daily. */
+  /** Temporary churn from events, fading daily toward 0 (negative = relief from good news). */
   churnShock: number
+  /** Lasting churn reduction from shipped retention features (spec §4, review fix). */
+  churnRelief: number
   customersLostThisMonth: number
   brand: number
   techDebt: number
@@ -76,6 +78,7 @@ export function createCompany(config: OnboardingConfig, cash: number): CompanySt
     customers: 0,
     churnRate: churn,
     churnShock: 0,
+    churnRelief: 0,
     customersLostThisMonth: 0,
     brand: 10,
     techDebt: 0,

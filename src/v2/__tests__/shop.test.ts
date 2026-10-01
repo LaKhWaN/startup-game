@@ -39,7 +39,7 @@ describe('setups', () => {
     const { createV2State } = await import('../state')
     const { makeConfig } = await import('./fixtures')
     const real = createV2State(makeConfig())
-    expect(SETUPS[0]).toMatchObject({ tier: 1, speed: 0.85, mistakes: 1.2 })
+    expect(SETUPS[0]).toMatchObject({ tier: 1, speed: 0.9, mistakes: 1.2 })
     expect(setupOf(real, 'founder').tier).toBe(1)
     expect(setupOf(real, 0).tier).toBe(1)
   })
@@ -63,9 +63,9 @@ describe('shop effects on people and work', () => {
     const { member, withTeam } = await import('./fixtures')
     const base = withTeam(makeState(), member({ id: 'b', task: { type: 'emails', progress: 0 }, energy: 100 }))
     const coffee = withV2(base, { perks: ['coffee'] })
-    expect(peopleHour(coffee, true).v2.team.b.energy).toBe(96) // 5 × 0.8
+    expect(peopleHour(coffee, true).v2.team.b.energy).toBeCloseTo(100 - 7 * 0.8)
     const sofa = withV2({ ...base, v2: { ...base.v2, team: { b: { ...base.v2.team.b, energy: 20 } } } }, { perks: ['sofa'] })
-    expect(peopleDay(sofa, 1, false).v2.team.b.energy).toBe(20 + 50 + 12)
+    expect(peopleDay(sofa, 1, false).v2.team.b.energy).toBe(20 + 45 + 12)
     const plain = peopleDay(base, 1, false).v2.team.b.morale!
     const happy = peopleDay(withV2(base, { perks: ['plants'] }), 1, false).v2.team.b.morale!
     expect(happy).toBeGreaterThan(plain)
@@ -73,7 +73,7 @@ describe('shop effects on people and work', () => {
 
   it('better setups make desks faster', async () => {
     const { deskSpeed } = await import('../shop')
-    expect(deskSpeed(withV2(makeState(), { setups: { founder: 1, seats: [] } }), 0)).toBe(0.85)
+    expect(deskSpeed(withV2(makeState(), { setups: { founder: 1, seats: [] } }), 0)).toBe(0.9)
     expect(deskSpeed(withV2(makeState(), { setups: { founder: 4, seats: [3] } }), 'founder')).toBe(1.3)
     expect(deskSpeed(withV2(makeState(), { setups: { founder: 4, seats: [3] } }), 0)).toBe(1.15)
   })

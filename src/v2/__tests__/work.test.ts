@@ -13,9 +13,9 @@ describe('hire speeds', () => {
   it('maps each role to its main task', () => {
     expect(MAIN_TASK).toEqual({ developer: 'develop', product_manager: 'research', marketing: 'emails', sales: 'sales' })
   })
-  it('is 0.7 on the main task and 0.35 elsewhere', () => {
-    expect(hireSpeed('marketing', 'emails')).toBe(0.7)
-    expect(hireSpeed('marketing', 'develop')).toBe(0.35)
+  it('is 0.8 on the main task and 0.4 elsewhere', () => {
+    expect(hireSpeed('marketing', 'emails')).toBe(0.8)
+    expect(hireSpeed('marketing', 'develop')).toBe(0.4)
   })
   it('stretches the founder duration by 1/speed', () => {
     const s = makeState()

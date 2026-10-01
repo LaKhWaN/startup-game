@@ -7,9 +7,13 @@ import { claimFamilyMoney, onMoved } from '../chapter'
 import { startTask } from '../founder'
 import { canMove, LOCATIONS, locationIndex, moveTo } from '../locations'
 import type { FounderTaskType, V2GameState } from '../state'
-import { canHire, canPromote, generateCandidates, hireIntern, isFullTimeUnlocked, promoteMember, setAssignment, teamCapacity } from '../team'
+import { canHire, canPromote, convinceToStay, generateCandidates, hireIntern, isFullTimeUnlocked, promoteMember, setAssignment, teamCapacity } from '../team'
+import { buyPerk, canBuyPerk, canUpgradeSetup, nextSetup, perkDef, upgradeSetup, type Desk, type PerkId } from '../shop'
+import { setWifi, toggleTool } from '../engine/infra'
+import { MAIN_TASK } from '../work'
+import { createV2State } from '../state'
 import { stepV2 } from '../v2Tick'
-import { makeState } from './fixtures'
+import { makeConfig } from './fixtures'
 
 /** mulberry32: small seeded PRNG so the run is repeatable. */
 function seeded(seed: number): () => number {
@@ -23,7 +27,36 @@ function seeded(seed: number): () => number {
   }
 }
 
-/** A sensible, not optimal, player. `careful` also answers support and pays down debt. */
+const PERK_ORDER: PerkId[] = ['coffee', 'plants', 'decor', 'sofa', 'tableTennis', 'games']
+const resting = new Set<string>()
+
+/** The extra care a sensible manager takes: people, shop, infra (spec §5–§7). */
+function manage(s: V2GameState): V2GameState {
+  const burn = getMonthlyBurn(s)
+  const spare = (price: number, months: number) => s.cash >= price + months * Math.max(burn - s.mrr, burn * 0.5)
+  // Rest people before they burn out; talk leavers into staying.
+  for (const m of Object.values(s.v2.team)) {
+    if (m.leavingOn !== undefined && !m.convinced) s = convinceToStay(s, m.id)
+    if ((m.stress ?? 0) > 70 && !resting.has(m.id)) { resting.add(m.id); s = setAssignment(s, m.id, 'idle') }
+    else if (resting.has(m.id) && (m.stress ?? 0) < 35) { resting.delete(m.id); s = setAssignment(s, m.id, MAIN_TASK[m.role]) }
+  }
+  // One hire on support per 250 customers.
+  const team = Object.values(s.v2.team).filter(m => !resting.has(m.id))
+  const onSupport = team.filter(m => m.assignment === 'support').length
+  const want = Math.min(team.length - 1, Math.ceil(s.customers / 250))
+  if (onSupport < want) { const m = team.find(x => x.assignment !== 'support' && x.role !== 'sales'); if (m) s = setAssignment(s, m.id, 'support') }
+  // Shop: perks, then computers (founder first).
+  for (const id of PERK_ORDER) if (canBuyPerk(s, id) === 'ok' && spare(perkDef(id).price, 3)) s = buyPerk(s, id)
+  const desks: Desk[] = ['founder', ...Object.values(s.v2.team).map(m => m.seat)]
+  for (const d of desks) { const n = nextSetup(s, d); if (n && n.tier <= 3 && canUpgradeSetup(s, d) === 'ok' && spare(n.price, 4)) s = upgradeSetup(s, d) }
+  // Infra: fiber once there's a team, tools when they pay off.
+  if (s.v2.infra.wifi === 'home' && Object.keys(s.v2.team).length >= 3 && spare(80, 6)) s = setWifi(s, 'fiber')
+  if (!s.v2.infra.tools.includes('helpdesk') && s.customers > 150 && spare(100, 6)) s = toggleTool(s, 'helpdesk')
+  if (!s.v2.infra.tools.includes('monitoring') && s.techDebt > 40 && spare(150, 6)) s = toggleTool(s, 'monitoring')
+  return s
+}
+
+/** A sensible, not optimal, player. `careful` also answers support, pays down debt and manages people/shop/infra. */
 function play(s: V2GameState, rng: () => number, careful = false): V2GameState {
   if (s.pendingEvent) s = applyEventChoice(s, 0)
   const { chapter } = s.v2
@@ -55,16 +88,12 @@ function play(s: V2GameState, rng: () => number, careful = false): V2GameState {
   const nextTier = s.v2.infra.hosting + 1
   if (hostingLoad(s) > 0.75 && canMigrate(s, nextTier) === 'ok' && nextTier <= 5) s = startMigration(s, nextTier, totalDays(s.gameTime))
 
-  // A careful player keeps one hire on support once the team has three people.
-  if (careful) {
-    const team = Object.values(s.v2.team)
-    if (team.length >= 3 && !team.some(m => m.assignment === 'support')) s = setAssignment(s, team[team.length - 1].id, 'support')
-  }
+  if (careful) s = manage(s)
 
   // Promote anyone ready, then move up when it's safely affordable.
   for (const id of Object.keys(s.v2.team)) if (canPromote(s, id) === 'ok' && s.mrr > getMonthlyBurn(s)) s = promoteMember(s, id)
   const next = LOCATIONS[locationIndex(s.v2.location) + 1]
-  if (next && canMove(s, next.id) === 'ok' && s.cash >= next.moveIn + 4 * (getMonthlyBurn(s) - s.infraCostMonthly + next.rent)) {
+  if (next && canMove(s, next.id) === 'ok' && s.cash >= next.moveIn + 2 * (getMonthlyBurn(s) - s.infraCostMonthly + next.rent)) {
     s = onMoved(moveTo(s, next.id))
   }
 
@@ -82,13 +111,14 @@ afterEach(() => vi.restoreAllMocks())
 
 describe('balance simulation', () => {
   for (const seed of [1, 2, 3]) {
-    it(`seed ${seed}: a sensible player reaches Co-working within two years without going broke`, () => {
+    it(`seed ${seed}: a sensible manager reaches Co-working within two years without going broke`, () => {
       const rng = seeded(seed)
       vi.spyOn(Math, 'random').mockImplementation(rng)
-      let s = makeState()
+      resting.clear()
+      let s = createV2State(makeConfig()) // real start: XP laptops, free hosting
       const reached: Record<string, number> = {}
       for (let h = 0; h < 730 * 24 && s.phase === 'playing'; h++) {
-        if (h % 6 === 0) s = play(s, rng)
+        if (h % 6 === 0) s = play(s, rng, true)
         else if (s.pendingEvent) s = applyEventChoice(s, 0)
         s = stepV2(s, rng)
         if (!(s.v2.location in reached)) reached[s.v2.location] = totalDays(s.gameTime)
@@ -107,11 +137,12 @@ describe('balance simulation', () => {
     }, 60_000)
   }
 
-  it('answering support and paying down debt keeps more customers than neglecting them', () => {
+  it('managing support, debt, people, shop and infra beats neglecting them', () => {
     const runFor = (careful: boolean) => {
       const rng = seeded(11)
       vi.spyOn(Math, 'random').mockImplementation(rng)
-      let s = makeState()
+      resting.clear()
+      let s = createV2State(makeConfig())
       for (let h = 0; h < 300 * 24 && s.phase === 'playing'; h++) {
         if (h % 6 === 0) s = play(s, rng, careful)
         else if (s.pendingEvent) s = applyEventChoice(s, 0)

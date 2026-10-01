@@ -3,7 +3,7 @@ import type { Rng } from '../state'
 import { DAYS_PER_MONTH, totalDays } from './clock'
 import { EVENTS } from './eventData'
 import { pickEvent } from './events'
-import { churnBreakdown, SHOCK_FADE_PER_DAY } from './churn'
+import { churnBreakdown, fadeShock } from './churn'
 import { INCIDENT, INCIDENT_CUSTOMER_LOSS, INCIDENT_TICKETS_PER_CUSTOMER, incidentChance } from './incidents'
 import { finishMigrations, OUTAGE, OUTAGE_CUSTOMER_LOSS, OUTAGE_TICKETS_PER_CUSTOMER, outageChance, toolEffects } from './infra'
 import { monthlyBurn, valuation } from './money'
@@ -30,7 +30,7 @@ export const TICKETS_PER_CUSTOMER_DAY = 0.03
 export function processDay<T extends GameV2>(raw: T, day: number, rng: Rng): T {
   const state = finishMigrations(raw, day)
   // Product-health churn: shocks fade, the rest follows the product (spec §4).
-  const churnShock = Math.max(0, (state.churnShock ?? 0) - SHOCK_FADE_PER_DAY)
+  const churnShock = fadeShock(state.churnShock ?? 0)
   const churnRate = churnBreakdown({ ...state, churnShock }).total
   const lost = dailyChurn(state.customers, churnRate, rng)
   // Leads go cold; customers raise support tickets (more with tech debt).
@@ -79,8 +79,8 @@ export function processDay<T extends GameV2>(raw: T, day: number, rng: Rng): T {
     churnShock,
     churnRate,
     customers: afterIncident.customers,
+    mrr: afterIncident.customers * state.arpu,
     customersLostThisMonth: (state.customersLostThisMonth ?? 0) + lost + (customers - afterIncident.customers),
-    mrr,
     cash,
     brand: Math.max(0, Math.min(100, state.brand - 0.01)),
     investorInterest,

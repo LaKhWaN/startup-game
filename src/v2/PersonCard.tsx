@@ -97,7 +97,7 @@ export function PersonCard({ m }: { m: TeamMember }) {
 
       {m.leavingOn !== undefined && (
         <div className="v2-person-notice">
-          <span>😫 Burnt out: handed in notice. Leaves on day {m.leavingOn}.</span>
+          <span>😫 Burnt out: handed in notice. Leaves on day {m.leavingOn + 1}.</span>
           {!m.convinced && (
             <button className="v2-btn v2-btn-primary" onClick={() => convinceTeamMemberToStay(m.id)}>
               Convince them to stay (+20% salary)

@@ -21,6 +21,7 @@ export function FounderPanel() {
   const v2 = useV2(s => s.v2)
   const features = useV2(s => s.features)
   const customers = useV2(s => s.customers)
+  const techDebt = useV2(s => s.techDebt)
 
   const task = v2.founder.task
   const busy = task !== null
@@ -30,13 +31,12 @@ export function FounderPanel() {
   const shipped = features.filter(f => f.status === 'completed').length
   const developUnlocked = isTaskUnlocked({ v2 }, 'develop')
 
-  const taskDays = task ? taskDurationDays({ features }, task.type, task.featureId) : 0
+  const taskDays = task ? taskDurationDays({ features, techDebt }, task.type, task.featureId) : 0
   const daysLeft = task ? Math.max(0, Math.ceil((1 - task.progress) * taskDays)) : 0
   const taskTitle = task?.type === 'develop'
     ? `Building ${features.find(f => f.id === task.featureId)?.title ?? 'a feature'}`
     : task ? TASK_INFO[task.type].name : ''
 
-  const techDebt = useV2(s => s.techDebt)
   const reasonFor = (type: FounderTaskType) => taskReason(v2, type, { techDebt })
 
   return (

@@ -77,7 +77,7 @@ export function applyEventChoice(state: GameV2, choiceIndex: 0 | 1, precomputed?
   // Churn from events is a shock on top of product-health churn, fading daily.
   const { churnRate: eventChurn, ...rest } = patch
   const shockDelta = eventChurn !== undefined ? eventChurn - state.churnRate : 0
-  let s: GameV2 = { ...state, ...rest, churnShock: Math.max(0, (state.churnShock ?? 0) + shockDelta) }
+  let s: GameV2 = { ...state, ...rest, churnShock: (state.churnShock ?? 0) + shockDelta }
   s = { ...s, churnRate: churnBreakdown(s).total }
   s = applyEmployees(s, employees, lines)
   s = {

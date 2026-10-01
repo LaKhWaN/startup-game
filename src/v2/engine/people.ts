@@ -48,8 +48,8 @@ export function peopleHour<T extends GameV2>(state: T, workHour: boolean): T {
     const empty = mood.energy < 30 ? 1 : 0
     team[m.id] = {
       ...m,
-      energy: clamp(mood.energy - (busy ? 5 * perks.energyDrain : 1)),
-      stress: clamp(mood.stress + (busy ? 0.35 : -1 * perks.idleStressRelief) + empty - perks.workStressRelief),
+      energy: clamp(mood.energy - (busy ? 7 * perks.energyDrain : 1)),
+      stress: clamp(mood.stress + (busy ? 0.45 : -1 * perks.idleStressRelief) + empty - perks.workStressRelief),
       context: clamp(mood.context + (busy ? 0.25 : 0)),
     }
   }
@@ -74,7 +74,11 @@ export function founderHour<T extends GameV2>(state: T, hourOfDay: number): T {
 }
 
 /** Once per day: overnight/weekend recovery, morale drift, burnout → notice → leaving. */
-export function peopleDay<T extends GameV2>(state: T, day: number, weekend: boolean): T {
+/**
+ * `restDay`: the day starting now is a weekend (full rest). `endedOnWeekend`: the day that just ended
+ * was a weekend (it doesn't count toward burnout).
+ */
+export function peopleDay<T extends GameV2>(state: T, day: number, restDay: boolean, endedOnWeekend: boolean = restDay): T {
   let s: GameV2 = state
   const perks = perkEffects(state)
   const lines: string[] = []
@@ -82,16 +86,16 @@ export function peopleDay<T extends GameV2>(state: T, day: number, weekend: bool
   for (const m of Object.values(state.v2.team)) {
     if (m.leavingOn !== undefined && day >= m.leavingOn) continue // handled below
     const mood = moodOf(m)
-    const burnoutDays = !weekend && mood.stress >= BURNOUT_STRESS ? (m.burnoutDays ?? 0) + 1 : weekend ? (m.burnoutDays ?? 0) : 0
+    const burnoutDays = endedOnWeekend ? (m.burnoutDays ?? 0) : mood.stress >= BURNOUT_STRESS ? (m.burnoutDays ?? 0) + 1 : 0
     let leavingOn = m.leavingOn
     if (leavingOn === undefined && burnoutDays >= BURNOUT_DAYS) {
       leavingOn = day + NOTICE_DAYS
-      lines.push(`😫 ${m.name} is burnt out and handed in their notice. They leave on day ${leavingOn} unless you convince them to stay.`)
+      lines.push(`😫 ${m.name} is burnt out and handed in their notice. They leave on day ${leavingOn + 1} unless you convince them to stay.`)
     }
-    const stress = clamp(mood.stress - 2 - (weekend ? 8 : 0))
+    const stress = clamp(mood.stress - 1 - (restDay ? 4 : 0))
     team[m.id] = {
       ...m,
-      energy: weekend ? 100 : clamp(mood.energy + 50 + perks.overnightEnergy),
+      energy: restDay ? 100 : clamp(mood.energy + 45 + perks.overnightEnergy),
       stress,
       morale: clamp(mood.morale + (75 + perks.moraleBonus - stress / 2 - mood.morale) * 0.1),
       context: mood.context,

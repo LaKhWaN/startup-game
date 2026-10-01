@@ -19,14 +19,14 @@ const hire = (s: V2GameState, c = cand()) => hireIntern(withV2(s, { candidates: 
 
 describe('tier rules', () => {
   it('matches spec §8.3', () => {
-    expect(TIER_RULES.intern).toEqual({ mainSpeed: 0.7, offSpeed: 0.35, skillMain: 3, skillOther: 1, gain: 0.25, cap: 6 })
+    expect(TIER_RULES.intern).toEqual({ mainSpeed: 0.8, offSpeed: 0.4, skillMain: 3, skillOther: 1, gain: 0.25, cap: 6 })
     expect(TIER_RULES.fulltime).toEqual({ mainSpeed: 1, offSpeed: 0.5, skillMain: 5, skillOther: 2, gain: 0.2, cap: 9 })
   })
 
   it('full-time hires work at founder speed on their main task, half elsewhere', () => {
     expect(hireSpeed('developer', 'develop', 'fulltime')).toBe(1)
     expect(hireSpeed('developer', 'emails', 'fulltime')).toBe(0.5)
-    expect(hireSpeed('developer', 'develop')).toBe(0.7) // intern default
+    expect(hireSpeed('developer', 'develop')).toBe(0.8) // intern default
   })
 
   it('full-time mistakes: 5% at main skill 5, −1% per point, floor 1%', () => {
