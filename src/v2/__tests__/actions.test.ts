@@ -178,3 +178,12 @@ describe('location actions', () => {
     expect(getV2State().v2.team[c.id].tier).toBe('fulltime')
   })
 })
+
+describe('ui reset on new game', () => {
+  it('a new game starts in the office with nothing open', async () => {
+    const { openModal, showCity, uiStore } = await import('../ui')
+    showCity(); openModal({ kind: 'team' })
+    newGameV2(makeConfig())
+    expect(uiStore.getState()).toMatchObject({ view: 'office', modal: null })
+  })
+})

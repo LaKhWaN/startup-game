@@ -51,3 +51,17 @@ export const TREES: { model: CityModel; position: [number, number, number] }[] =
 ].map((x, i) => ({ model: i % 2 ? 'suburban/tree-small' : 'suburban/tree-large', position: [x, 0, 1.4] }))
 
 export const STREET_LIGHTS: [number, number, number][] = [1.15, 5.75, 10.35, 14.95].map(x => [x, 0, 0.62])
+
+/** Canvases narrower than this frame ~3 lots around the focus instead of the whole street. */
+export const NARROW_CITY = 640
+const NARROW_SPAN = 7
+
+/** Camera framing for the city: whole street when wide, a zoomed window around `focusX` on phones. */
+export function cityFrame(size: { width: number; height: number }, focusX: number): { zoom: number; centerX: number } {
+  const w = CITY.x1 - CITY.x0
+  const d = CITY.z1 - CITY.z0
+  const fit = (span: number) => Math.min(size.width / (6.6 * (span + d) / 8), size.height / (5.0 * (span + d) / 8)) * 1.15
+  if (size.width >= NARROW_CITY) return { zoom: fit(w), centerX: (CITY.x0 + CITY.x1) / 2 }
+  const half = NARROW_SPAN / 2
+  return { zoom: fit(NARROW_SPAN), centerX: Math.min(CITY.x1 - half, Math.max(CITY.x0 + half, focusX)) }
+}

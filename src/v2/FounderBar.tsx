@@ -19,6 +19,8 @@ export function FounderBar() {
   const teamBuilds = features.filter(f => f.status === 'in_development' && f.assignedToDevId !== FOUNDER_ID)
   const buildReason = taskReason(v2, 'develop') ?? (proposed.length === 0 ? 'Nothing to build. Research first' : null)
 
+  if (picking && buildReason !== null) setPicking(false)
+
   const days = task ? taskDurationDays({ features }, task.type, task.featureId) : 0
   const title = task?.type === 'develop'
     ? `Building ${features.find(f => f.id === task.featureId)?.title ?? 'a feature'}`
@@ -45,7 +47,7 @@ export function FounderBar() {
           )
         })}
         <div className="v2-fb-build">
-          <button className="v2-fb-btn" disabled={buildReason !== null} title={buildReason ?? 'Pick a feature to build'} onClick={() => setPicking(p => !p)}>
+          <button className="v2-fb-btn" disabled={buildReason !== null} title={buildReason ?? 'Pick a feature to build'} onClick={() => setPicking(p => !p)} onBlur={() => setTimeout(() => setPicking(false), 150)}>
             <span aria-hidden="true">🛠️</span> Build ▾
           </button>
           {picking && buildReason === null && (

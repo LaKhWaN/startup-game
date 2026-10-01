@@ -30,3 +30,19 @@ describe('city layout', () => {
     }
   })
 })
+
+describe('cityFrame', () => {
+  it('shows the whole street on wide canvases', async () => {
+    const { cityFrame } = await import('../scene/cityLayout')
+    const f = cityFrame({ width: 1200, height: 800 }, 0)
+    expect(f.centerX).toBeCloseTo((CITY.x0 + CITY.x1) / 2)
+  })
+  it('zooms in on the focused lot on phones, clamped to the street', async () => {
+    const { cityFrame } = await import('../scene/cityLayout')
+    const wide = cityFrame({ width: 1200, height: 800 }, 0)
+    const narrow = cityFrame({ width: 375, height: 700 }, LOTS.villa.position[0])
+    expect(narrow.centerX).toBeCloseTo(LOTS.villa.position[0])
+    expect(narrow.zoom / 375).toBeGreaterThan(wide.zoom / 1200 * 2)
+    expect(cityFrame({ width: 375, height: 700 }, -100).centerX).toBeGreaterThan(CITY.x0)
+  })
+})

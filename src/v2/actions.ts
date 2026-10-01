@@ -12,6 +12,7 @@ import {
   type HireCheck, type PromoteCheck,
 } from './team'
 import { stepV2 } from './v2Tick'
+import { resetUi } from './ui'
 
 type LegacyStore = ReturnType<typeof useGameStore.getState>
 export type V2Store = LegacyStore & { v2: V2Slice }
@@ -50,6 +51,7 @@ export function stepGame(): void {
 
 export function newGameV2(config: OnboardingConfig): void {
   const next = { ...createV2State(config), gameSpeed: 1 as GameSpeed }
+  resetUi()
   playSfx('whoosh', 0.45)
   setV2State(next)
   syncAnalytics(next)
@@ -60,6 +62,7 @@ export function loadV2(slot: SlotId): boolean {
   if (!saved) return false
   playSfx('whoosh', 0.45)
   const next = { ...saved, gameSpeed: 1 as GameSpeed }
+  resetUi()
   setV2State(next)
   syncAnalytics(next)
   return true

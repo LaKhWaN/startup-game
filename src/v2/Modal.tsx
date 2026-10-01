@@ -1,10 +1,18 @@
 import { useEffect, type ReactNode } from 'react'
+import { getV2State } from './actions'
 import './v2.css'
 
 /** A sheet over the room. Esc or the backdrop closes it. Event cards stay above it. */
 export function Modal({ title, onClose, children, wide = false }: { title: string; onClose: () => void; children: ReactNode; wide?: boolean }) {
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      // An event card or the family-money modal sits on top: Esc isn't ours.
+      const s = getV2State()
+      const familyMoney = s.v2?.chapter.beat === 5 && s.v2.chapter.familyMoney && !s.v2.chapter.familyMoney.claimed
+      if (s.pendingEvent || familyMoney) return
+      onClose()
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])

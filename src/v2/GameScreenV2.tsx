@@ -45,7 +45,7 @@ export function GameScreenV2() {
   const active: V2Panel | null = view === 'city' ? 'map' : modal && modal.kind !== 'person' ? modal.kind : null
 
   useBackgroundMusic()
-  useTypingLoop(founderPose(v2.founder.task).typing && phase === 'playing' && gameSpeed > 0)
+  useTypingLoop(founderPose(v2.founder.task).typing && phase === 'playing' && gameSpeed > 0 && view === 'office')
 
   const metricsUnlocked = isMetricsUnlocked({ v2 })
   const teamUnlocked = isTeamUnlocked({ v2 })

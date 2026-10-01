@@ -19,6 +19,9 @@ export const uiStore = create<UiState>(() => ({ view: 'office', modal: null, cit
 /** Selector hook; like useV2, return stored refs or primitives only. */
 export const useUi = <T,>(selector: (s: UiState) => T): T => uiStore(selector)
 
+/** Back to the office with nothing open (new game, load). */
+export const resetUi = () => uiStore.setState(uiStore.getInitialState())
+
 export const openModal = (modal: Modal) => uiStore.setState({ modal })
 export const closeModal = () => uiStore.setState({ modal: null })
 export const showCity = () => uiStore.setState({ view: 'city', modal: null, citySelection: null })

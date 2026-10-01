@@ -15,6 +15,11 @@ export function CityOverlay() {
   if (view !== 'city') return null
 
   const def = selected ? LOCATIONS.find(l => l.id === selected) : undefined
+  // Step through the street (phones frame ~3 buildings at a time).
+  const step = (dir: 1 | -1) => {
+    const i = LOCATIONS.findIndex(l => l.id === (selected ?? v2.location))
+    selectLot(LOCATIONS[(i + dir + LOCATIONS.length) % LOCATIONS.length].id)
+  }
   const check: MoveCheck | null = def ? canMove({ v2, cash } as V2GameState, def.id) : null
   const reason: Record<Exclude<MoveCheck, 'ok'>, string> = {
     current: '📍 You are here',
@@ -26,6 +31,10 @@ export function CityOverlay() {
   return (
     <>
       <button className="v2-city-back" onClick={showOffice}>◀ Back to office</button>
+      <div className="v2-city-step">
+        <button className="v2-fb-btn" aria-label="Previous building" onClick={() => step(-1)}>◀</button>
+        <button className="v2-fb-btn" aria-label="Next building" onClick={() => step(1)}>▶</button>
+      </div>
       {!def && <div className="v2-city-hint">Click a building to see it. Peak MRR {fmt(v2.peakMrr)}.</div>}
       {def && check && (
         <div className="v2-city-card">

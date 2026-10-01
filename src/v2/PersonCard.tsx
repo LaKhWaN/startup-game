@@ -3,10 +3,13 @@ import { assignTeamMember, fireTeamMember, promoteTeamMember, useV2 } from './ac
 import { armedNow, CONFIRM_MS, type Armed } from './confirm'
 import { fmtMoney, ROLE_INFO, TierBadge } from './MemberCard'
 import { statusText } from './scene/hoverText'
-import type { Assignment, FounderSkill, TeamMember, V2GameState } from './state'
+import type { Assignment, FounderSkill, FounderTaskType, TeamMember, V2GameState } from './state'
 import { canPromote, PROMOTE_SKILL } from './team'
 import { hireSpeed, MAIN_TASK, mainSkillOf, TIER_RULES, workerDurationDays } from './work'
+import { closeModal } from './ui'
 import './v2.css'
+
+const TASK_LABEL: Record<FounderTaskType, string> = { research: 'research', develop: 'building', emails: 'emails', sales: 'sales' }
 
 const ASSIGNMENTS: { id: Assignment; label: string }[] = [
   { id: 'research', label: '🔍 Research' },
@@ -42,7 +45,7 @@ export function PersonCard({ m }: { m: TeamMember }) {
     return () => clearTimeout(t)
   }, [armed])
   function letGo() {
-    if (armedNow(armed, m.id, Date.now())) { setArmed(null); fireTeamMember(m.id) }
+    if (armedNow(armed, m.id, Date.now())) { setArmed(null); fireTeamMember(m.id); closeModal() }
     else setArmed({ id: m.id, at: Date.now() })
   }
 
@@ -61,7 +64,7 @@ export function PersonCard({ m }: { m: TeamMember }) {
         <img className="v2-person-portrait" src={portraitUrl(m.characterModel)} alt="" />
         <div className="v2-person-id">
           <div className="v2-person-name">{m.name}<TierBadge tier={m.tier} /></div>
-          <div className="v2-person-role">{ROLE_INFO[m.role].icon} {ROLE_INFO[m.role].label} · best at {MAIN_TASK[m.role]}</div>
+          <div className="v2-person-role">{ROLE_INFO[m.role].icon} {ROLE_INFO[m.role].label} · best at {TASK_LABEL[MAIN_TASK[m.role]]}</div>
           <div className="v2-person-meta">
             {fmtMoney(m.salary)}/mo{joined !== undefined && ` · joined day ${joined}`}
             {m.mistakes > 0 && ` · ${m.mistakes} mistake${m.mistakes > 1 ? 's' : ''}`}
@@ -116,7 +119,7 @@ export function PersonCard({ m }: { m: TeamMember }) {
         {promote === 'ok' && (
           <button className="v2-btn v2-btn-primary" onClick={() => promoteTeamMember(m.id)}>Promote to full-time</button>
         )}
-        {promote === 'skill' && <span className="v2-muted">Promotable at {ROLE_INFO[m.role].label.toLowerCase()} skill {PROMOTE_SKILL}</span>}
+        {promote === 'skill' && <span className="v2-muted">Promotable at {SKILLS.find(sk => sk.id === main)?.label.toLowerCase()} skill {PROMOTE_SKILL}</span>}
         <button className="v2-btn v2-btn-ghost" onClick={letGo}>{armed ? 'Sure? Click again' : 'Let go'}</button>
       </div>
     </div>

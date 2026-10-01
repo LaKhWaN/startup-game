@@ -27,3 +27,12 @@ describe('ui store', () => {
     expect(uiStore.getState()).toMatchObject({ view: 'office', citySelection: null })
   })
 })
+
+describe('resetUi', () => {
+  it('clears view, modal and selection (new game / load)', async () => {
+    const { resetUi } = await import('../ui')
+    showCity(); selectLot('villa'); openModal({ kind: 'metrics' })
+    resetUi()
+    expect(uiStore.getState()).toMatchObject({ view: 'office', modal: null, citySelection: null })
+  })
+})

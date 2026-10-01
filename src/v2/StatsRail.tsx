@@ -20,8 +20,8 @@ export function StatsRail() {
 
   const r = railStats({ v2, features })
   const st = v2.stats
-  const shipped = features.filter(f => f.status === 'completed').length
-  const conversion = st.salesCalls > 0 && st.leadsFound > 0 ? Math.round((st.customersWon / st.leadsFound) * 100) : null
+  const shipped = features.filter(f => f.status === 'completed').length // includes pre-counter saves
+  const conversion = st.salesCalls > 0 && st.leadsFound > 0 ? Math.min(100, Math.round((st.customersWon / st.leadsFound) * 100)) : null
 
   return (
     <aside className="v2-rail" aria-label="Stats">
