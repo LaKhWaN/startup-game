@@ -3,6 +3,7 @@ import { totalDays } from './engine/clock'
 import { estimateFeatureEffects } from './engine/features'
 import { leadSaturation, marketRoom, reputationFactor, salesBaseOf } from './engine/market'
 import { founderSpeed } from './engine/people'
+import { deskSpeed } from './shop'
 import type { Feature, FeatureResult } from '../types'
 import { isTaskUnlocked } from './chapter'
 import { addStory, type FounderSkill, type FounderTask, type FounderTaskType, type Rng, type V2GameState } from './state'
@@ -351,7 +352,7 @@ export function advanceFounder(state: V2GameState, hours: number, rng: Rng): Adv
 
   const days = taskDurationDays(state, task.type, task.featureId)
   // A tired founder works slower (spec §5).
-  const progress = Math.min(1, task.progress + (hours * founderSpeed(state.v2.founder.energy)) / (24 * days))
+  const progress = Math.min(1, task.progress + (hours * founderSpeed(state.v2.founder.energy) * deskSpeed(state, 'founder')) / (24 * days))
 
   if (progress < 1 - EPSILON) {
     const features = task.type === 'develop'

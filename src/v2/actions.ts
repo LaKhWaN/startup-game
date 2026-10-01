@@ -17,6 +17,7 @@ import {
 } from './team'
 import { skipToMorning, stepV2 } from './v2Tick'
 import { resetUi } from './ui'
+import { buyPerk, canBuyPerk, canUpgradeSetup, upgradeSetup, type Desk, type PerkCheck, type PerkId, type SetupCheck } from './shop'
 
 export type { V2Store } from './store'
 
@@ -106,6 +107,26 @@ export function toggleWorkLate(): void {
 export function convinceTeamMemberToStay(id: string): void {
   playSfx('success1', 0.6)
   setV2State(convinceToStay(getV2State(), id))
+}
+
+// ── Shop ────────────────────────────────────────────────────────────────────
+
+export function buyShopPerk(id: PerkId): PerkCheck {
+  const s = getV2State()
+  const check = canBuyPerk(s, id)
+  if (check !== 'ok') return check
+  playSfx('cashCredit', 0.5)
+  setV2State(buyPerk(s, id))
+  return 'ok'
+}
+
+export function upgradeDesk(desk: Desk): SetupCheck {
+  const s = getV2State()
+  const check = canUpgradeSetup(s, desk)
+  if (check !== 'ok') return check
+  playSfx('success1', 0.5)
+  setV2State(upgradeSetup(s, desk))
+  return 'ok'
 }
 
 export function setSpeed(speed: GameSpeed): void {

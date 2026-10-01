@@ -16,8 +16,13 @@ export function makeConfig(overrides: Partial<OnboardingConfig> = {}): Onboardin
   }
 }
 
+/**
+ * A fresh game for tests. Desks are set to the neutral tier-2 computer (speed ×1) so
+ * timing tests stay exact; real games start on the tier-1 laptop (see shop.test).
+ */
 export function makeState(overrides: Partial<V2GameState> = {}): V2GameState {
-  return { ...createV2State(makeConfig()), ...overrides }
+  const base = createV2State(makeConfig())
+  return { ...base, v2: { ...base.v2, setups: { founder: 2, seats: Array(60).fill(2) } }, ...overrides }
 }
 
 export function withV2(state: V2GameState, patch: Partial<V2Slice>): V2GameState {

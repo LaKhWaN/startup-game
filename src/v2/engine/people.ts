@@ -2,6 +2,7 @@ import { addStory, type TeamMember } from '../state'
 import { isNight } from './clock'
 import { departMember } from './events'
 import type { GameV2 } from './types'
+import { perkEffects } from '../shop'
 
 /** Spec §5. All values 0–100. */
 export const BURNOUT_STRESS = 90
@@ -39,6 +40,7 @@ function withTeam(state: GameV2, team: Record<string, TeamMember>): GameV2 {
 /** One hour for the hires. Only work hours matter (they're home otherwise). */
 export function peopleHour<T extends GameV2>(state: T, workHour: boolean): T {
   if (!workHour || Object.keys(state.v2.team).length === 0) return state
+  const perks = perkEffects(state)
   const team: Record<string, TeamMember> = {}
   for (const m of Object.values(state.v2.team)) {
     const mood = moodOf(m)
@@ -46,8 +48,8 @@ export function peopleHour<T extends GameV2>(state: T, workHour: boolean): T {
     const empty = mood.energy < 30 ? 1 : 0
     team[m.id] = {
       ...m,
-      energy: clamp(mood.energy - (busy ? 5 : 1)),
-      stress: clamp(mood.stress + (busy ? 0.35 : -1) + empty),
+      energy: clamp(mood.energy - (busy ? 5 * perks.energyDrain : 1)),
+      stress: clamp(mood.stress + (busy ? 0.35 : -1 * perks.idleStressRelief) + empty - perks.workStressRelief),
       context: clamp(mood.context + (busy ? 0.25 : 0)),
     }
   }
@@ -74,6 +76,7 @@ export function founderHour<T extends GameV2>(state: T, hourOfDay: number): T {
 /** Once per day: overnight/weekend recovery, morale drift, burnout → notice → leaving. */
 export function peopleDay<T extends GameV2>(state: T, day: number, weekend: boolean): T {
   let s: GameV2 = state
+  const perks = perkEffects(state)
   const lines: string[] = []
   const team: Record<string, TeamMember> = {}
   for (const m of Object.values(state.v2.team)) {
@@ -88,9 +91,9 @@ export function peopleDay<T extends GameV2>(state: T, day: number, weekend: bool
     const stress = clamp(mood.stress - 2 - (weekend ? 8 : 0))
     team[m.id] = {
       ...m,
-      energy: weekend ? 100 : clamp(mood.energy + 50),
+      energy: weekend ? 100 : clamp(mood.energy + 50 + perks.overnightEnergy),
       stress,
-      morale: clamp(mood.morale + (75 - stress / 2 - mood.morale) * 0.1),
+      morale: clamp(mood.morale + (75 + perks.moraleBonus - stress / 2 - mood.morale) * 0.1),
       context: mood.context,
       burnoutDays,
       leavingOn,

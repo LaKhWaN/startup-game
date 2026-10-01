@@ -3,6 +3,7 @@ import { FEATURE_TEMPLATES } from '../data/featureTemplates'
 import { scoreToDifficulty } from '../ai/gemini'
 import { totalDays } from './engine/clock'
 import { createCompany, type CompanyState } from './engine/company'
+import type { PerkId } from './shop'
 import { LOCATIONS } from './locations'
 
 export type FounderTaskType = 'research' | 'develop' | 'emails' | 'sales' | 'support' | 'refactor'
@@ -128,6 +129,10 @@ export interface V2Slice {
   stats: V2Stats
   /** Open support tickets (spec §4). */
   tickets: number
+  /** Perks bought, in purchase order (spec §6). */
+  perks: PerkId[]
+  /** Computer tier per desk: the founder's and each hire seat (spec §6). */
+  setups: { founder: number; seats: number[] }
 }
 
 /** The whole v2 game: company state + the v2 slice. */
@@ -162,6 +167,8 @@ export function createV2Slice(): V2Slice {
     chapter3: { beat: 0, complete: false },
     stats: { ...EMPTY_STATS },
     tickets: 0,
+    perks: [],
+    setups: { founder: 1, seats: [] },
   }
 }
 
@@ -226,6 +233,8 @@ export function migrateV2Slice(v: unknown): V2Slice | null {
     chapter3: s.chapter3 ?? { beat: 0, complete: false },
     stats: { ...EMPTY_STATS, ...(s.stats ?? {}) },
     tickets: typeof s.tickets === 'number' ? s.tickets : 0,
+    perks: Array.isArray(s.perks) ? s.perks : [],
+    setups: s.setups && typeof s.setups.founder === 'number' && Array.isArray(s.setups.seats) ? s.setups : { founder: 1, seats: [] },
   }
 }
 

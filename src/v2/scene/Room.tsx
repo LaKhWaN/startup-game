@@ -8,6 +8,8 @@ import { tintedScene } from './tint'
 import { furnitureUrl } from './assets'
 import type { Placement } from './layout'
 import { useRoom } from './RoomContext'
+import { perkPlacements } from './perks'
+import { activePerks } from '../shop'
 
 function Piece({ p, tint }: { p: Placement; tint?: string }) {
   const { scene } = useGLTF(furnitureUrl(p.model))
@@ -78,12 +80,23 @@ export function Room() {
   const room = useRoom()
   // A primitive: Room re-renders when seats change, not every hour a hire works.
   const seats = useV2(s => occupiedSeatMask(s.v2.team))
+  // Shop: bought perks in their spots, and a monitor on tier-3+ desks (stored refs only).
+  const perkList = useV2(s => s.v2.perks)
+  const location = useV2(s => s.v2.location)
+  const setups = useV2(s => s.v2.setups)
+  const perks = activePerks({ v2: { perks: perkList, location } } as never)
+  const monitors = [
+    ...(setups.founder >= 3 ? [room.deskPivots.founder] : []),
+    ...room.deskPivots.seats.filter((p, i): p is [number, number] => !!p && (setups.seats[i] ?? 1) >= 3 && (room.showEmptySeats || seatTaken(seats, i))),
+  ]
   return (
     <group>
       <InstancedFloor tiles={room.floor} tint={room.theme.floorTint} />
       {room.walls.map((p, i) => <Piece key={`w${i}`} p={p} tint={room.theme.wallTint} />)}
       {room.furniture.map((p, i) => <Piece key={`${p.model}-${i}`} p={p} />)}
       {room.seats.map((seat, i) => (room.showEmptySeats || seatTaken(seats, i)) && seat.furniture.map((p, j) => <Piece key={`seat${i}-${j}`} p={p} />))}
+      {perks.map((id, i) => room.perkSpots[i] && perkPlacements(id, room.perkSpots[i]).map((p, j) => <Piece key={`perk-${id}-${j}`} p={p} />))}
+      {monitors.map(([x, z], i) => <Piece key={`mon-${i}`} p={{ model: 'computerScreen', position: [x + 0.3, 0.384, z - 0.4], rotationY: 0, size: [0.393, 0.104] }} />)}
       {room.pictureFrame && <PictureFrame />}
     </group>
   )

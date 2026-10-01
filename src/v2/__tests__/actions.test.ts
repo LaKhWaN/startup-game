@@ -222,3 +222,15 @@ describe('people actions', () => {
     expect(getV2State().v2.team.x.leavingOn).toBeUndefined()
   })
 })
+
+describe('shop actions', () => {
+  it('buys a perk and upgrades a desk through the store', async () => {
+    const { buyShopPerk, upgradeDesk } = await import('../actions')
+    newGameV2(makeConfig())
+    gameStore.setState({ cash: 10_000 })
+    expect(buyShopPerk('coffee')).toBe('ok')
+    expect(getV2State().v2.perks).toEqual(['coffee'])
+    expect(upgradeDesk('founder')).toBe('ok')
+    expect(getV2State().v2.setups.founder).toBe(2)
+  })
+})

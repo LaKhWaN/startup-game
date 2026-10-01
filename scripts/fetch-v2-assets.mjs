@@ -17,6 +17,8 @@ const FURNITURE = [
   'loungeSofa', 'loungeDesignSofa', 'loungeSofaCorner', 'tableCoffeeGlass', 'televisionModern', 'cabinetTelevision',
   'rugRound', 'rugRounded', 'plantSmall2', 'kitchenBar', 'kitchenCoffeeMachine', 'stoolBar',
   'kitchenFridge', 'coatRackStanding', 'bookcaseClosed', 'kitchenCabinet', 'trashcan', 'speaker',
+  // Shop (sub-project D)
+  'table', 'computerScreen',
 ]
 // Founder + the intern looks (src/v2/team.ts INTERN_MODELS)
 const CHARACTERS = [

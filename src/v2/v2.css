@@ -254,3 +254,13 @@
 .v2-skill--bad .v2-skill-name, .v2-skill--bad .v2-skill-val { color: var(--error); font-weight: 600; }
 .v2-fb-energy { display: flex; flex-direction: column; align-items: center; gap: 4px; font-family: 'Roboto Mono', monospace; font-size: 0.78rem; color: var(--text); }
 .v2-fb-energy .v2-chip { font-size: 0.7rem; padding: 3px 8px; }
+
+/* ── Shop (spec §6) ─────────────────────────────────────────────────────── */
+.v2-shop { display: flex; flex-direction: column; gap: 18px; padding: 16px 18px 20px; }
+.v2-shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.v2-shop-item { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); }
+.v2-shop-item--owned { border-color: var(--brand-primary); }
+.v2-shop-icon { font-size: 1.8rem; }
+.v2-shop-name { font-weight: 700; font-size: 0.88rem; color: var(--text); }
+.v2-shop-tag { font-size: 0.78rem; font-weight: 600; color: var(--brand-primary); }
+.v2-shop-desk { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); }

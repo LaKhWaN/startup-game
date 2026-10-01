@@ -2,6 +2,7 @@ import { locationDef } from '../locations'
 import type { LocationId } from '../state'
 import type { FurnitureModel } from './assets'
 import { AMENITY_STRIP, THEMES, type Theme } from './themes'
+import { PERK_SLOTS } from '../shop'
 import {
   FLOOR, FURNITURE, HIRE_SPOTS, SEAT_FURNITURE, SPOTS, WALLS,
   type HireSpots, type Placement, type Spot, type SpotId,
@@ -24,6 +25,10 @@ export interface RoomLayout {
   seats: Seat[]
   /** Where hires walk out at 17:00 and back in at 09:00. */
   door: Spot
+  /** One spot per perk slot (front-left corner of a 1.0 × 0.45 cell, see scene/perks). */
+  perkSpots: [number, number][]
+  /** Desk corners for monitors on tier-3+ setups: the founder's and each seat's (null = no desk). */
+  deskPivots: { founder: [number, number]; seats: ([number, number] | null)[] }
   /** Where the founder's laptop glows. */
   laptopGlow: [number, number, number]
   /** Floor lamp light, if the room has one. */
@@ -46,6 +51,8 @@ const HOME: RoomLayout = {
   spots: SPOTS,
   seats: SEAT_FURNITURE.map((furniture, i) => ({ furniture, spots: HIRE_SPOTS[i] })),
   door: { position: [3.7, 0, -0.3], yaw: Math.PI / 2 },
+  perkSpots: [[2.98, -0.76]],
+  deskPivots: { founder: [1.13, -3.42], seats: [null, [2.2, -3.42]] },
   laptopGlow: [1.47, 0.52, -3.55],
   lamp: [0.33, 0.95, -3.52],
   pictureFrame: true,
@@ -115,10 +122,15 @@ function floor(width: number, depth: number): Placement[] {
   }))
 }
 
-export function generateRoom(capacity: number, theme: Theme): RoomLayout {
+const PERK_COL_W = 1.15
+const PERK_ROW_D = 1.0
+
+export function generateRoom(capacity: number, theme: Theme, perkSlots: number): RoomLayout {
   const { cols, rows } = gridSize(capacity)
   const stripX0 = FOUNDER_ZONE + cols * CELL_W + STRIP_GAP
-  const width = Math.ceil(stripX0 + AMENITY_STRIP + RIGHT_MARGIN)
+  // Perk row: two columns of perk cells to the right of the amenity strip.
+  const perkX0 = stripX0 + AMENITY_STRIP + 0.15
+  const width = Math.ceil(perkX0 + 2 * PERK_COL_W + RIGHT_MARGIN)
   const depth = Math.max(4, Math.ceil(BACK_GAP + DESK[1] + (rows - 1) * CELL_D + 0.67 + FRONT_LANE))
   const back = -depth
 
@@ -168,6 +180,11 @@ export function generateRoom(capacity: number, theme: Theme): RoomLayout {
     spots,
     seats,
     door: { position: [width - 0.2, 0, -0.3], yaw: Math.PI / 2 },
+    perkSpots: Array.from({ length: perkSlots }, (_, i) => [perkX0 + (i % 2) * PERK_COL_W, back + 0.7 + Math.floor(i / 2) * PERK_ROW_D] as [number, number]),
+    deskPivots: {
+      founder: [0.3, back + BACK_GAP + DESK[1]],
+      seats: Array.from({ length: capacity }, (_, i) => [FOUNDER_ZONE + (i % cols) * CELL_W + 0.13, back + BACK_GAP + DESK[1] + Math.floor(i / cols) * CELL_D] as [number, number]),
+    },
     laptopGlow: [0.3 + 0.34, 0.52, back + BACK_GAP + DESK[1] - 0.2],
     lamp: [0.13, 0.95, back + 0.76],
     theme,
@@ -182,7 +199,7 @@ export function roomFor(id: LocationId): RoomLayout {
   if (id === 'home') return HOME
   let room = cache.get(id)
   if (!room) {
-    room = generateRoom(locationDef(id).capacity, THEMES[id])
+    room = generateRoom(locationDef(id).capacity, THEMES[id], PERK_SLOTS[id])
     cache.set(id, room)
   }
   return room
