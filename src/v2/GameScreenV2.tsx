@@ -7,6 +7,7 @@ import { getV2State, reshowCoachCard, stepGame, useV2 } from './actions'
 import { BottomNavV2, type V2Panel } from './BottomNavV2'
 import { isMapUnlocked, isMetricsUnlocked, isTeamUnlocked } from './chapter'
 import { MoveTransition } from './MoveTransition'
+import { NightBanner } from './NightBanner'
 import { TeamPanel } from './TeamPanel'
 import { FamilyMoneyModal } from './FamilyMoneyModal'
 import { FounderPanel } from './FounderPanel'
@@ -79,6 +80,7 @@ export function GameScreenV2() {
           </RoomView>
           {view === 'office' && <CoachOverlay />}
           {view === 'office' && <FounderBar />}
+          <NightBanner />
           <CityOverlay />
           <MoveTransition />
           <BottomNavV2 active={active} metricsUnlocked={metricsUnlocked} teamUnlocked={teamUnlocked} mapUnlocked={mapUnlocked} onTabClick={onTab} />

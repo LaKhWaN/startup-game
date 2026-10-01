@@ -1,4 +1,4 @@
-import { HOURS_PER_DAY, DAYS_PER_MONTH } from './engine/clock'
+import { DAYS_PER_MONTH, HOURS_PER_DAY, isWorkHour } from './engine/clock'
 import { processDay, processMonth } from './engine/day'
 import { checkChapter2Complete, checkChapter3Complete, onTaskCompleted, onTeamProgress } from './chapter'
 import { filterPendingEvent } from './eventsV2'
@@ -11,7 +11,7 @@ import { advanceTeam } from './team'
  * The v2 layer for one step: events gating, founder, team, chapters, unlocks.
  * `hours` = game hours that just passed (0 when paused).
  */
-export function v2Tick(state: V2GameState, hours: number, rng: Rng = Math.random): V2GameState {
+export function v2Tick(state: V2GameState, hours: number, rng: Rng = Math.random, teamHours: number = hours): V2GameState {
   if (state.phase !== 'playing') return state
 
   let s = state
@@ -26,7 +26,8 @@ export function v2Tick(state: V2GameState, hours: number, rng: Rng = Math.random
   const { state: advanced, completed } = advanceFounder(s, hours, rng)
   s = completed ? onTaskCompleted(advanced, completed, rng) : advanced
 
-  const team = advanceTeam(s, hours, rng)
+  // Hires only work office hours (teamHours = 0 outside them); the founder works any time.
+  const team = advanceTeam(s, teamHours, rng)
   s = onTeamProgress(team.state, team)
   s = checkChapter2Complete(s)
   s = updateUnlocks(s)
@@ -46,5 +47,15 @@ export function stepV2<T extends V2GameState>(state: T, rng: Rng = Math.random):
   const month = Math.floor(day / DAYS_PER_MONTH)
   if (month > Math.floor(Math.floor(prev / HOURS_PER_DAY) / DAYS_PER_MONTH)) s = processMonth(s, month)
   if (s.phase !== 'playing') return s
-  return v2Tick(s, 1, rng) as T
+  return v2Tick(s, 1, rng, isWorkHour(prev) ? 1 : 0) as T
+}
+
+/** Fast-forward to 09:00 on the next work day, stopping early for an event or game over. */
+export function skipToMorning<T extends V2GameState>(state: T, rng: Rng = Math.random, stopWhen?: (s: T) => boolean): T {
+  let s = state
+  for (let i = 0; i < 24 * 4 && s.phase === 'playing' && !isWorkHour(s.gameTime.totalHours); i++) {
+    s = stepV2(s, rng)
+    if (s.pendingEvent || stopWhen?.(s)) break
+  }
+  return s
 }

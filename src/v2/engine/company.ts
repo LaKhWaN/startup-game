@@ -2,6 +2,7 @@ import type {
   DecisionRecord, DifficultyModifier, Feature, FeatureResult, GamePhase, GameTime, MetricsSnapshot, OnboardingConfig, StoryEntry,
 } from '../../types'
 import type { FeatureTemplate } from '../../data/featureTemplates'
+import { WORK_START } from './clock'
 import type { EventDef } from './eventData'
 
 /**
@@ -66,7 +67,7 @@ export function createCompany(config: OnboardingConfig, cash: number): CompanySt
     difficultyModifier: config.difficulty,
     lastConfig: config,
     gameId: `v2-game-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    gameTime: { totalHours: 0 },
+    gameTime: { totalHours: WORK_START }, // Monday 09:00
     cash,
     mrr: 0,
     arpu: START_ARPU,

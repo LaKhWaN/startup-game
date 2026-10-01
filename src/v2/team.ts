@@ -4,7 +4,7 @@ import { monthlyBurn, runwayMonths } from './engine/money'
 import { applyOutcome, pickResearchTemplates } from './founder'
 import { currentLocation, locationIndex } from './locations'
 import { addStory, type Assignment, type FounderSkill, type FounderTask, type FounderTaskType, type InternCandidate, type Rng, type TeamMember, type TeamRole, type Tier, type V2GameState } from './state'
-import { hireSpeed, MAIN_TASK, mainSkillOf, mistakeChance, TIER_RULES, workerDurationDays } from './work'
+import { hireSpeed, MAIN_TASK, mainSkillOf, mistakeChance, TIER_RULES, WORK_DAY_HOURS, workerDurationDays } from './work'
 
 export const HOME_CAPACITY = 2
 export const INTERN_SKILL_MAIN = TIER_RULES.intern.skillMain
@@ -220,7 +220,7 @@ export interface TeamTickResult {
   mistakes: string[]
 }
 
-/** Advances every hire by `hours`: start the next task, progress it, apply its outcome. */
+/** Advances every hire by `hours` of work: start the next task, progress it, apply its outcome. */
 export function advanceTeam(state: V2GameState, hours: number, rng: Rng): TeamTickResult {
   let s = state
   const completedBy: string[] = []
@@ -241,7 +241,8 @@ export function advanceTeam(state: V2GameState, hours: number, rng: Rng): TeamTi
 
     const task = m.task
     const days = workerDurationDays(s, task.type, task.featureId, hireSpeed(m.role, task.type, m.tier))
-    const progress = Math.min(1, task.progress + hours / (24 * days))
+    // Hires count work hours: one work day = WORK_DAY_HOURS.
+    const progress = Math.min(1, task.progress + hours / (WORK_DAY_HOURS * days))
     if (progress < 1 - EPSILON) {
       if (task.type === 'develop') {
         s = { ...s, features: s.features.map(f => (f.id === task.featureId ? { ...f, buildProgress: progress } : f)) }

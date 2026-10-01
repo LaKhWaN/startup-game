@@ -9,6 +9,7 @@ import { fitZoom } from './camera'
 import { Room } from './Room'
 import { City } from './City'
 import { useUi } from '../ui'
+import { isNight } from '../engine/clock'
 import { RoomContext } from './RoomContext'
 import { roomFor, type RoomLayout } from './rooms'
 
@@ -37,7 +38,10 @@ function CameraRig({ room }: { room: RoomLayout }) {
   return null
 }
 
-function Lights({ room }: { room: RoomLayout }) {
+/** Night: moonlight through the window, lamps do the work (spec §3.2). */
+const NIGHT = { hemi: 0.3, sun: 0.18, sunColor: '#9fb4ff', fill: 0.15, lamp: 5.5 }
+
+function Lights({ room, night }: { room: RoomLayout; night: boolean }) {
   // The bedroom was lit with the sun aimed at the origin; keep that direction and slide it with the room.
   const [cx, , cz] = centerOf(room)
   const aim: [number, number, number] = [cx - 2, 0, cz + 2]
@@ -46,13 +50,13 @@ function Lights({ room }: { room: RoomLayout }) {
   return (
     <>
       <primitive object={target} position={aim} />
-      <hemisphereLight args={[room.theme.hemi.sky, room.theme.hemi.ground, room.theme.hemi.intensity]} />
+      <hemisphereLight args={[night ? '#55638a' : room.theme.hemi.sky, room.theme.hemi.ground, room.theme.hemi.intensity * (night ? NIGHT.hemi : 1)]} />
       {/* Warm evening light coming in through the back-wall window */}
       <directionalLight
         target={target}
         position={[aim[0] + 1.5, 5, aim[2] - 7]}
-        intensity={room.theme.sun.intensity}
-        color={room.theme.sun.color}
+        intensity={room.theme.sun.intensity * (night ? NIGHT.sun : 1)}
+        color={night ? NIGHT.sunColor : room.theme.sun.color}
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-reach}
@@ -62,9 +66,11 @@ function Lights({ room }: { room: RoomLayout }) {
         shadow-bias={-0.0005}
       />
       {/* Soft front fill so the cut-away side isn't black */}
-      <directionalLight position={[aim[0] + 8, 6, aim[2] + 6]} intensity={room.theme.fill.intensity} color={room.theme.fill.color} />
+      <directionalLight position={[aim[0] + 8, 6, aim[2] + 6]} intensity={room.theme.fill.intensity * (night ? NIGHT.fill : 1)} color={room.theme.fill.color} />
       {/* Floor lamp by the founder's desk */}
-      {room.lamp && <pointLight position={room.lamp} intensity={3} distance={3.5} decay={2} color="#ffb46b" />}
+      {room.lamp && <pointLight position={room.lamp} intensity={night ? NIGHT.lamp : 3} distance={night ? 5 : 3.5} decay={2} color="#ffb46b" />}
+      {/* Ceiling glow at night so the room isn't a black box */}
+      {night && <pointLight position={[room.width / 2, 2.2, -room.depth / 2]} intensity={2.2} distance={Math.max(room.width, room.depth) * 1.4} decay={1.6} color="#ffd29a" />}
     </>
   )
 }
@@ -72,6 +78,7 @@ function Lights({ room }: { room: RoomLayout }) {
 export default function HomeScene({ children }: { children?: ReactNode }) {
   const location = useV2(s => s.v2.location)
   const view = useUi(s => s.view)
+  const night = useV2(s => isNight(s.gameTime.totalHours))
   const room = roomFor(location)
   // Adaptive quality: on a sustained FPS drop, render at 1× DPR. Shadows stay on: toggling
   // them live leaves already-compiled materials without their shadow maps (they vanish).
@@ -86,13 +93,13 @@ export default function HomeScene({ children }: { children?: ReactNode }) {
         onCreated={({ gl }) => { gl.toneMapping = ACESFilmicToneMapping }}
       >
         <PerformanceMonitor {...qualityHandlers(setLow)} />
-        <color attach="background" args={[view === 'city' ? '#cfe6f5' : room.theme.background]} />
+        <color attach="background" args={[view === 'city' ? (night ? '#1c2440' : '#cfe6f5') : night ? '#120f14' : room.theme.background]} />
         <RoomContext.Provider value={room}>
           {/* Remount everything on a move so characters start at their new seats. */}
           {view === 'city' ? <City key="city" /> : (
           <group key={location}>
             <CameraRig room={room} />
-            <Lights room={room} />
+            <Lights room={room} night={night} />
             <Room />
             <ContactShadows
               position={[room.width / 2, 0.006, -room.depth / 2]}

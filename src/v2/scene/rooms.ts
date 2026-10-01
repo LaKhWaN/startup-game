@@ -22,6 +22,8 @@ export interface RoomLayout {
   /** The founder's spots. 'bed' is wherever the founder rests when idle. */
   spots: Record<SpotId, Spot>
   seats: Seat[]
+  /** Where hires walk out at 17:00 and back in at 09:00. */
+  door: Spot
   /** Where the founder's laptop glows. */
   laptopGlow: [number, number, number]
   /** Floor lamp light, if the room has one. */
@@ -43,6 +45,7 @@ const HOME: RoomLayout = {
   furniture: FURNITURE,
   spots: SPOTS,
   seats: SEAT_FURNITURE.map((furniture, i) => ({ furniture, spots: HIRE_SPOTS[i] })),
+  door: { position: [3.7, 0, -0.3], yaw: Math.PI / 2 },
   laptopGlow: [1.47, 0.52, -3.55],
   lamp: [0.33, 0.95, -3.52],
   pictureFrame: true,
@@ -164,6 +167,7 @@ export function generateRoom(capacity: number, theme: Theme): RoomLayout {
     furniture,
     spots,
     seats,
+    door: { position: [width - 0.2, 0, -0.3], yaw: Math.PI / 2 },
     laptopGlow: [0.3 + 0.34, 0.52, back + BACK_GAP + DESK[1] - 0.2],
     lamp: [0.13, 0.95, back + 0.76],
     theme,

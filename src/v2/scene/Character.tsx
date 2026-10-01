@@ -34,13 +34,15 @@ export interface CharacterProps<S extends string> {
   onSelect?: () => void
   /** Shown over their head while hovered with a mouse. */
   hoverCard?: { title: string; subtitle?: string; status: string }
+  /** Hide the character once they've arrived here (hires leaving through the door). */
+  hideAt?: S
 }
 
 /**
  * One animated Kenney mini character. Each instance clones the GLB's skinned
  * scene, so the founder and several hires can share a model.
  */
-export function Character<S extends string>({ url, spots, pose, startSpot, progress, onSelect, hoverCard }: CharacterProps<S>) {
+export function Character<S extends string>({ url, spots, pose, startSpot, progress, onSelect, hoverCard, hideAt }: CharacterProps<S>) {
   const [hovered, setHovered] = useState(false)
   const room = useRoom()
   const size = useThree(s => s.size)
@@ -152,6 +154,8 @@ export function Character<S extends string>({ url, spots, pose, startSpot, progr
     }
 
     const settled = !walking.current
+    // Gone home: invisible at the door until they walk back in.
+    g.visible = !(hideAt && settled && target.current === hideAt)
     const y = settled ? spot.position[1] : 0
     g.position.set(pos.current[0], y, pos.current[1])
     if (settled && (!pose.pace || reduced)) g.rotation.y = spot.yaw + MODEL_YAW_OFFSET

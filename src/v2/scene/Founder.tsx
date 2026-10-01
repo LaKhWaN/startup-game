@@ -6,6 +6,7 @@ import { CHARACTER_URL } from './assets'
 import { Character } from './Character'
 import { founderPose } from './founderPose'
 import { useRoom } from './RoomContext'
+import { isNight } from '../engine/clock'
 import { founderStatusText } from './hoverText'
 
 export function Founder({ onSelect }: { onSelect?: () => void }) {
@@ -32,10 +33,12 @@ useGLTF.preload(CHARACTER_URL)
 export function LaptopGlow() {
   const task = useV2(s => s.v2.founder.task)
   const typing = founderPose(task).typing
+  const night = useV2(s => isNight(s.gameTime.totalHours))
   const light = useRef<import('three').PointLight>(null)
   useFrame((_, delta) => {
     if (!light.current) return
-    const goal = typing ? 1.6 : 0.25
+    // Screens glow brighter in the dark.
+    const goal = typing ? (night ? 2.6 : 1.6) : night ? 0.7 : 0.25
     light.current.intensity += (goal - light.current.intensity) * Math.min(1, delta * 4)
   })
   const room = useRoom()

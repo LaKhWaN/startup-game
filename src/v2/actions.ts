@@ -15,7 +15,7 @@ import {
   canHire, canPromote, fireMember, generateCandidates, hireIntern, isFullTimeUnlocked, promoteMember, setAssignment,
   type HireCheck, type PromoteCheck,
 } from './team'
-import { stepV2 } from './v2Tick'
+import { skipToMorning, stepV2 } from './v2Tick'
 import { resetUi } from './ui'
 
 export type { V2Store } from './store'
@@ -98,6 +98,14 @@ export function claimFamilyMoney(): void {
   playSfx('cashCredit', 0.7)
   setV2State({ ...next, gameSpeed: speedBeforeModal ?? 1 })
   speedBeforeModal = null
+}
+
+/** ⏭ Skip to morning: run the closed hours until the office opens (stops on an event). */
+export function skipNight(): void {
+  const before = getV2State()
+  const next = skipToMorning(before)
+  setV2State(next)
+  syncAnalytics(next)
 }
 
 export function setSpeed(speed: GameSpeed): void {

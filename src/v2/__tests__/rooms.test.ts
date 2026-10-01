@@ -56,6 +56,12 @@ describe('roomFor', () => {
         }
       })
 
+      it('has a door spot inside the room, clear of furniture', () => {
+        const [x, , z] = r.door.position
+        expect(x > 0 && x < r.width && z < 0 && z > -r.depth).toBe(true)
+        for (const p of all.filter(onFloor)) expect(inside(x, z, footprint(p)), `door in ${p.model}`).toBe(false)
+      })
+
       it('keeps standing and pace spots inside the room and out of furniture', () => {
         const standing = [
           ...Object.values(r.spots).filter(s => !s.seat),

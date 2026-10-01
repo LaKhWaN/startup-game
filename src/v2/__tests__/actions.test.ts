@@ -50,12 +50,12 @@ describe('startFounderTask', () => {
 })
 
 describe('stepGame', () => {
-  it('advances legacy time by one hour and the founder with it', () => {
+  it('advances time by one hour and the founder with it', () => {
     newGameV2(makeConfig())
     startFounderTask('research')
     stepGame()
     const s = getV2State()
-    expect(s.gameTime.totalHours).toBe(1)
+    expect(s.gameTime.totalHours).toBe(10) // games start Monday 09:00
     expect(s.v2.founder.task?.progress).toBeCloseTo(1 / 72)
   })
 })
@@ -184,5 +184,15 @@ describe('ui reset on new game', () => {
     showCity(); openModal({ kind: 'team' })
     newGameV2(makeConfig())
     expect(uiStore.getState()).toMatchObject({ view: 'office', modal: null })
+  })
+})
+
+describe('skipNight', () => {
+  it('fast-forwards a closed office to the next morning', async () => {
+    const { skipNight } = await import('../actions')
+    newGameV2(makeConfig())
+    gameStore.setState({ gameTime: { totalHours: 20 } })
+    skipNight()
+    expect(getV2State().gameTime.totalHours).toBe(24 + 9)
   })
 })
