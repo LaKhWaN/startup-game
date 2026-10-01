@@ -1,0 +1,47 @@
+import { moveToLocation, useV2 } from './actions'
+import { canMove, LOCATIONS, type MoveCheck } from './locations'
+import type { V2GameState } from './state'
+import { selectLot, showOffice, useUi } from './ui'
+import './v2.css'
+
+const fmt = (n: number) => `$${n.toLocaleString()}`
+
+/** DOM controls over the city view: back button + the selected location's card. */
+export function CityOverlay() {
+  const view = useUi(s => s.view)
+  const selected = useUi(s => s.citySelection)
+  const v2 = useV2(s => s.v2)
+  const cash = useV2(s => s.cash)
+  if (view !== 'city') return null
+
+  const def = selected ? LOCATIONS.find(l => l.id === selected) : undefined
+  const check: MoveCheck | null = def ? canMove({ v2, cash } as V2GameState, def.id) : null
+  const reason: Record<Exclude<MoveCheck, 'ok'>, string> = {
+    current: '📍 You are here',
+    locked: def ? `🔒 Reach ${fmt(def.unlockMrr)} MRR to unlock` : '',
+    cash: def ? `Need ${fmt(def.moveIn)} to move in` : '',
+    capacity: def ? `Your team doesn't fit (${def.capacity} seats)` : '',
+  }
+
+  return (
+    <>
+      <button className="v2-city-back" onClick={showOffice}>◀ Back to office</button>
+      {!def && <div className="v2-city-hint">Click a building to see it. Peak MRR {fmt(v2.peakMrr)}.</div>}
+      {def && check && (
+        <div className="v2-city-card">
+          <div className="v2-city-card-head">
+            <span className="v2-city-card-icon" aria-hidden="true">{def.icon}</span>
+            <div>
+              <div className="v2-city-card-name">{def.name}</div>
+              <div className="v2-muted">{def.capacity} seats · rent {def.rent > 0 ? `${fmt(def.rent)}/mo` : 'free'}{def.moveIn > 0 && ` · move-in ${fmt(def.moveIn)}`}</div>
+            </div>
+            <button className="v2-sheet-close" onClick={() => selectLot(null)} aria-label="Close">✕</button>
+          </div>
+          {check === 'ok'
+            ? <button className="v2-btn v2-btn-primary" onClick={() => { if (moveToLocation(def.id) === 'ok') showOffice() }}>Move here{def.moveIn > 0 ? ` (${fmt(def.moveIn)})` : ''}</button>
+            : <div className="v2-city-reason">{reason[check]}</div>}
+        </div>
+      )}
+    </>
+  )
+}

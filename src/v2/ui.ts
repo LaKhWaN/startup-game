@@ -6,7 +6,6 @@ export type Modal =
   | { kind: 'founder' }
   | { kind: 'team' }
   | { kind: 'metrics' }
-  | { kind: 'map' }
   | { kind: 'person'; id: string }
 
 interface UiState {

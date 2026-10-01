@@ -7,7 +7,6 @@ import { RunwayBanner } from '../components/RunwayBanner'
 import { getV2State, reshowCoachCard, stepGame, useV2 } from './actions'
 import { BottomNavV2, type V2Panel } from './BottomNavV2'
 import { isMapUnlocked, isMetricsUnlocked, isTeamUnlocked } from './chapter'
-import { MapPanel } from './MapPanel'
 import { MoveTransition } from './MoveTransition'
 import { TeamPanel } from './TeamPanel'
 import { FamilyMoneyModal } from './FamilyMoneyModal'
@@ -17,7 +16,8 @@ import { FounderBar } from './FounderBar'
 import { PersonCard } from './PersonCard'
 import { StatsRail } from './StatsRail'
 import { Modal } from './Modal'
-import { closeModal, openModal, useUi, type Modal as ModalState } from './ui'
+import { closeModal, openModal, showCity, showOffice, useUi, type Modal as ModalState } from './ui'
+import { CityOverlay } from './CityOverlay'
 import { RoomView } from './RoomView'
 import { useBackgroundMusic, useTypingLoop } from './audio'
 import { Founder, LaptopGlow } from './scene/Founder'
@@ -37,8 +37,12 @@ export function GameScreenV2() {
   const pendingMilestoneToasts = useV2(s => s.pendingMilestoneToasts)
   const dismissMilestoneToast = useV2(s => s.dismissMilestoneToast)
   const modal = useUi(s => s.modal)
-  const onTab = (p: V2Panel) => openModal({ kind: p } as ModalState)
-  const active: V2Panel | null = modal && modal.kind !== 'person' ? modal.kind : null
+  const view = useUi(s => s.view)
+  const onTab = (p: V2Panel) => {
+    if (p === 'map') { if (view === 'city') showOffice(); else showCity(); return }
+    openModal({ kind: p } as ModalState)
+  }
+  const active: V2Panel | null = view === 'city' ? 'map' : modal && modal.kind !== 'person' ? modal.kind : null
 
   useBackgroundMusic()
   useTypingLoop(founderPose(v2.founder.task).typing && phase === 'playing' && gameSpeed > 0)
@@ -76,8 +80,9 @@ export function GameScreenV2() {
             <Hires onSelect={id => openModal({ kind: 'person', id })} />
             <LaptopGlow />
           </RoomView>
-          <CoachOverlay />
-          <FounderBar />
+          {view === 'office' && <CoachOverlay />}
+          {view === 'office' && <FounderBar />}
+          <CityOverlay />
           <MoveTransition />
           <BottomNavV2 active={active} metricsUnlocked={metricsUnlocked} teamUnlocked={teamUnlocked} mapUnlocked={mapUnlocked} onTabClick={onTab} />
         </div>
@@ -99,7 +104,6 @@ function ScreenModal({ modal }: { modal: ModalState | null }) {
   switch (modal.kind) {
     case 'founder': return <Modal title="Founder" onClose={closeModal}><FounderPanel /></Modal>
     case 'team': return <Modal title="Team" onClose={closeModal}><TeamPanel /></Modal>
-    case 'map': return <Modal title="Map" onClose={closeModal}><MapPanel /></Modal>
     case 'metrics': return <Modal title="Metrics" onClose={closeModal} wide><RightPanel activePanel="metrics" /></Modal>
     case 'person': {
       const m = team[modal.id]

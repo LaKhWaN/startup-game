@@ -24,6 +24,22 @@ const CHARACTERS = [
   'character-female-a', 'character-female-b', 'character-female-c', 'character-female-d', 'character-female-e', 'character-female-f',
 ]
 
+// City map (Phase 7): Kenney City Kit Suburban / Commercial / Roads, CC0. Each kit has its own colormap.
+const CITY_KITS = {
+  suburban: {
+    zip: 'https://kenney.nl/media/pages/assets/city-kit-suburban/2c871b7af2-1745479373/kenney_city-kit-suburban_20.zip',
+    models: ['building-type-h', 'building-type-a', 'building-type-m', 'tree-large', 'tree-small'],
+  },
+  commercial: {
+    zip: 'https://kenney.nl/media/pages/assets/city-kit-commercial/a742d900eb-1753115042/kenney_city-kit-commercial_2.1.zip',
+    models: ['building-e', 'building-a', 'building-skyscraper-a', 'building-skyscraper-c'],
+  },
+  roads: {
+    zip: 'https://kenney.nl/media/pages/assets/city-kit-roads/74288c9459-1787042796/kenney_city-kit-roads.zip',
+    models: ['road-straight', 'light-square'],
+  },
+}
+
 const OUT = join(process.cwd(), 'public', 'assets', 'v2')
 const work = mkdtempSync(join(tmpdir(), 'kenney-'))
 
@@ -52,5 +68,15 @@ for (const name of CHARACTERS) {
 }
 copyFileSync(join(charDir, 'Textures', 'colormap.png'), join(OUT, 'characters', 'Textures', 'colormap.png'))
 copyFileSync(join(work, 'furn', 'License.txt'), join(OUT, 'LICENSE-kenney.txt'))
+
+for (const [kit, { zip, models }] of Object.entries(CITY_KITS)) {
+  await download(zip, join(work, `${kit}.zip`))
+  execFileSync('unzip', ['-oq', join(work, `${kit}.zip`), '-d', join(work, kit)])
+  const src = join(work, kit, 'Models', 'GLB format')
+  const dst = join(OUT, 'city', kit)
+  mkdirSync(join(dst, 'Textures'), { recursive: true })
+  for (const m of models) copyFileSync(join(src, `${m}.glb`), join(dst, `${m}.glb`))
+  copyFileSync(join(src, 'Textures', 'colormap.png'), join(dst, 'Textures', 'colormap.png'))
+}
 
 console.log(`Wrote ${FURNITURE.length} furniture models + ${CHARACTERS.length} characters to ${OUT}`)

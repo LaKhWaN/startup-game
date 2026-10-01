@@ -7,6 +7,8 @@ import { PRELOAD_URLS } from './assets'
 import { qualityHandlers } from './quality'
 import { fitZoom } from './camera'
 import { Room } from './Room'
+import { City } from './City'
+import { useUi } from '../ui'
 import { RoomContext } from './RoomContext'
 import { roomFor, type RoomLayout } from './rooms'
 
@@ -69,6 +71,7 @@ function Lights({ room }: { room: RoomLayout }) {
 
 export default function HomeScene({ children }: { children?: ReactNode }) {
   const location = useV2(s => s.v2.location)
+  const view = useUi(s => s.view)
   const room = roomFor(location)
   // Adaptive quality: on a sustained FPS drop, render at 1× DPR. Shadows stay on: toggling
   // them live leaves already-compiled materials without their shadow maps (they vanish).
@@ -83,9 +86,10 @@ export default function HomeScene({ children }: { children?: ReactNode }) {
         onCreated={({ gl }) => { gl.toneMapping = ACESFilmicToneMapping }}
       >
         <PerformanceMonitor {...qualityHandlers(setLow)} />
-        <color attach="background" args={[room.theme.background]} />
+        <color attach="background" args={[view === 'city' ? '#cfe6f5' : room.theme.background]} />
         <RoomContext.Provider value={room}>
           {/* Remount everything on a move so characters start at their new seats. */}
+          {view === 'city' ? <City key="city" /> : (
           <group key={location}>
             <CameraRig room={room} />
             <Lights room={room} />
@@ -99,6 +103,7 @@ export default function HomeScene({ children }: { children?: ReactNode }) {
             />
             {children}
           </group>
+          )}
         </RoomContext.Provider>
       </Canvas>
     </div>
