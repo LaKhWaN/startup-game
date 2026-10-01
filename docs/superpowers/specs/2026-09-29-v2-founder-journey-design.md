@@ -510,3 +510,26 @@ Exact colours live in `src/v2/scene/themes.ts`. Tints multiply the model's mater
 ### 9.4 Out of scope for Phase 5
 
 Postprocessing, adaptive quality, instancing, mobile layout (Phase 6); managers.
+
+## 10. Phase 6 detailed design — polish, performance, mobile (autonomous, 2026-10-01)
+
+*Written under the same blanket approval; every choice is logged as a ruling.*
+
+### 10.1 Decisions
+
+| Topic | Decision |
+|---|---|
+| Postprocessing | **No postprocessing dependency.** MSAA is already on; bloom would read as "glow", which the design system rules out; a vignette is a CSS radial-gradient overlay. Saves a dependency (`@react-three/postprocessing` v2 is the last R3F-8 line) and GPU time on phones. |
+| Adaptive quality | drei `PerformanceMonitor` + `AdaptiveDpr`: on a sustained FPS decline the scene drops DPR toward 1 and turns shadows off; on recovery it restores them. |
+| Draw calls | Floor tiles render as one `InstancedMesh` per floor sub-mesh (the Building has 120 tiles). Walls and furniture stay as clones. |
+| Leaks / re-renders | Dispose each cloned skeleton's bone texture on unmount. `Room` subscribes to a primitive "occupied seats" bitmask instead of the whole team. |
+| Loading | While models stream in, the placeholder shows "Setting up your room… N%" from drei `useProgress`. |
+| Reduced motion | With `prefers-reduced-motion: reduce`, characters snap to their spot instead of walking, the typing/breathing motion is off, and the move transition doesn't animate. |
+| Mobile layout | Under 768 px wide: the room sits on top (≈42 vh), the active panel scrolls below it, and the bottom nav stays visible. No fixed 400 px side panel. |
+| Small UX debts | "Let go" asks for a second click ("Sure?") within 3 s. A hire removed by a legacy event is dropped *before* the team works that hour. |
+
+### 10.2 Testing and acceptance
+
+- **Unit tests:** occupied-seat bitmask; floor instancing matrices (one per tile, positions match the layout); reduced-motion step (snaps to goal); the remove-before-work ordering in `v2Tick`; the two-click confirm helper.
+- **Screenshot harness:** add a 390×844 phone viewport (room visible above the panel, nav visible, no horizontal scroll); every earlier shot still renders.
+- **Gates:** `tsc`, `npm test`, `npm run build`, legacy guard.
