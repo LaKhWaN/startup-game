@@ -5,6 +5,9 @@ export const FURNITURE_MODELS = [
   'bookcaseOpen', 'books', 'pottedPlant', 'plantSmall1',
   'lampRoundFloor', 'rugRectangle',
   'loungeChair', 'tableCoffee',
+  'loungeSofa', 'loungeDesignSofa', 'loungeSofaCorner', 'tableCoffeeGlass', 'televisionModern', 'cabinetTelevision',
+  'rugRound', 'rugRounded', 'plantSmall2', 'kitchenBar', 'kitchenCoffeeMachine', 'stoolBar',
+  'kitchenFridge', 'coatRackStanding', 'bookcaseClosed', 'kitchenCabinet', 'trashcan', 'speaker',
 ] as const
 
 export type FurnitureModel = typeof FURNITURE_MODELS[number]

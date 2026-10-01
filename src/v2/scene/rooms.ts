@@ -1,6 +1,7 @@
 import { locationDef } from '../locations'
 import type { LocationId } from '../state'
 import type { FurnitureModel } from './assets'
+import { AMENITY_STRIP, THEMES, type Theme } from './themes'
 import {
   FLOOR, FURNITURE, HIRE_SPOTS, SEAT_FURNITURE, SPOTS, WALLS,
   type HireSpots, type Placement, type Spot, type SpotId,
@@ -27,6 +28,9 @@ export interface RoomLayout {
   lamp?: [number, number, number]
   /** The bedroom's hand-placed wall picture. */
   pictureFrame?: boolean
+  theme: Theme
+  /** Generated rooms: the x-range on the right that holds the theme's amenities. */
+  amenityStrip?: { x0: number; x1: number }
 }
 
 const HOME: RoomLayout = {
@@ -40,6 +44,7 @@ const HOME: RoomLayout = {
   laptopGlow: [1.47, 0.52, -3.55],
   lamp: [0.33, 0.95, -3.52],
   pictureFrame: true,
+  theme: THEMES.home,
 }
 
 // ── Generated rooms ─────────────────────────────────────────────────────────
@@ -47,7 +52,8 @@ const HOME: RoomLayout = {
 // then a grid of desks, with a walkway along the front for sales calls.
 
 const FOUNDER_ZONE = 1.6
-const RIGHT_MARGIN = 0.6
+const STRIP_GAP = 0.1
+const RIGHT_MARGIN = 0.3
 const BACK_GAP = 0.05
 const CELL_W = 1.0
 const CELL_D = 1.4
@@ -103,9 +109,10 @@ function floor(width: number, depth: number): Placement[] {
   }))
 }
 
-export function generateRoom(capacity: number): RoomLayout {
+export function generateRoom(capacity: number, theme: Theme): RoomLayout {
   const { cols, rows } = gridSize(capacity)
-  const width = Math.ceil(FOUNDER_ZONE + cols * CELL_W + RIGHT_MARGIN)
+  const stripX0 = FOUNDER_ZONE + cols * CELL_W + STRIP_GAP
+  const width = Math.ceil(stripX0 + AMENITY_STRIP + RIGHT_MARGIN)
   const depth = Math.max(4, Math.ceil(BACK_GAP + DESK[1] + (rows - 1) * CELL_D + 0.67 + FRONT_LANE))
   const back = -depth
 
@@ -118,8 +125,8 @@ export function generateRoom(capacity: number): RoomLayout {
     place('books', 1.15, 0.44, back + 0.18, [0.2, 0.15]),
     lounge,
     place('lampRoundFloor', 0.05, 0, back + 0.85, [0.152, 0.176]),
-    place('pottedPlant', width - 0.35, 0, back + 0.32, [0.255, 0.291]),
     place('plantSmall1', 0.47, 0.384, back + 0.2, [0.189, 0.189]),
+    ...theme.amenities(stripX0, back),
   ]
   const spots: Record<SpotId, Spot> = {
     bed: { position: [0.53, 0.16, -0.6], yaw: Math.PI / 2, seat: 'loungeChair' },
@@ -156,6 +163,8 @@ export function generateRoom(capacity: number): RoomLayout {
     seats,
     laptopGlow: [0.3 + 0.34, 0.52, back + BACK_GAP + DESK[1] - 0.2],
     lamp: [0.13, 0.95, back + 0.76],
+    theme,
+    amenityStrip: { x0: stripX0, x1: stripX0 + AMENITY_STRIP },
   }
 }
 
@@ -165,7 +174,7 @@ export function roomFor(id: LocationId): RoomLayout {
   if (id === 'home') return HOME
   let room = cache.get(id)
   if (!room) {
-    room = generateRoom(locationDef(id).capacity)
+    room = generateRoom(locationDef(id).capacity, THEMES[id])
     cache.set(id, room)
   }
   return room

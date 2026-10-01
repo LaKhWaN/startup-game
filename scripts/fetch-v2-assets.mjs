@@ -13,9 +13,16 @@ const FURNITURE = [
   'floorFull', 'wall', 'wallWindow', 'desk', 'chairDesk', 'laptop', 'bedSingle', 'sideTable',
   'lampSquareTable', 'bookcaseOpen', 'books', 'pottedPlant', 'plantSmall1', 'lampRoundFloor', 'rugRectangle',
   'loungeChair', 'tableCoffee',
+  // Phase 5 amenities
+  'loungeSofa', 'loungeDesignSofa', 'loungeSofaCorner', 'tableCoffeeGlass', 'televisionModern', 'cabinetTelevision',
+  'rugRound', 'rugRounded', 'plantSmall2', 'kitchenBar', 'kitchenCoffeeMachine', 'stoolBar',
+  'kitchenFridge', 'coatRackStanding', 'bookcaseClosed', 'kitchenCabinet', 'trashcan', 'speaker',
 ]
 // Founder + the intern looks (src/v2/team.ts INTERN_MODELS)
-const CHARACTERS = ['character-male-a', 'character-male-c', 'character-male-e', 'character-female-b', 'character-female-d']
+const CHARACTERS = [
+  'character-male-a', 'character-male-b', 'character-male-c', 'character-male-d', 'character-male-e', 'character-male-f',
+  'character-female-a', 'character-female-b', 'character-female-c', 'character-female-d', 'character-female-e', 'character-female-f',
+]
 
 const OUT = join(process.cwd(), 'public', 'assets', 'v2')
 const work = mkdtempSync(join(tmpdir(), 'kenney-'))
