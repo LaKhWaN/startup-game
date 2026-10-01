@@ -60,3 +60,15 @@ Fresh launch: the save shape changes, so old v2 saves and the old leaderboard ar
 - Balance simulation rebuilt on the new engine (still reaches Co-working, never broke).
 - Gates: `tsc`, `npm test`, `npm run build`; no Phaser/legacy engine imports remain; marketing pages still build.
 - One manual test table for the user.
+
+## 4. Sub-project B — market reality (approved 2026-10-02)
+
+- **Market ceiling** by idea tier: promising 2,000 · competitive 1,200 · risky 700 · brutal 350 customers; ×(1 + 0.05 per shipped feature) ×(1 + brand/400). Email leads × max(0.1, 1 − (customers + leads)/ceiling). Feature customer gains and sales conversions never exceed the ceiling.
+- **Conversion by tier:** sales base 0.30 / 0.25 / 0.20 / 0.15 + 0.03 × sales skill.
+- **Leads go cold:** ~8% of uncalled leads lost per day (probabilistic rounding).
+- **Product-health churn:** monthly churn = tier floor + bugs (techDebt/100 × 6) + support (min 8, backlog/customers × 40) + thin product (productProgress < 30 → up to +4) + shock. Event churn changes become a shock that fades 0.15/day. Metrics shows the breakdown.
+- **Support (5th task):** tickets arrive daily ≈ customers × 0.03 × (1 + techDebt/100). Support (1 founder day, outreach skill) clears 8 + 2 × outreach tickets (mistake halves).
+- **Tech debt bites:** builds take ×(1 + techDebt/100). Incidents: daily chance max(0, techDebt − 40)/600 → incident popup (lose ~3% customers, tickets flood in; choose "All hands" = −5 debt & −1 day of founder task, or "Ride it out" = +3 churn shock). Incidents happen from day one (not gated by chapters).
+- **Refactor (6th task):** 2 founder days, build skill, −(12 + 2 × build) debt (mistake halves).
+- **Scaling costs:** burn += 3% of MRR (payments) + $1 per customer (tools).
+- Support/Refactor unlock after Chapter 1, are founder-bar buttons and hire assignments (standing: support when tickets ≥ 1, refactor when debt ≥ 5). Icons 🎧 / 🧹.
