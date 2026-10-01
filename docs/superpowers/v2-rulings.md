@@ -88,3 +88,28 @@ Decisions made autonomously during the build, with what each costs if wrong, and
 - Final: minor (deferred): wall tint also tints window glass (blue cast in Small office).
 - Final: minor (deferred): tint cache keyed by model name, not scene identity (stale after useGLTF.clear/HMR, dev-only).
 - Final: minor (deferred): no test names the amenity-strip "never covers a standing spot" contract (covered by generic room tests).
+
+## 2026-10-01-v2-phase7-room-first
+
+### Rulings
+- Task 2: Ruling: pure helpers renamed founderBar.ts → founderTasks.ts — macOS can't hold founderBar.ts next to FounderBar.tsx — cost if wrong: none.
+- Task 2: Ruling: Map opens the old map list in a modal for now; Task 4 replaces it with the city view — keeps every commit playable — cost if wrong: none.
+- Task 2: Ruling: modals sit at z 60, below event cards (100), toasts (90/300) and the family-money modal (1000), so game-pausing events always stay on top — cost if wrong: an event can appear over an open sheet (intended).
+- Task 2: Ruling: top-bar mini labels hide below 1680px (tooltips keep the names) so six metrics + controls fit; Profit uses 💰 so it doesn't repeat churn's 📉 — cost if wrong: copy/style tweak.
+- Task 2: Ruling: hoverText helper + test written in one step (TDD slip, pure string table) — cost if wrong: none observed.
+- Task 3: Ruling: verification is now tsc + unit tests + a manual test table (user's call: browser checks cost too many tokens); hover/click not machine-verified — cost if wrong: UI bugs surface in the user's manual pass.
+- Task 3b: Ruling: avatars are Kenney's own preview renders of each character (public/assets/v2/portraits) so the card matches the person in the room; hires from older saves have no one-liner and simply skip that line — cost if wrong: none.
+- Task 3c (user request mid-build): Ruling: the right side gets a slim read-only stats rail (funnel, working/waiting/idle, ideas/being built, all-time email rounds/leads/calls/customers/shipped/research/mistakes); hidden on phones (≤768px) where the room needs the width — cost if wrong: phone players don't see these counts.
+- Task 3c: Ruling: lifetime counters live in v2.stats, counted once in applyOutcome so founder and hires share one path; saves without stats migrate to zeros (history before this build isn't counted) — cost if wrong: totals start from the update.
+- Task 4: Ruling: city data module named cityLayout.ts (macOS case clash with City.tsx) — cost if wrong: none.
+- Task 4: Ruling: all seven lots sit on one side of a straight main road, left→right in ladder order, trees and street lights across the road; building fronts assumed to face +z (toward the road) — Kenney's facing wasn't machine-checked (no browser checks now) — cost if wrong: flip one rotation constant.
+- Task 4: Ruling: the old Map list (MapPanel) is deleted; the city card shows the same info (seats, rent, move-in, Move or blocked reason) — cost if wrong: none.
+- Task 4: Ruling: founder bar and coach card hide in city view; the stats rail stays — cost if wrong: none.
+- Task 4: Ruling: cityLayout test + module written together (TDD slip, pure data) — cost if wrong: none observed.
+- Final: Ruling: also fixed these minors by effect (players hit them): Build picker reopening by itself, PersonCard "best at develop" / "product skill" copy, stale person modal after Let go, typing sound in city view, Esc closing the sheet under an event, city sun missing far towers, lots re-rendering every tick, committed probe script, dead map/focus CSS, old phone right-panel rule in sheets, conversion capped at 100% — no unit tests (UI-only), covered by the manual table — cost if wrong: caught in the manual pass.
+
+### Deferred minors
+- Final: minor (deferred): v2.stats.featuresShipped written but the rail counts completed features (keeps pre-counter saves right).
+- Final: minor (deferred): drei Html labels/icons can draw over floating controls (visual only).
+- Final: minor (deferred): characters restart at their start spot after returning from the city.
+- Final: minor (deferred): city GLBs preload before the Map unlocks (~1MB).
