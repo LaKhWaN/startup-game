@@ -113,3 +113,38 @@ Decisions made autonomously during the build, with what each costs if wrong, and
 - Final: minor (deferred): drei Html labels/icons can draw over floating controls (visual only).
 - Final: minor (deferred): characters restart at their start spot after returning from the city.
 - Final: minor (deferred): city GLBs preload before the Map unlocks (~1MB).
+
+## 2026-10-02-v2-A-own-engine
+
+### Rulings
+- Task 1+2+5: Ruling: Tasks 1, 2 and 5 landed as one commit — the legacy UI pieces read the legacy store, so switching the store and copying the UI couldn't be split without a broken build — cost if wrong: one bigger commit.
+- Task 1: Ruling: kept the field name infraCostMonthly (spec said rent) — events, scaling and 20+ call sites use it; renaming is churn with no player effect — cost if wrong: a later rename.
+- Task 1: Ruling: cash still moves daily ((MRR − burn) / 30), spec §3.1 said monthly payroll — same totals, smoother, and runway/game-over react immediately — cost if wrong: none.
+- Task 1: Ruling: daily churn rounds probabilistically (legacy floored to 0 for small companies, so <~250 customers never churned) — this is the "customers never change" bug — cost if wrong: churn now visible earlier; B replaces the formula anyway.
+- Task 1: Ruling: events are the legacy data run against a team-backed `employees` view; departures/salary changes map onto v2 hires, morale/stress changes are ignored until C; "best developer" now really is the most skilled developer — cost if wrong: none.
+- Task 5: Ruling: the event card computes the outcome once and passes it to applyEventChoice (legacy ran effects twice, so the shown outcome could differ from the applied one) — cost if wrong: none.
+- Task 5: Ruling: legacy milestone toasts dropped (chapters/coach cards cover progression); local SQLite analytics dropped, Mongo ingest kept (session workspace = current location) — cost if wrong: admin local-DB view loses v2 games (Mongo dashboard unaffected).
+- Task 2: Ruling: shared types (src/types) and data (featureTemplates, candidates) stay as shared modules; only legacy runtime gets deleted in Task 6 — cost if wrong: none.
+- Task 3: Ruling: games start Monday 09:00 (not midnight) so day one opens with the office open — cost if wrong: none.
+- Task 3: Ruling: the founder's tasks still progress 24h/day (works nights for free until C adds energy); hires count 8-hour work days, so their throughput is 5/7 of before — balance sim still passes; C/F retune — cost if wrong: hires feel weaker until F.
+- Task 3: Ruling: "window darkens" is done with lighting (moonlight sun, dim sky, brighter lamps/screens, ceiling glow, dark background) rather than swapping window models — cost if wrong: windows look lit-glass at night.
+- Task 3: Ruling: hires mounted after hours (load, back from the city) start hidden at the door; at 09:00 they walk in — cost if wrong: none.
+- Task 4: Ruling: the event outcome popup no longer auto-dismisses after 4 s — it stays (and keeps the game paused) until clicked, per "when done after dismiss resume" — cost if wrong: one extra click per event.
+- Task 4: Ruling: pausing popups = event card + its outcome, family money, investor check-in; speed buttons disable while any is open — cost if wrong: none.
+- Task 6: Ruling: also deleted the /prototype dev experiments (one imported Phaser) and the unused StoryLog component; removed phaser, sql.js, lucide-react, @types/sql.js — cost if wrong: prototypes recoverable from git.
+- Task 6: Ruling: local SQLite game analytics (src/save/gameAnalytics) removed with the legacy save code; Mongo ingest and the admin dashboard (API-backed) stay — cost if wrong: no local analytics DB in dev.
+- Task 6: Ruling: the landing page still shows the old pixel-office screenshot (office_bg_level1.png kept, employee sprite deleted); refreshing landing visuals goes to F (polish) — cost if wrong: marketing shows the old look until then.
+- Task 6: Ruling: updated CLAUDE.md to the new architecture (it described the deleted legacy game) — cost if wrong: none.
+- Task 7: Ruling: balance sim (3 seeds) passes unchanged on the new engine with office hours — no tuning needed in A; F re-balances with B–E — cost if wrong: none.
+- Final: Ruling: re-graded Minor 1 (a popup after a player pause resumed at 1×) to Important — players expect to stay paused — cost if wrong: none.
+- Final: Ruling: game over at cash < $0 (legacy was <= 0) — a founder at exactly $0 can still claim family money/sell — cost if wrong: one comparison.
+- Final: Ruling: investor-interest "culture > 65" bonus dropped in the port (culture is static in v2 until C) — cost if wrong: tiny.
+- Final: Ruling: quit event's "halve build progress" is overridden by departMember resetting the feature to proposed/0 — losing the builder loses the build — cost if wrong: harsher than legacy.
+
+### Deferred minors
+- Final: minor (deferred): a kept event costs the founder that one hour (early return in v2Tick).
+- Final: minor (deferred): departMember duplicates team.ts removeMember/freeFeatureOf.
+- Final: minor (deferred): PostMortem mount effect double-runs in dev StrictMode (two leaderboard entries, dev only).
+- Final: minor (deferred): load forces 1× even if a popup hold is live.
+- Final: minor (deferred): investor interest ≥70 before stage 2 can occupy the event slot every day (legacy behaviour).
+- Final: minor (deferred): old localStorage keys (startup-game-v2-save-*, startup-game-leaderboard) left behind.

@@ -37,11 +37,11 @@ describe('pause on popups', () => {
     expect(gameStore.getState().gameSpeed).toBe(5)
   })
 
-  it('resumes at 1× if the game was already paused by the player', () => {
+  it('stays paused if the player had paused before the popup', () => {
     gameStore.setState({ gameSpeed: 0 })
     holdPause('event')
     releasePause('event')
-    expect(gameStore.getState().gameSpeed).toBe(1)
+    expect(gameStore.getState().gameSpeed).toBe(0)
   })
 
   it('exposes whether a popup is holding the game (speed buttons disable)', () => {

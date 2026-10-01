@@ -9,11 +9,12 @@ export function NightBanner() {
   const playing = useV2(s => s.phase === 'playing')
   const pending = useV2(s => s.pendingEvent !== null)
   const view = useUi(s => s.view)
+  const held = useUi(s => s.pauseHolds.length > 0)
   if (!playing || view !== 'office' || isWorkHour(hours)) return null
   return (
     <div className="v2-night">
       <span>{isWeekend(hours) ? '🛋️ Weekend' : '🌙 Office closed'} · {clockLabel(hours)}</span>
-      <button className="v2-fb-btn" onClick={skipNight} disabled={pending} title="Fast-forward to 09:00 on the next work day">⏭ Skip to morning</button>
+      <button className="v2-fb-btn" onClick={skipNight} disabled={pending || held} title="Fast-forward to 09:00 on the next work day">⏭ Skip to morning</button>
     </div>
   )
 }

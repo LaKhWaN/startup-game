@@ -10,8 +10,8 @@ export function holdPause(id: string): void {
   const holds = uiStore.getState().pauseHolds
   if (holds.includes(id)) return
   if (holds.length === 0) {
-    const speed = gameStore.getState().gameSpeed
-    saved = speed === 0 ? 1 : speed
+    // A player who had paused stays paused after the popup.
+    saved = gameStore.getState().gameSpeed
     gameStore.setState({ gameSpeed: 0 })
   }
   uiStore.setState({ pauseHolds: [...holds, id] })
@@ -23,7 +23,7 @@ export function releasePause(id: string): void {
   const rest = holds.filter(h => h !== id)
   uiStore.setState({ pauseHolds: rest })
   if (rest.length === 0) {
-    gameStore.setState({ gameSpeed: saved ?? 1 })
+    gameStore.setState({ gameSpeed: saved ?? 0 })
     saved = null
   }
 }

@@ -69,3 +69,20 @@ describe('skipToMorning', () => {
     expect(skipToMorning(s, () => 0.99)).toBe(s)
   })
 })
+
+describe('skipToMorning (review fixes)', () => {
+  it('stops on a real event and on the family-money popup', async () => {
+    const { EVENTS } = await import('../engine/eventData')
+    const withEvent = skipToMorning(at(emailsHire(), 0, 18), () => 0.99, s => s.gameTime.totalHours === 20 ? true : false)
+    expect(withEvent.gameTime.totalHours).toBe(20)
+    const pending = at({ ...emailsHire(), pendingEvent: EVENTS[0] }, 0, 18)
+    expect(skipToMorning(pending, () => 0.99).gameTime.totalHours).toBe(18)
+  })
+
+  it('reports every day boundary it crosses (analytics), and runs month ends', () => {
+    const days: number[] = []
+    const s = skipToMorning(at(emailsHire(), 29, 18), () => 0.99, undefined, d => days.push(d.metricsHistory[d.metricsHistory.length - 1].day))
+    expect(days).toEqual([30])
+    expect(s.storyLog.some(e => e.lines[0].startsWith('Month 1:'))).toBe(true)
+  })
+})

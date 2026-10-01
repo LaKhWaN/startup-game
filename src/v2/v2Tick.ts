@@ -50,11 +50,23 @@ export function stepV2<T extends V2GameState>(state: T, rng: Rng = Math.random):
   return v2Tick(s, 1, rng, isWorkHour(prev) ? 1 : 0) as T
 }
 
-/** Fast-forward to 09:00 on the next work day, stopping early for an event or game over. */
-export function skipToMorning<T extends V2GameState>(state: T, rng: Rng = Math.random, stopWhen?: (s: T) => boolean): T {
+/**
+ * Fast-forward to 09:00 on the next work day, stopping early for an event, game
+ * over, or `stopWhen` (another popup). `onDay` runs after every day boundary
+ * crossed (analytics sends one snapshot per day).
+ */
+export function skipToMorning<T extends V2GameState>(
+  state: T,
+  rng: Rng = Math.random,
+  stopWhen?: (s: T) => boolean,
+  onDay?: (s: T) => void,
+): T {
+  if (state.pendingEvent || stopWhen?.(state)) return state
   let s = state
   for (let i = 0; i < 24 * 4 && s.phase === 'playing' && !isWorkHour(s.gameTime.totalHours); i++) {
+    const day = Math.floor(s.gameTime.totalHours / HOURS_PER_DAY)
     s = stepV2(s, rng)
+    if (Math.floor(s.gameTime.totalHours / HOURS_PER_DAY) > day) onDay?.(s)
     if (s.pendingEvent || stopWhen?.(s)) break
   }
   return s

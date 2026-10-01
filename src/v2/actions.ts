@@ -93,10 +93,9 @@ export function claimFamilyMoney(): void {
 
 /** ⏭ Skip to morning: run the closed hours until the office opens (stops on an event). */
 export function skipNight(): void {
-  const before = getV2State()
-  const next = skipToMorning(before)
+  const familyMoneyUp = (s: V2GameState) => s.v2.chapter.beat === 5 && !!s.v2.chapter.familyMoney && !s.v2.chapter.familyMoney.claimed
+  const next = skipToMorning(getV2State(), Math.random, familyMoneyUp, syncAnalytics)
   setV2State(next)
-  syncAnalytics(next)
 }
 
 export function setSpeed(speed: GameSpeed): void {

@@ -139,7 +139,7 @@ const SPEEDS: GameSpeed[] = import.meta.env.DEV ? [1, 2, 3, 5, 10] : [1, 2, 3, 5
 
 function SpeedControl() {
   const gameSpeed    = useV2(s => s.gameSpeed)
-  const setSpeed     = (() => setGameSpeed)()
+  const setSpeed     = setGameSpeed
   const pendingEvent = useV2(s => s.pendingEvent)
   // A game-raised popup (event, family money, check-in) is holding the game paused.
   const held = useUi(s => s.pauseHolds.length > 0)
