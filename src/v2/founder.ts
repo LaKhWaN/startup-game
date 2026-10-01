@@ -1,6 +1,7 @@
 import { FEATURE_TEMPLATES, type FeatureTemplate } from '../data/featureTemplates'
 import { totalDays } from './engine/clock'
 import { estimateFeatureEffects } from './engine/features'
+import { leadSaturation, marketRoom, salesBaseOf } from './engine/market'
 import type { Feature, FeatureResult } from '../types'
 import { isTaskUnlocked } from './chapter'
 import { addStory, type FounderSkill, type FounderTask, type FounderTaskType, type Rng, type V2GameState } from './state'
@@ -184,7 +185,8 @@ function applyDevelop(state: V2GameState, worker: Worker, featureId: string | un
   }
 
   const preSale = !state.v2.firstSaleDone
-  const customers = preSale ? state.customers : Math.max(0, state.customers + est.customers)
+  const gain = Math.min(est.customers, marketRoom(state))
+  const customers = preSale ? state.customers : Math.max(0, state.customers + gain)
   const leads = preSale ? Math.max(0, state.v2.leads + est.customers) : state.v2.leads
   const arpu = Math.max(10, state.arpu + est.arpu)
 
@@ -236,7 +238,8 @@ function applyDevelop(state: V2GameState, worker: Worker, featureId: string | un
 
 function applyEmails(state: V2GameState, worker: Worker, rng: Rng, opts: OutcomeOptions): V2GameState {
   const outreach = worker.skills.outreach
-  const full = Math.round((4 + outreach + rng() * 4) * (1 + state.brand / 100))
+  // Fewer fresh prospects as the market fills up (spec §4).
+  const full = Math.round((4 + outreach + rng() * 4) * (1 + state.brand / 100) * leadSaturation(state))
   const gained = opts.mistake ? Math.floor(full * 0.5) : full
   const next: V2GameState = { ...state, v2: { ...state.v2, leads: state.v2.leads + gained } }
   const lines = [`${isFounder(worker) ? 'You' : worker.name} sent a round of cold emails. ${gained} new leads.`]
@@ -248,11 +251,12 @@ function applyEmails(state: V2GameState, worker: Worker, rng: Rng, opts: Outcome
 
 function applySales(state: V2GameState, worker: Worker, rng: Rng, opts: OutcomeOptions): V2GameState {
   const contacted = state.v2.leads
-  const p = 0.25 + 0.03 * worker.skills.sales
+  const p = salesBaseOf(state) + 0.03 * worker.skills.sales
   let converted = 0
   for (let i = 0; i < contacted; i++) if (rng() < p) converted++
   if (opts.firstSaleGuarantee && !state.v2.firstSaleDone && contacted > 0) converted = Math.max(1, converted)
   if (opts.mistake) converted = Math.max(0, converted - 1)
+  converted = Math.min(converted, marketRoom(state))
 
   const customers = state.customers + converted
   const next: V2GameState = {
