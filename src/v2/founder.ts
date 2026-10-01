@@ -23,6 +23,24 @@ export const TASK_SKILL: Record<FounderTaskType, FounderSkill> = {
   sales: 'sales',
 }
 
+/** Anyone who can do a task: the founder or a hire. */
+export interface Worker {
+  id: string
+  name: string
+  skills: Record<FounderSkill, number>
+}
+
+export interface OutcomeOptions {
+  mistake: boolean
+  firstSaleGuarantee: boolean
+}
+
+function founderWorker(state: V2GameState): Worker {
+  return { id: FOUNDER_ID, name: state.v2.founder.name, skills: state.v2.founder.skills }
+}
+
+const isFounder = (w: Worker) => w.id === FOUNDER_ID
+
 export type StartTaskError = 'busy' | 'locked' | 'no-feature' | 'no-leads'
 export type StartTaskResult = { ok: true; state: V2GameState } | { ok: false; reason: StartTaskError }
 
@@ -77,12 +95,16 @@ function growSkill(state: V2GameState, skill: FounderSkill): V2GameState {
 
 // ── Research ────────────────────────────────────────────────────────────────
 
-export function pickResearchTemplates(state: V2GameState, rng: Rng): { templates: FeatureTemplate[]; newIndex: number } {
+export function pickResearchTemplates(
+  state: V2GameState,
+  rng: Rng,
+  count: number = FEATURES_PER_RESEARCH,
+): { templates: FeatureTemplate[]; newIndex: number } {
   const used = new Set(state.features.map(f => f.title))
   const templates: FeatureTemplate[] = []
 
   let idx = state.featureRoadmapIndex
-  while (idx < state.featureRoadmap.length && templates.length < FEATURES_PER_RESEARCH) {
+  while (idx < state.featureRoadmap.length && templates.length < count) {
     const t = state.featureRoadmap[idx]
     idx++
     if (!used.has(t.title)) {
@@ -92,7 +114,7 @@ export function pickResearchTemplates(state: V2GameState, rng: Rng): { templates
   }
 
   const pool = FEATURE_TEMPLATES.filter(t => !used.has(t.title))
-  while (templates.length < FEATURES_PER_RESEARCH && pool.length > 0) {
+  while (templates.length < count && pool.length > 0) {
     const i = Math.min(pool.length - 1, Math.floor(rng() * pool.length))
     const [t] = pool.splice(i, 1)
     templates.push(t)
@@ -102,7 +124,7 @@ export function pickResearchTemplates(state: V2GameState, rng: Rng): { templates
   return { templates, newIndex: idx }
 }
 
-function toFeature(t: FeatureTemplate, day: number, key: string): Feature {
+function toFeature(t: FeatureTemplate, day: number, key: string, by: string): Feature {
   return {
     id: `feat-founder-${key}`,
     title: t.title,
@@ -112,22 +134,25 @@ function toFeature(t: FeatureTemplate, day: number, key: string): Feature {
     impacts: t.impacts,
     effects: t.effects,
     tradeoffHint: t.tradeoffHint,
-    discoveredByPMId: FOUNDER_ID,
+    discoveredByPMId: by,
     status: 'proposed',
     buildProgress: 0,
     discoveredAtDay: day,
   }
 }
 
-function applyResearch(state: V2GameState, rng: Rng): V2GameState {
-  const { templates, newIndex } = pickResearchTemplates(state, rng)
+function applyResearch(state: V2GameState, worker: Worker, rng: Rng, opts: OutcomeOptions): V2GameState {
+  const count = opts.mistake ? 1 : FEATURES_PER_RESEARCH
+  const { templates, newIndex } = pickResearchTemplates(state, rng, count)
   const day = totalDays(state.gameTime)
-  const found = templates.map((t, i) => toFeature(t, day, `${state.gameTime.totalHours}-${i}`))
+  const found = templates.map((t, i) => toFeature(t, day, `${state.gameTime.totalHours}-${worker.id}-${i}`, worker.id))
   const next: V2GameState = { ...state, features: [...state.features, ...found], featureRoadmapIndex: newIndex }
-  const line = found.length === 0
-    ? 'You researched for days but found nothing new worth building.'
-    : `Research done. Worth building: ${found.map(f => `"${f.title}"`).join(' and ')}.`
-  return addStory(next, [line])
+  const who = isFounder(worker) ? 'You' : worker.name
+  const lines = [found.length === 0
+    ? `${who} researched for days but found nothing new worth building.`
+    : `${isFounder(worker) ? 'Research done' : `${worker.name} finished research`}. Worth building: ${found.map(f => `"${f.title}"`).join(' and ')}.`]
+  if (opts.mistake) lines.push(`${worker.name} researched the wrong market for half the time, so only one idea came out of it.`)
+  return addStory(next, lines)
 }
 
 // ── Develop ─────────────────────────────────────────────────────────────────
@@ -136,14 +161,26 @@ function clamp100(n: number): number {
   return Math.max(0, Math.min(100, n))
 }
 
-function applyDevelop(state: V2GameState, featureId: string | undefined): V2GameState | null {
+function applyDevelop(state: V2GameState, worker: Worker, featureId: string | undefined, opts: OutcomeOptions): V2GameState | null {
   const feature = state.features.find(f => f.id === featureId)
   if (!feature) return null
 
   const day = totalDays(state.gameTime)
   const diffMult = state.difficultyModifier?.featureImpactMultiplier ?? 1
   const churnFloor = state.difficultyModifier?.churnFloor ?? 3
-  const est = estimateFeatureEffects(feature.effects, feature.value, FOUNDER_ACCURACY, state.arpu, state.customers, diffMult)
+  const raw = estimateFeatureEffects(feature.effects, feature.value, FOUNDER_ACCURACY, state.arpu, state.customers, diffMult)
+  // A rushed intern build ships at half strength and leaves a mess behind.
+  const half = (n: number) => (opts.mistake ? Math.round(n * 0.5) : n)
+  const est = {
+    ...raw,
+    customers: half(raw.customers),
+    arpu: half(raw.arpu),
+    cashBonus: half(raw.cashBonus),
+    brand: half(raw.brand),
+    productGain: half(raw.productGain),
+    churnDrop: opts.mistake ? raw.churnDrop * 0.5 : raw.churnDrop,
+    techDebt: raw.techDebt + (opts.mistake ? 5 : 0),
+  }
 
   const preSale = !state.v2.firstSaleDone
   const customers = preSale ? state.customers : Math.max(0, state.customers + est.customers)
@@ -153,7 +190,7 @@ function applyDevelop(state: V2GameState, featureId: string | undefined): V2Game
   const result: FeatureResult = {
     featureTitle: feature.title,
     value: feature.value,
-    devName: state.v2.founder.name,
+    devName: worker.name,
     customerGain: preSale ? 0 : est.customers,
     arpuChange: est.arpu,
     churnDrop: est.churnDrop,
@@ -180,34 +217,41 @@ function applyDevelop(state: V2GameState, featureId: string | undefined): V2Game
     v2: { ...state.v2, leads },
   }
 
+  const who = isFounder(worker) ? 'You' : worker.name
   let line: string
   if (preSale && est.customers > 0) {
-    line = `You shipped "${feature.title}"! ${est.customers} people joined the beta — leads, not paying customers yet.`
+    line = `${who} shipped "${feature.title}"! ${est.customers} people joined the beta — leads, not paying customers yet.`
   } else if (preSale) {
-    line = `You shipped "${feature.title}".`
+    line = `${who} shipped "${feature.title}".`
   } else {
-    line = `You shipped "${feature.title}"! ${est.customers >= 0 ? '+' : ''}${est.customers} users.`
+    line = `${who} shipped "${feature.title}"! ${est.customers >= 0 ? '+' : ''}${est.customers} users.`
   }
-  return addStory(next, [line])
+  const lines = [line]
+  if (opts.mistake) lines.push(`${worker.name} rushed it: it shipped buggy, at half strength, and left tech debt behind.`)
+  return addStory(next, lines)
 }
 
 // ── Emails ──────────────────────────────────────────────────────────────────
 
-function applyEmails(state: V2GameState, rng: Rng): V2GameState {
-  const outreach = state.v2.founder.skills.outreach
-  const gained = Math.round((4 + outreach + rng() * 4) * (1 + state.brand / 100))
+function applyEmails(state: V2GameState, worker: Worker, rng: Rng, opts: OutcomeOptions): V2GameState {
+  const outreach = worker.skills.outreach
+  const full = Math.round((4 + outreach + rng() * 4) * (1 + state.brand / 100))
+  const gained = opts.mistake ? Math.floor(full * 0.5) : full
   const next: V2GameState = { ...state, v2: { ...state.v2, leads: state.v2.leads + gained } }
-  return addStory(next, [`You sent a round of cold emails. ${gained} new leads.`])
+  const lines = [`${isFounder(worker) ? 'You' : worker.name} sent a round of cold emails. ${gained} new leads.`]
+  if (opts.mistake) lines.push(`${worker.name} had a typo in the subject line, so half the emails went to spam.`)
+  return addStory(next, lines)
 }
 
 // ── Sales ───────────────────────────────────────────────────────────────────
 
-function applySales(state: V2GameState, rng: Rng): V2GameState {
+function applySales(state: V2GameState, worker: Worker, rng: Rng, opts: OutcomeOptions): V2GameState {
   const contacted = state.v2.leads
-  const p = 0.25 + 0.03 * state.v2.founder.skills.sales
+  const p = 0.25 + 0.03 * worker.skills.sales
   let converted = 0
   for (let i = 0; i < contacted; i++) if (rng() < p) converted++
-  if (!state.v2.firstSaleDone && contacted > 0) converted = Math.max(1, converted)
+  if (opts.firstSaleGuarantee && !state.v2.firstSaleDone && contacted > 0) converted = Math.max(1, converted)
+  if (opts.mistake) converted = Math.max(0, converted - 1)
 
   const customers = state.customers + converted
   const next: V2GameState = {
@@ -216,21 +260,29 @@ function applySales(state: V2GameState, rng: Rng): V2GameState {
     mrr: customers * state.arpu,
     v2: { ...state.v2, leads: 0, firstSaleDone: state.v2.firstSaleDone || customers > 0 },
   }
-  const line = converted > 0
-    ? `Sales calls done: ${converted} of ${contacted} leads became paying customers.`
-    : `Sales calls done: none of ${contacted} leads bought this time.`
-  return addStory(next, [line])
+  const prefix = isFounder(worker) ? 'Sales calls done' : `${worker.name} finished sales calls`
+  const lines = [converted > 0
+    ? `${prefix}: ${converted} of ${contacted} leads became paying customers.`
+    : `${prefix}: none of ${contacted} leads bought this time.`]
+  if (opts.mistake) lines.push(`${worker.name} fumbled a call that was about to close.`)
+  return addStory(next, lines)
 }
 
 // ── Outcome dispatch ────────────────────────────────────────────────────────
 
 /** Returns null when the task has no outcome (e.g. develop on a feature that disappeared). */
-function applyOutcome(state: V2GameState, task: FounderTask, rng: Rng): V2GameState | null {
+export function applyOutcome(
+  state: V2GameState,
+  worker: Worker,
+  task: FounderTask,
+  rng: Rng,
+  opts: OutcomeOptions,
+): V2GameState | null {
   switch (task.type) {
-    case 'research': return applyResearch(state, rng)
-    case 'develop': return applyDevelop(state, task.featureId)
-    case 'emails': return applyEmails(state, rng)
-    case 'sales': return applySales(state, rng)
+    case 'research': return applyResearch(state, worker, rng, opts)
+    case 'develop': return applyDevelop(state, worker, task.featureId, opts)
+    case 'emails': return applyEmails(state, worker, rng, opts)
+    case 'sales': return applySales(state, worker, rng, opts)
   }
 }
 
@@ -256,7 +308,7 @@ export function advanceFounder(state: V2GameState, hours: number, rng: Rng): Adv
   }
 
   const cleared = withTask(state, null)
-  const outcome = applyOutcome(cleared, task, rng)
+  const outcome = applyOutcome(cleared, founderWorker(cleared), task, rng, { mistake: false, firstSaleGuarantee: true })
   if (!outcome) return { state: cleared, completed: null }
   return { state: growSkill(outcome, TASK_SKILL[task.type]), completed: task.type }
 }
