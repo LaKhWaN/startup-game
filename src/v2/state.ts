@@ -19,7 +19,9 @@ export interface FamilyMoney {
 }
 
 export type TeamRole = EmployeeRole
-export type Tier = 'intern'
+export type Tier = 'intern' | 'fulltime'
+export type LocationId = 'home' | 'biggerHome' | 'villa' | 'coworking' | 'smallOffice' | 'bigOffice' | 'building'
+export const LOCATION_IDS: LocationId[] = ['home', 'biggerHome', 'villa', 'coworking', 'smallOffice', 'bigOffice', 'building']
 export type Assignment = FounderTaskType | 'idle'
 
 export interface TeamMember {
@@ -44,6 +46,7 @@ export interface InternCandidate {
   name: string
   gender: 'male' | 'female'
   role: TeamRole
+  tier: Tier
   skills: Record<FounderSkill, number>
   salary: number
   bio: string
@@ -54,6 +57,11 @@ export interface Chapter2State {
   beat: 0 | 1 | 2
   complete: boolean
   firstMistake: boolean
+}
+
+export interface Chapter3State {
+  beat: 0 | 1
+  complete: boolean
 }
 
 export interface V2Slice {
@@ -73,6 +81,11 @@ export interface V2Slice {
   team: Record<string, TeamMember>
   candidates: InternCandidate[]
   chapter2: Chapter2State
+  location: LocationId
+  unlockedLocations: LocationId[]
+  /** Highest MRR ever reached; drives location unlocks. */
+  peakMrr: number
+  chapter3: Chapter3State
 }
 
 export type V2GameState = GameState & { v2: V2Slice }
@@ -100,6 +113,10 @@ export function createV2Slice(): V2Slice {
     team: {},
     candidates: [],
     chapter2: { beat: 0, complete: false, firstMistake: false },
+    location: 'home',
+    unlockedLocations: ['home'],
+    peakMrr: 0,
+    chapter3: { beat: 0, complete: false },
   }
 }
 
@@ -154,11 +171,17 @@ export function isValidV2Slice(v: unknown): v is V2Slice {
 export function migrateV2Slice(v: unknown): V2Slice | null {
   if (!isValidV2Slice(v)) return null
   const s = v as Partial<V2Slice> & V2Slice
+  const isLocation = (x: unknown): x is LocationId => LOCATION_IDS.includes(x as LocationId)
+  const unlocked = Array.isArray(s.unlockedLocations) ? s.unlockedLocations.filter(isLocation) : []
   return {
     ...s,
     team: s.team && typeof s.team === 'object' ? s.team : {},
-    candidates: Array.isArray(s.candidates) ? s.candidates : [],
+    candidates: Array.isArray(s.candidates) ? s.candidates.map(c => ({ ...c, tier: c.tier ?? 'intern' })) : [],
     chapter2: s.chapter2 ?? { beat: 0, complete: false, firstMistake: false },
+    location: isLocation(s.location) ? s.location : 'home',
+    unlockedLocations: unlocked.includes('home') ? unlocked : ['home', ...unlocked],
+    peakMrr: typeof s.peakMrr === 'number' ? s.peakMrr : 0,
+    chapter3: s.chapter3 ?? { beat: 0, complete: false },
   }
 }
 

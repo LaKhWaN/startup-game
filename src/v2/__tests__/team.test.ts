@@ -10,7 +10,7 @@ import { makeFeature, makeState, seq, withChapter, withV2 } from './fixtures'
 
 function candidate(over: Partial<InternCandidate> = {}): InternCandidate {
   return {
-    id: 'cand-1', name: 'Priya Patel', gender: 'female', role: 'marketing',
+    id: 'cand-1', name: 'Priya Patel', gender: 'female', role: 'marketing', tier: 'intern',
     skills: { research: 1, build: 1, outreach: 3, sales: 1 }, salary: 800,
     bio: 'Writes great subject lines.', characterModel: 'character-female-b', ...over,
   }

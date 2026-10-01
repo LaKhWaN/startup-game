@@ -2,6 +2,7 @@ import { generateCandidate, ROLE_LABELS } from '../data/candidates'
 import { totalDays } from '../engine/gameEngine'
 import type { Employee } from '../types'
 import { applyOutcome, pickResearchTemplates } from './founder'
+import { currentLocation } from './locations'
 import { addStory, type Assignment, type FounderSkill, type FounderTask, type FounderTaskType, type InternCandidate, type Rng, type TeamMember, type TeamRole, type V2GameState } from './state'
 import { hireSpeed, MAIN_TASK, mainSkillOf, mistakeChance, workerDurationDays } from './work'
 
@@ -28,9 +29,9 @@ const SKILL_OF_TASK: Record<FounderTaskType, FounderSkill> = {
   sales: 'sales',
 }
 
-/** How many hires fit in the current space. Phase 4 makes this location-based. */
-export function teamCapacity(_state: V2GameState): number {
-  return HOME_CAPACITY
+/** How many hires fit in the current space. */
+export function teamCapacity(state: V2GameState): number {
+  return currentLocation(state).capacity
 }
 
 const pick = <T,>(arr: T[], rng: Rng): T => arr[Math.min(arr.length - 1, Math.floor(rng() * arr.length))]
@@ -49,6 +50,7 @@ export function generateInternCandidates(rng: Rng, count = 3): InternCandidate[]
       name: base.name,
       gender: base.gender,
       role,
+      tier: 'intern' as const,
       skills,
       salary,
       bio: base.bio,

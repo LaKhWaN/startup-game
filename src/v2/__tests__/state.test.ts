@@ -96,3 +96,21 @@ describe('migrateV2Slice', () => {
     expect(migrateV2Slice(undefined)).toBeNull()
   })
 })
+
+describe('migrateV2Slice (Phase 4 fields)', () => {
+  it('fills location fields and candidate tiers on a Phase 3 slice', () => {
+    const { location: _l, unlockedLocations: _u, peakMrr: _p, chapter3: _c, ...phase3 } = createV2Slice()
+    const old = { ...phase3, candidates: [{ id: 'x', name: 'X', gender: 'male', role: 'sales', skills: { research: 1, build: 1, outreach: 1, sales: 3 }, salary: 700, bio: '', characterModel: 'character-male-c' }] }
+    const v = migrateV2Slice(old)!
+    expect(v.location).toBe('home')
+    expect(v.unlockedLocations).toEqual(['home'])
+    expect(v.peakMrr).toBe(0)
+    expect(v.chapter3).toEqual({ beat: 0, complete: false })
+    expect(v.candidates[0].tier).toBe('intern')
+  })
+
+  it('falls back to home for an unknown location id', () => {
+    const v = migrateV2Slice({ ...createV2Slice(), location: 'moon' })!
+    expect(v.location).toBe('home')
+  })
+})
