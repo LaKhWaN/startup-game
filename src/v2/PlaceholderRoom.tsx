@@ -1,3 +1,4 @@
+import { useProgress } from '@react-three/drei'
 import { useV2 } from './actions'
 import type { FounderTaskType } from './state'
 import './v2.css'
@@ -24,11 +25,13 @@ export function PlaceholderRoom() {
     status = task.type === 'develop' ? `Building ${title ?? 'a feature'}…` : STATUS[task.type]
   }
   const pct = task ? task.progress : 0
+  const { active, progress } = useProgress()
 
   return (
     <div className="v2-room">
       <div className="v2-room-card">
         <div className="v2-room-label">🏠 Home</div>
+        {active && <div className="v2-room-loading">Setting up your room… {Math.round(progress)}%</div>}
         <div className="v2-room-avatar-wrap">
           <svg className="v2-ring" viewBox="0 0 80 80" width="80" height="80" aria-hidden="true">
             <circle cx="40" cy="40" r={R} className="v2-ring-track" />

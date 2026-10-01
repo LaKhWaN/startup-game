@@ -7,12 +7,15 @@ import type { CharacterClip } from './assets'
 import type { FounderPose } from './founderPose'
 import type { Spot } from './layout'
 import { applyTypingMotion, frameIntent } from './animation'
-import { stepToward, tripSpeed, yawTowards } from './motion'
+import { stepFor, tripSpeed, yawTowards } from './motion'
 
 const CHARACTER_SCALE = 0.85
 const FADE = 0.25
 /** Kenney minis face +z natively; motion/layout yaws assume 0 faces +z. */
 const MODEL_YAW_OFFSET = 0
+
+const prefersReducedMotion = (): boolean =>
+  typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
 type PaceSpots = 'paceA' | 'paceB'
 
@@ -35,6 +38,8 @@ export interface CharacterProps<S extends string> {
  */
 export function Character<S extends string>({ url, spots, pose, startSpot, progress, onSelect }: CharacterProps<S>) {
   const gltf = useGLTF(url)
+  const reduced = useMemo(prefersReducedMotion, [])
+  const step = useMemo(() => stepFor(reduced), [reduced])
   const scene = useMemo(() => cloneSkinned(gltf.scene), [gltf.scene])
   const root = useRef<Group>(null)
   const mixer = useMemo(() => new AnimationMixer(scene), [scene])
@@ -123,13 +128,13 @@ export function Character<S extends string>({ url, spots, pose, startSpot, progr
 
     if (walking.current && intent.move) {
       const dist = Math.hypot(goal[0] - pos.current[0], goal[1] - pos.current[1])
-      const step = stepToward(pos.current, goal, tripSpeed(dist), dt)
-      if (!step.arrived) g.rotation.y = yawTowards(pos.current, goal) + MODEL_YAW_OFFSET
-      pos.current = step.pos
-      if (step.arrived) {
+      const next = step(pos.current, goal, tripSpeed(dist), dt)
+      if (!next.arrived) g.rotation.y = yawTowards(pos.current, goal) + MODEL_YAW_OFFSET
+      pos.current = next.pos
+      if (next.arrived) {
         walking.current = false
         // Pacing: bounce between the two pace spots.
-        if (pose.pace) {
+        if (pose.pace && !reduced) {
           target.current = target.current === 'paceA' ? 'paceB' : 'paceA'
           walking.current = true
         }
@@ -147,7 +152,9 @@ export function Character<S extends string>({ url, spots, pose, startSpot, progr
 
     // Procedural motion on top of the clip (the clip rewrites bones each frame).
     const t = state.clock.elapsedTime
-    if (settled && pose.typing) {
+    if (reduced) {
+      // No procedural typing or breathing.
+    } else if (settled && pose.typing) {
       applyTypingMotion(bones, rest, t)
     } else if (settled && !hasTask) {
       g.position.y = y + Math.sin(t * 1.6) * 0.006 // breathing
