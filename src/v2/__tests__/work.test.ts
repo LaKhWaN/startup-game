@@ -19,8 +19,8 @@ describe('hire speeds', () => {
   })
   it('stretches the founder duration by 1/speed', () => {
     const s = makeState()
-    expect(workerDurationDays(s, 'emails', undefined, 0.7)).toBeCloseTo(2 / 0.7)
-    expect(workerDurationDays(s, 'emails', undefined, 1)).toBe(2)
+    expect(workerDurationDays(s, 'emails', undefined, 0.7)).toBeCloseTo(1 / 0.7)
+    expect(workerDurationDays(s, 'emails', undefined, 1)).toBe(1)
   })
 })
 

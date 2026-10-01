@@ -9,7 +9,7 @@ import { useRoom } from './RoomContext'
 import { statusText } from './hoverText'
 import { ROLE_INFO } from '../MemberCard'
 import type { HireSpots, Spot } from './layout'
-import { isWorkHour } from '../engine/clock'
+import { officeOpen } from '../engine/infra'
 
 const GOING_HOME = { spot: 'door' as const, clip: 'walk' as const, typing: false, pace: false, icon: null }
 
@@ -53,7 +53,7 @@ function Hire({ m, spots, door, offHours, onSelect, featureTitle }: {
 export function Hires({ onSelect }: { onSelect?: (id: string) => void }) {
   const team = useV2(s => s.v2.team)
   const features = useV2(s => s.features)
-  const offHours = useV2(s => !isWorkHour(s.gameTime.totalHours))
+  const offHours = useV2(s => !officeOpen(s, s.gameTime.totalHours))
   const room = useRoom()
   return (
     <>

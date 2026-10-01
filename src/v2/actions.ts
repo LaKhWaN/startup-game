@@ -15,8 +15,8 @@ import {
   canHire, canPromote, convinceToStay, fireMember, generateCandidates, hireIntern, isFullTimeUnlocked, promoteMember, setAssignment,
   type HireCheck, type PromoteCheck,
 } from './team'
-import { skipToMorning, stepV2 } from './v2Tick'
-import { resetUi } from './ui'
+import { shouldAutoSkip, skipToMorning, stepV2 } from './v2Tick'
+import { resetUi, uiStore } from './ui'
 import { canMigrate, setWifi, startMigration, toggleTool, type MigrateCheck, type ToolId, type WifiPlan } from './engine/infra'
 import { buyPerk, canBuyPerk, canUpgradeSetup, upgradeSetup, type Desk, type PerkCheck, type PerkId, type SetupCheck } from './shop'
 
@@ -50,6 +50,12 @@ export function stepGame(): void {
   const next = stepV2(before)
   gameStore.setState(next)
   if (totalDays(next.gameTime) > totalDays(before.gameTime)) syncAnalytics(next)
+  if (shouldAutoSkip(next, uiStore.getState().pauseHolds.length > 0)) skipNight()
+}
+
+export function toggleAutoSkip(): void {
+  const s = getV2State()
+  setV2State({ v2: { ...s.v2, autoSkipNights: !s.v2.autoSkipNights } })
 }
 
 export function newGameV2(config: OnboardingConfig): void {

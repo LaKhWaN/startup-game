@@ -11,10 +11,12 @@ import { isTaskUnlocked } from './chapter'
 import { addStory, type FounderSkill, type FounderTask, type FounderTaskType, type Rng, type V2GameState } from './state'
 
 export const FOUNDER_ID = 'founder'
-export const RESEARCH_DAYS = 3
-export const EMAILS_DAYS = 2
-export const SALES_DAYS = 2
-export const FOUNDER_BUILD_SPEED = 0.6
+/** Real milliseconds per game hour at 1× (a game day lasts 36 s). */
+export const GAME_HOUR_MS = 1500
+export const RESEARCH_DAYS = 1.5
+export const EMAILS_DAYS = 1
+export const SALES_DAYS = 1
+export const FOUNDER_BUILD_SPEED = 1.2
 export const FEATURES_PER_RESEARCH = 2
 export const SKILL_GAIN = 0.5
 export const SKILL_CAP = 8
@@ -31,8 +33,8 @@ export const TASK_SKILL: Record<FounderTaskType, FounderSkill> = {
   refactor: 'build',
 }
 
-export const SUPPORT_DAYS = 1
-export const REFACTOR_DAYS = 2
+export const SUPPORT_DAYS = 0.5
+export const REFACTOR_DAYS = 1
 
 /** Anyone who can do a task: the founder or a hire. */
 export interface Worker {

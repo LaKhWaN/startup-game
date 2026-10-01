@@ -58,18 +58,18 @@ describe('advanceFounder + research', () => {
     expect(advanceFounder(busy, 0, rng).state).toBe(busy)
   })
 
-  it('completes research after exactly 72 game hours', () => {
+  it('completes research after exactly 36 game hours', () => {
     const s = started(makeState(), 'research')
-    const almost = advanceHours(s, 71)
+    const almost = advanceHours(s, 35)
     expect(almost.completed).toBeNull()
-    expect(almost.state.v2.founder.task?.progress).toBeCloseTo(71 / 72)
+    expect(almost.state.v2.founder.task?.progress).toBeCloseTo(35 / 36)
     const done = advanceFounder(almost.state, 1, rng)
     expect(done.completed).toBe('research')
     expect(done.state.v2.founder.task).toBeNull()
   })
 
   it('reveals the next 2 roadmap features as proposed and advances the index', () => {
-    const done = advanceHours(started(makeState(), 'research'), 72).state
+    const done = advanceHours(started(makeState(), 'research'), 36).state
     expect(done.features.map(f => f.title)).toEqual([FEATURE_TEMPLATES[0].title, FEATURE_TEMPLATES[1].title])
     expect(done.features.every(f => f.status === 'proposed' && f.discoveredByPMId === FOUNDER_ID)).toBe(true)
     expect(done.featureRoadmapIndex).toBe(2)
@@ -92,7 +92,7 @@ describe('advanceFounder + research', () => {
   it('completes with a "nothing new" story when every template is used', () => {
     const everything = FEATURE_TEMPLATES.map((t, i) => makeFeature({ id: `f${i}`, title: t.title, status: 'completed' }))
     const s = started(makeState({ features: everything, featureRoadmap: [] }), 'research')
-    const done = advanceHours(s, 72)
+    const done = advanceHours(s, 36)
     expect(done.completed).toBe('research')
     expect(done.state.features).toHaveLength(everything.length)
     expect(done.state.storyLog[0].lines[0]).toMatch(/nothing new/i)
@@ -100,7 +100,7 @@ describe('advanceFounder + research', () => {
 
   it('caps skills at 8', () => {
     const s = started(withFounder(makeState(), { skills: { research: 7.8, build: 4, outreach: 4, sales: 4 } }), 'research')
-    expect(advanceHours(s, 72).state.v2.founder.skills.research).toBe(8)
+    expect(advanceHours(s, 36).state.v2.founder.skills.research).toBe(8)
   })
 })
 
@@ -112,16 +112,16 @@ describe('develop outcome', () => {
     return estimateFeatureEffects(f.effects, f.value, 5, s.arpu, s.customers, s.difficultyModifier!.featureImpactMultiplier)
   }
 
-  it('takes baseDays / 0.6 days (3 → 5 days = 120 hours) and mirrors progress onto the feature', () => {
+  it('takes baseDays / 1.2 days (3 → 2.5 days = 60 hours) and mirrors progress onto the feature', () => {
     const s = started(base, 'develop', 'feat-test')
-    const half = advanceHours(s, 60)
+    const half = advanceHours(s, 30)
     expect(half.completed).toBeNull()
     expect(half.state.features[0].buildProgress).toBeCloseTo(0.5)
-    expect(advanceHours(half.state, 60).completed).toBe('develop')
+    expect(advanceHours(half.state, 30).completed).toBe('develop')
   })
 
   it('before the first sale, sends customer gains into leads', () => {
-    const done = advanceHours(started(base, 'develop', 'feat-test'), 120).state
+    const done = advanceHours(started(base, 'develop', 'feat-test'), 60).state
     const est = estFor(base)
     expect(est.customers).toBeGreaterThan(0)
     expect(done.v2.leads).toBe(est.customers)
@@ -134,7 +134,7 @@ describe('develop outcome', () => {
 
   it('after the first sale, adds real customers', () => {
     const s = withV2(base, { firstSaleDone: true })
-    const done = advanceHours(started(s, 'develop', 'feat-test'), 120).state
+    const done = advanceHours(started(s, 'develop', 'feat-test'), 60).state
     expect(done.customers).toBe(estFor(s).customers)
     expect(done.mrr).toBe(done.customers * done.arpu)
     expect(done.v2.leads).toBe(0)

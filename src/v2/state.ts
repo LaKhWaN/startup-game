@@ -136,6 +136,8 @@ export interface V2Slice {
   setups: { founder: number; seats: number[] }
   /** Hosting, Wi-Fi and tools (spec §7). */
   infra: InfraState
+  /** Skip closed office hours automatically. */
+  autoSkipNights?: boolean
 }
 
 /** The whole v2 game: company state + the v2 slice. */

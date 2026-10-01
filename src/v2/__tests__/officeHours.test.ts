@@ -36,9 +36,9 @@ describe('office hours', () => {
 
   it('counts hire durations in work days of 8 hours', () => {
     expect(WORK_DAY_HOURS).toBe(8)
-    // Emails: 2/0.7 work days ≈ 22.9 work hours at full mood; a fresh hire is slower (mood, no context)
+    // Emails: 1/0.8 work days = 10 work hours at full mood; a fresh hire is slower (mood, no context)
     const s = run(at(emailsHire(), 0, 9), 8)
-    const full = 8 / (8 * (2 / 0.7))
+    const full = 8 / (8 * (1 / 0.8))
     expect(s.v2.team.h.task!.progress).toBeLessThan(full)
     expect(s.v2.team.h.task!.progress).toBeGreaterThan(full * 0.5)
   })

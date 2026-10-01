@@ -1,6 +1,5 @@
 import type { CoachCard } from './chapter'
-import { isWorkHour } from './engine/clock'
-import { hostingLoad } from './engine/infra'
+import { hostingLoad, officeOpen } from './engine/infra'
 import { marketCeiling } from './engine/market'
 import type { V2GameState } from './state'
 
@@ -43,7 +42,7 @@ export const TIPS: Tip[] = [
   {
     id: 'tip-night', title: 'Office hours',
     body: 'Your team works 9 to 5 on weekdays. You can keep going at night (🌙 Work late costs energy) or ⏭ skip to the morning.',
-    when: s => Object.keys(s.v2.team).length > 0 && !isWorkHour(s.gameTime.totalHours),
+    when: s => Object.keys(s.v2.team).length > 0 && !officeOpen(s, s.gameTime.totalHours),
   },
   {
     id: 'tip-market', title: 'The market is filling up',

@@ -38,7 +38,8 @@ function withTeam(state: GameV2, team: Record<string, TeamMember>): GameV2 {
 }
 
 /** One hour for the hires. Only work hours matter (they're home otherwise). */
-export function peopleHour<T extends GameV2>(state: T, workHour: boolean): T {
+/** `evening`: a night-shift hour (busy stress counts double). */
+export function peopleHour<T extends GameV2>(state: T, workHour: boolean, evening = false): T {
   if (!workHour || Object.keys(state.v2.team).length === 0) return state
   const perks = perkEffects(state)
   const team: Record<string, TeamMember> = {}
@@ -49,7 +50,7 @@ export function peopleHour<T extends GameV2>(state: T, workHour: boolean): T {
     team[m.id] = {
       ...m,
       energy: clamp(mood.energy - (busy ? 7 * perks.energyDrain : 1)),
-      stress: clamp(mood.stress + (busy ? 0.45 : -1 * perks.idleStressRelief) + empty - perks.workStressRelief),
+      stress: clamp(mood.stress + (busy ? 0.45 * (evening ? 2 : 1) : -1 * perks.idleStressRelief) + empty - perks.workStressRelief),
       context: clamp(mood.context + (busy ? 0.25 : 0)),
     }
   }

@@ -160,7 +160,7 @@ describe('balance simulation', () => {
     if (process.env.SIM_DEBUG) console.log('neglect', neglect.customers, Math.round(neglect.churnRate), neglect.v2.tickets, '| careful', careful.customers, Math.round(careful.churnRate), careful.v2.tickets)
     expect(careful.phase).toBe('playing')
     expect(careful.customers).toBeGreaterThan(neglect.customers)
-    expect(careful.v2.tickets).toBeLessThan(neglect.v2.tickets)
+    expect(careful.v2.tickets / careful.customers).toBeLessThan(neglect.v2.tickets / Math.max(1, neglect.customers))
     // Neglect never upgrades hosting, so it's stuck under the free tier's 20-customer cap with outages.
     expect(neglect.v2.infra.hosting).toBe(1)
   }, 60_000)

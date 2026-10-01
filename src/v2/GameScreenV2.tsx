@@ -7,6 +7,7 @@ import { getV2State, reshowCoachCard, stepGame, useV2 } from './actions'
 import { BottomNavV2, type V2Panel } from './BottomNavV2'
 import { isMapUnlocked, isMetricsUnlocked, isTeamUnlocked } from './chapter'
 import { MoveTransition } from './MoveTransition'
+import { GAME_HOUR_MS } from './founder'
 import { founderAwake } from './engine/people'
 import { hourOfDay } from './engine/clock'
 import { NightBanner } from './NightBanner'
@@ -58,7 +59,7 @@ export function GameScreenV2() {
 
   useEffect(() => {
     if (phase !== 'playing' || gameSpeed === 0) return
-    const id = setInterval(stepGame, Math.floor(1000 / gameSpeed))
+    const id = setInterval(stepGame, Math.floor(GAME_HOUR_MS / gameSpeed))
     return () => clearInterval(id)
   }, [phase, gameSpeed])
 

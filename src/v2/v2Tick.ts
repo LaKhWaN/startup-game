@@ -1,6 +1,6 @@
-import { DAYS_PER_MONTH, HOURS_PER_DAY, hourOfDay, isWeekend, isWorkHour } from './engine/clock'
+import { DAYS_PER_MONTH, HOURS_PER_DAY, hourOfDay, isWeekend } from './engine/clock'
 import { founderAwake, founderHour, peopleDay, peopleHour } from './engine/people'
-import { infraServicesCost } from './engine/infra'
+import { infraServicesCost, isEveningHour, officeOpen } from './engine/infra'
 import { processDay, processMonth } from './engine/day'
 import { checkChapter2Complete, checkChapter3Complete, onTaskCompleted, onTeamProgress } from './chapter'
 import { filterPendingEvent } from './eventsV2'
@@ -50,12 +50,13 @@ export function stepV2<T extends V2GameState>(state: T, rng: Rng = Math.random):
   let s: T = { ...state, gameTime: { totalHours: now }, cash: state.cash - infraServicesCost(state) / (24 * DAYS_PER_MONTH) }
   const day = Math.floor(now / HOURS_PER_DAY)
   // People: hires tire/learn during work hours; the founder tires working and recovers sleeping.
-  s = founderHour(peopleHour(s, isWorkHour(prev)), hourOfDay(prev))
+  const open = officeOpen(s, prev)
+  s = founderHour(peopleHour(s, open, open && isEveningHour(prev)), hourOfDay(prev))
   if (day > Math.floor(prev / HOURS_PER_DAY)) s = peopleDay(processDay(s, day, rng), day, isWeekend(now), isWeekend(prev))
   const month = Math.floor(day / DAYS_PER_MONTH)
   if (month > Math.floor(Math.floor(prev / HOURS_PER_DAY) / DAYS_PER_MONTH)) s = processMonth(s, month)
   if (s.phase !== 'playing') return s
-  return v2Tick(s, 1, rng, isWorkHour(prev) ? 1 : 0) as T
+  return v2Tick(s, 1, rng, open ? 1 : 0) as T
 }
 
 /**
@@ -71,11 +72,17 @@ export function skipToMorning<T extends V2GameState>(
 ): T {
   if (state.pendingEvent || stopWhen?.(state)) return state
   let s = state
-  for (let i = 0; i < 24 * 4 && s.phase === 'playing' && !isWorkHour(s.gameTime.totalHours); i++) {
+  for (let i = 0; i < 24 * 4 && s.phase === 'playing' && !officeOpen(s, s.gameTime.totalHours); i++) {
     const day = Math.floor(s.gameTime.totalHours / HOURS_PER_DAY)
     s = stepV2(s, rng)
     if (Math.floor(s.gameTime.totalHours / HOURS_PER_DAY) > day) onDay?.(s)
     if (s.pendingEvent || stopWhen?.(s)) break
   }
   return s
+}
+
+/** Auto skip to morning: on, office closed, nothing waiting, no popup holding the game, founder not working late. */
+export function shouldAutoSkip(s: V2GameState, popupHeld: boolean): boolean {
+  return s.phase === 'playing' && !!s.v2.autoSkipNights && !popupHeld && !s.pendingEvent
+    && !s.v2.founder.workLate && !officeOpen(s, s.gameTime.totalHours)
 }
