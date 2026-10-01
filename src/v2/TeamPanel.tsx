@@ -5,21 +5,20 @@ import { formatProfit } from './finance'
 import { fmtMoney, MemberCard, ROLE_INFO, TierBadge } from './MemberCard'
 import { canHire, isFullTimeUnlocked, teamCapacity, teamFinances } from './team'
 import type { InternCandidate, V2GameState } from './state'
-import '../components/RightPanel.css'
+import './ui/RightPanel.css'
 import './v2.css'
 
 export function TeamPanel() {
   // Stored refs / primitives only; everything else is derived below.
   const v2 = useV2(s => s.v2)
   const cash = useV2(s => s.cash)
-  const employees = useV2(s => s.employees)
   const infra = useV2(s => s.infraCostMonthly)
   const mrr = useV2(s => s.mrr)
 
   useEffect(() => { ensureCandidates() }, [])
   const members = Object.values(v2.team).sort((a, b) => a.seat - b.seat)
   const capacity = teamCapacity({ v2 } as V2GameState)
-  const state = { v2, cash, employees, infraCostMonthly: infra, mrr } as V2GameState
+  const state = { v2, cash, infraCostMonthly: infra, mrr } as V2GameState
   const { burn, runwayMonths: runway } = teamFinances(state)
   const fullTime = isFullTimeUnlocked(state)
 

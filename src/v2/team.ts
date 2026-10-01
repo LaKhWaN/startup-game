@@ -1,6 +1,6 @@
 import { generateCandidate, ROLE_LABELS } from '../data/candidates'
-import { getMonthlyBurn, getRunwayMonths, totalDays } from '../engine/gameEngine'
-import type { Employee } from '../types'
+import { totalDays } from './engine/clock'
+import { monthlyBurn, runwayMonths } from './engine/money'
 import { applyOutcome, pickResearchTemplates } from './founder'
 import { currentLocation, locationIndex } from './locations'
 import { addStory, type Assignment, type FounderSkill, type FounderTask, type FounderTaskType, type InternCandidate, type Rng, type TeamMember, type TeamRole, type Tier, type V2GameState } from './state'
@@ -113,28 +113,11 @@ export function hireIntern(state: V2GameState, candidateId: string): V2GameState
     characterModel: c.characterModel,
     salary: c.salary,
     bio: c.bio,
-  }
-  // Legacy payroll mirror: an idle "developer" with no feature is inert in the
-  // legacy daily loop, so legacy only deducts salary and runs morale drift.
-  const mirror: Employee = {
-    id: c.id,
-    name: c.name,
-    role: 'developer',
-    stats: { [mainSkillOf(c.role)]: TIER_RULES[c.tier].skillMain },
-    salary: c.salary,
-    status: 'idle',
-    gender: c.gender,
-    ideaProgress: 0,
     hiredAtDay: totalDays(state.gameTime),
-    morale: 72,
-    stress: 15,
-    xp: 0,
-    level: 1,
   }
   const chapter2 = state.v2.chapter2.beat === 0 ? { ...state.v2.chapter2, beat: 1 as const } : state.v2.chapter2
   const next: V2GameState = {
     ...state,
-    employees: [...state.employees, mirror],
     v2: {
       ...state.v2,
       team: { ...state.v2.team, [c.id]: member },
@@ -162,7 +145,6 @@ function removeMember(state: V2GameState, id: string): V2GameState {
   const { [id]: _gone, ...team } = state.v2.team
   return {
     ...freeFeatureOf(state, id),
-    employees: state.employees.filter(e => e.id !== id),
     v2: { ...state.v2, team },
   }
 }
@@ -201,10 +183,7 @@ export function promoteMember(state: V2GameState, id: string): V2GameState {
   if (canPromote(state, id) !== 'ok') return state
   const m = state.v2.team[id]
   const salary = Math.max(m.salary, FULLTIME_MIN_SALARY)
-  const next: V2GameState = {
-    ...withMember(state, { ...m, tier: 'fulltime', salary }),
-    employees: state.employees.map(e => (e.id === id ? { ...e, salary } : e)),
-  }
+  const next = withMember(state, { ...m, tier: 'fulltime', salary })
   return addStory(next, [`${m.name} was promoted to full-time ($${salary.toLocaleString()}/mo).`])
 }
 
@@ -296,37 +275,8 @@ export function advanceTeam(state: V2GameState, hours: number, rng: Rng): TeamTi
   return { state: s, completedBy, mistakes }
 }
 
-/**
- * Keeps the legacy payroll mirror in step with the team: drops members a
- * legacy event removed (e.g. someone quit), and holds the mirror inert with
- * fixed morale/stress so the legacy cash<$10k stress spiral never applies.
- */
-export function syncPayroll(state: V2GameState): V2GameState {
-  let s = state
-  const onPayroll = new Set(s.employees.map(e => e.id))
-  for (const m of Object.values(s.v2.team)) {
-    if (!onPayroll.has(m.id)) s = addStory(removeMember(s, m.id), [`${m.name} left the company.`])
-  }
-  if (Object.keys(s.v2.team).length === 0) return s
-  // The mirror's salary is the one legacy actually pays (events can change it).
-  let team = s.v2.team
-  for (const e of s.employees) {
-    const m = team[e.id]
-    if (m && m.salary !== e.salary) team = { ...team, [e.id]: { ...m, salary: e.salary } }
-  }
-  if (team !== s.v2.team) s = { ...s, v2: { ...s.v2, team } }
-  return {
-    ...s,
-    employees: s.employees.map(e => {
-      const m = team[e.id]
-      if (!m) return e
-      return { ...e, role: 'developer' as const, status: m.task ? 'busy' as const : 'idle' as const, currentFeatureId: undefined, isRefactoring: false, morale: 72, stress: 15, xp: 0, level: 1 }
-    }),
-  }
-}
-
-/** Monthly burn and runway the way the legacy banner counts it (net of MRR). */
-export function teamFinances(state: V2GameState): { burn: number; runwayMonths: number } {
-  const runway = getRunwayMonths(state)
-  return { burn: getMonthlyBurn(state), runwayMonths: runway >= 999 ? Infinity : runway }
+/** Monthly burn and runway (net of MRR). */
+export function teamFinances(state: Pick<V2GameState, 'infraCostMonthly' | 'v2' | 'cash' | 'mrr'>): { burn: number; runwayMonths: number } {
+  const runway = runwayMonths(state)
+  return { burn: monthlyBurn(state), runwayMonths: runway >= 999 ? Infinity : runway }
 }

@@ -1,9 +1,9 @@
-import { getMonthlyBurn } from '../engine/gameEngine'
-import type { GameState } from '../types'
+import { monthlyBurn } from './engine/money'
+import type { V2GameState } from './state'
 
 /** Monthly profit: MRR minus burn (rent/infra + salaries). Negative = losing money. */
-export function profitMonthly(state: GameState): number {
-  return state.mrr - getMonthlyBurn(state)
+export function profitMonthly(state: Pick<V2GameState, 'mrr' | 'infraCostMonthly' | 'v2'>): number {
+  return state.mrr - monthlyBurn(state)
 }
 
 export function formatProfit(n: number): string {

@@ -1,5 +1,6 @@
 import { FEATURE_TEMPLATES, type FeatureTemplate } from '../data/featureTemplates'
-import { estimateFeatureEffects, totalDays } from '../engine/gameEngine'
+import { totalDays } from './engine/clock'
+import { estimateFeatureEffects } from './engine/features'
 import type { Feature, FeatureResult } from '../types'
 import { isTaskUnlocked } from './chapter'
 import { addStory, type FounderSkill, type FounderTask, type FounderTaskType, type Rng, type V2GameState } from './state'

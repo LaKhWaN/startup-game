@@ -1,7 +1,7 @@
 import { scoreToDifficulty } from '../../ai/gemini'
 import { FEATURE_TEMPLATES } from '../../data/featureTemplates'
 import type { Feature, OnboardingConfig } from '../../types'
-import { createV2State, type Rng, type V2GameState, type V2Slice } from '../state'
+import { createV2State, type Rng, type TeamMember, type V2GameState, type V2Slice } from '../state'
 
 export function makeConfig(overrides: Partial<OnboardingConfig> = {}): OnboardingConfig {
   return {
@@ -53,4 +53,18 @@ export function makeFeature(overrides: Partial<Feature> = {}): Feature {
 export function seq(...values: number[]): Rng {
   let i = 0
   return () => values[i++ % values.length]
+}
+
+/** A minimal hire for tests. */
+export function member(over: Partial<TeamMember> = {}): TeamMember {
+  return {
+    id: 'm1', name: 'Sam', gender: 'male', role: 'developer', tier: 'intern',
+    skills: { research: 1, build: 3, outreach: 1, sales: 1 }, assignment: 'develop', task: null,
+    mistakes: 0, seat: 0, characterModel: 'character-male-b', salary: 700, ...over,
+  }
+}
+
+/** State with these hires on the team (replaces the old legacy `employees` setups). */
+export function withTeam(state: V2GameState, ...members: TeamMember[]): V2GameState {
+  return withV2(state, { team: Object.fromEntries(members.map(m => [m.id, m])) })
 }

@@ -1,0 +1,70 @@
+.runway-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: 'Roboto', sans-serif;
+  z-index: 9;
+  flex-shrink: 0;
+}
+
+.rb-text {
+  letter-spacing: 0.01em;
+}
+
+.rb-dismiss {
+  position: absolute;
+  right: 1.2rem;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+  line-height: 1;
+  padding: 0 0.3rem;
+}
+
+.rb-dismiss:hover {
+  opacity: 1;
+}
+
+.rb-warn {
+  background: var(--yellow);
+  color: #422006;
+}
+
+.rb-warn .rb-dismiss { color: #422006; }
+
+.rb-danger {
+  background: var(--orange);
+  color: #431407;
+  animation: rb-pulse 1.5s ease-in-out infinite;
+}
+
+.rb-danger .rb-dismiss { color: #431407; }
+
+.rb-critical {
+  background: var(--red);
+  color: #fff;
+  animation: rb-shake 0.4s ease-in-out infinite;
+}
+
+.rb-critical .rb-dismiss { color: #fff; }
+
+@keyframes rb-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.75; }
+}
+
+@keyframes rb-shake {
+  0%, 100% { transform: translateX(0); opacity: 1; }
+  15%      { transform: translateX(-2px); }
+  30%      { transform: translateX(2px); }
+  45%      { transform: translateX(-1px); }
+  60%      { transform: translateX(1px); }
+  75%      { transform: translateX(0); opacity: 0.85; }
+}

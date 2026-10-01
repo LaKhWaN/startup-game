@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { applyEventChoice, getMonthlyBurn, totalDays } from '../../engine/gameEngine'
+import { totalDays } from '../engine/clock'
+import { applyEventChoice } from '../engine/events'
+import { monthlyBurn as getMonthlyBurn } from '../engine/money'
 import { claimFamilyMoney, onMoved } from '../chapter'
 import { startTask } from '../founder'
 import { canMove, LOCATIONS, locationIndex, moveTo } from '../locations'
@@ -22,7 +24,7 @@ function seeded(seed: number): () => number {
 
 /** A sensible, not optimal, player. */
 function play(s: V2GameState, rng: () => number): V2GameState {
-  if (s.pendingEvent) s = applyEventChoice(s, 0) as V2GameState
+  if (s.pendingEvent) s = applyEventChoice(s, 0)
   const { chapter } = s.v2
   if (chapter.beat === 5 && chapter.familyMoney && !chapter.familyMoney.claimed) s = claimFamilyMoney(s)
 
@@ -71,7 +73,7 @@ describe('balance simulation', () => {
       const reached: Record<string, number> = {}
       for (let h = 0; h < 730 * 24 && s.phase === 'playing'; h++) {
         if (h % 6 === 0) s = play(s, rng)
-        else if (s.pendingEvent) s = applyEventChoice(s, 0) as V2GameState
+        else if (s.pendingEvent) s = applyEventChoice(s, 0)
         s = stepV2(s, rng)
         if (!(s.v2.location in reached)) reached[s.v2.location] = totalDays(s.gameTime)
         if (process.env.SIM_DEBUG && h % (24 * 15) === 0) console.log(`d${totalDays(s.gameTime)} h${s.gameTime.totalHours} mrr ${s.mrr} cust ${s.customers} cash ${Math.round(s.cash)} leads ${s.v2.leads} beat ${s.v2.chapter.beat} task ${s.v2.founder.task?.type} team ${Object.keys(s.v2.team).length} loc ${s.v2.location} :: ${s.storyLog[0]?.lines[0]}`)

@@ -1,9 +1,8 @@
 import { useEffect } from 'react'
-import { EventCard } from '../components/EventCard'
-import { FeatureResultToasts } from '../components/FeatureResultToast'
-import { MilestoneToastQueue } from '../components/MilestoneToast'
-import { RightPanel } from '../components/RightPanel'
-import { RunwayBanner } from '../components/RunwayBanner'
+import { EventCard } from './ui/EventCard'
+import { FeatureResultToasts } from './ui/FeatureResultToast'
+import { MetricsPanel } from './ui/MetricsPanel'
+import { RunwayBanner } from './ui/RunwayBanner'
 import { getV2State, reshowCoachCard, stepGame, useV2 } from './actions'
 import { BottomNavV2, type V2Panel } from './BottomNavV2'
 import { isMapUnlocked, isMetricsUnlocked, isTeamUnlocked } from './chapter'
@@ -34,8 +33,6 @@ export function GameScreenV2() {
   const phase = useV2(s => s.phase)
   const gameSpeed = useV2(s => s.gameSpeed)
   const v2 = useV2(s => s.v2)
-  const pendingMilestoneToasts = useV2(s => s.pendingMilestoneToasts)
-  const dismissMilestoneToast = useV2(s => s.dismissMilestoneToast)
   const modal = useUi(s => s.modal)
   const view = useUi(s => s.view)
   const onTab = (p: V2Panel) => {
@@ -90,7 +87,6 @@ export function GameScreenV2() {
       </div>
       <ScreenModal modal={modal} />
       <FeatureResultToasts />
-      <MilestoneToastQueue toasts={pendingMilestoneToasts} onDismiss={dismissMilestoneToast} />
       {chapter.complete && v2.chapter2.complete && <EventCard />}
       {showFamilyMoney && <FamilyMoneyModal />}
     </div>
@@ -104,7 +100,7 @@ function ScreenModal({ modal }: { modal: ModalState | null }) {
   switch (modal.kind) {
     case 'founder': return <Modal title="Founder" onClose={closeModal}><FounderPanel /></Modal>
     case 'team': return <Modal title="Team" onClose={closeModal}><TeamPanel /></Modal>
-    case 'metrics': return <Modal title="Metrics" onClose={closeModal} wide><RightPanel activePanel="metrics" /></Modal>
+    case 'metrics': return <Modal title="Metrics" onClose={closeModal} wide><MetricsPanel /></Modal>
     case 'person': {
       const m = team[modal.id]
       // They left (fired, quit): nothing to show.

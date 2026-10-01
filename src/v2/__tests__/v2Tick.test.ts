@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { EVENTS } from '../../data/events'
+import { EVENTS } from '../engine/eventData'
 import { claimFamilyMoney } from '../chapter'
 import { startTask } from '../founder'
 import type { FounderTaskType, Rng, V2GameState } from '../state'
 import { v2Tick } from '../v2Tick'
 import { generateInternCandidates, hireIntern } from '../team'
-import { createInitialState } from '../../engine/gameEngine'
-import { makeConfig, makeState, seq, withChapter } from './fixtures'
+import { makeState, member, seq, withChapter, withTeam } from './fixtures'
 
 function start(s: V2GameState, type: FounderTaskType, featureId?: string): V2GameState {
   const r = startTask(s, type, featureId)
@@ -28,14 +27,12 @@ describe('v2Tick', () => {
 
   it('keeps clearing $100k-scale legacy events while the founder is still solo after Chapter 1', () => {
     const s = withChapter(makeState({ pendingEvent: EVENTS[0] }), { beat: 5, complete: true })
-    expect(s.employees).toHaveLength(0)
+    expect(Object.keys(s.v2.team)).toHaveLength(0)
     expect(v2Tick(s, 1).pendingEvent).toBeNull()
   })
 
   it('keeps events once both chapters are done and there is a team, and pauses the founder while one is pending', () => {
-    const hire = createInitialState(makeConfig()).candidates[0]
-    const employee = { ...hire, status: 'idle' as const, ideaProgress: 0, hiredAtDay: 0, morale: 70, stress: 10, xp: 0, level: 1 }
-    const base = withChapter(makeState({ employees: [employee] }), { beat: 5, complete: true })
+    const base = withChapter(withTeam(makeState(), member()), { beat: 5, complete: true })
     const s = start({ ...base, v2: { ...base.v2, chapter2: { beat: 2, complete: true, firstMistake: false } } }, 'research')
     const pending = { ...s, pendingEvent: EVENTS[0] }
     const next = v2Tick(pending, 1, () => 0) // 0 → always kept (Phase 4 thinning)
@@ -87,7 +84,7 @@ describe('v2Tick', () => {
 describe('v2Tick with a team', () => {
   it('keeps clearing events during Chapter 2 even with interns hired', () => {
     const base = withChapter(makeState({ pendingEvent: EVENTS[0] }), { beat: 5, complete: true })
-    const s = { ...base, employees: [{ ...createInitialState(makeConfig()).candidates[0], status: 'idle' as const, ideaProgress: 0, hiredAtDay: 0, morale: 70, stress: 10, xp: 0, level: 1 }] }
+    const s = withTeam(base, member())
     expect(v2Tick(s, 1).pendingEvent).toBeNull()
   })
 
@@ -100,6 +97,5 @@ describe('v2Tick with a team', () => {
     expect(s.v2.leads).toBeGreaterThan(0)
     expect(s.v2.founder.task).toBeNull()
     expect(s.v2.chapter2.beat).toBe(2)
-    expect(s.employees[0]).toMatchObject({ role: 'developer', morale: 72, stress: 15 })
   })
 })

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { EVENTS } from '../../data/events'
+import { EVENTS } from '../engine/eventData'
 import { FOUNDER_ID, reconcileFounderFeatures } from '../founder'
 import { deleteSaveV2, listSavesV2, loadGameV2, saveGameV2, slotKeyV2 } from '../saveV2'
 import { makeFeature, makeState, withChapter, withFounder, withV2 } from './fixtures'
@@ -21,11 +21,14 @@ let store: Map<string, string>
 beforeEach(() => { store = installLocalStorage() })
 
 describe('saveV2', () => {
-  it('uses its own key prefix and never touches legacy slots', () => {
+  it('uses the launch key prefix and ignores pre-launch saves', () => {
     saveGameV2(1, makeState())
-    expect(slotKeyV2(1)).toBe('startup-game-v2-save-1')
-    expect(store.has('startup-game-v2-save-1')).toBe(true)
+    expect(slotKeyV2(1)).toBe('startup-v2-save-1')
+    expect(store.has('startup-v2-save-1')).toBe(true)
     expect(store.has('startup-game-save-1')).toBe(false)
+    store.clear()
+    store.set('startup-game-v2-save-2', JSON.stringify({ meta: {}, state: { gameId: 'v2-old' } }))
+    expect(loadGameV2(2)).toBeNull()
   })
 
   it('round-trips the v2 slice and restores the pending event by id', () => {

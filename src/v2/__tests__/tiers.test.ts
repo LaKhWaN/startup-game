@@ -97,19 +97,18 @@ describe('promotion', () => {
     expect(canPromote(promoteMember(skilled(), 'c1'), 'c1')).toBe('tier')
   })
 
-  it('makes them full-time, keeps skills and task, raises salary to at least $2,000 in the payroll mirror', () => {
+  it('makes them full-time, keeps skills and task, raises salary to at least $2,000', () => {
     let s = skilled()
     s = withV2(s, { team: { c1: { ...s.v2.team.c1, task: { type: 'emails', progress: 0.5 } } } })
     const after = promoteMember(s, 'c1')
     expect(after.v2.team.c1).toMatchObject({ tier: 'fulltime', salary: 2000, task: { type: 'emails', progress: 0.5 } })
     expect(after.v2.team.c1.skills.build).toBe(5)
-    expect(after.employees.find(e => e.id === 'c1')!.salary).toBe(2000)
     expect(after.storyLog[0].lines[0]).toMatch(/promoted/i)
   })
 
   it('never lowers a salary already above $2,000', () => {
     let s = skilled()
-    s = { ...s, employees: s.employees.map(e => ({ ...e, salary: 2600 })), v2: { ...s.v2, team: { c1: { ...s.v2.team.c1, salary: 2600 } } } }
+    s = { ...s, v2: { ...s.v2, team: { c1: { ...s.v2.team.c1, salary: 2600 } } } }
     expect(promoteMember(s, 'c1').v2.team.c1.salary).toBe(2600)
   })
 })

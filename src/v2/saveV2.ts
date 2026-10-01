@@ -1,6 +1,6 @@
-import { EVENTS } from '../data/events'
+import { EVENTS } from './engine/eventData'
 import { prepareEvent } from './eventsV2'
-import { totalDays } from '../engine/gameEngine'
+import { totalDays } from './engine/clock'
 import { reconcileFounderFeatures } from './founder'
 import { migrateV2Slice, type V2GameState } from './state'
 
@@ -22,7 +22,8 @@ interface SaveEnvelopeV2 {
   state: Record<string, unknown>
 }
 
-const KEY_PREFIX = 'startup-game-v2-save-'
+// New engine, new shape: saves from before the launch build (startup-game-v2-save-*) are ignored.
+const KEY_PREFIX = 'startup-v2-save-'
 
 export function slotKeyV2(slot: SlotId): string {
   return `${KEY_PREFIX}${slot}`
@@ -32,7 +33,6 @@ export function saveGameV2(slot: SlotId, state: V2GameState): void {
   const serializable: Record<string, unknown> = { ...state }
   serializable._pendingEventId = state.pendingEvent?.id ?? null
   serializable.pendingEvent = null
-  serializable.pendingMilestoneToasts = []
   serializable.recentFeatureResults = []
   serializable.fullMetricsHistory = []
 
@@ -71,8 +71,6 @@ export function loadGameV2(slot: SlotId): V2GameState | null {
     // It was already kept before saving: re-apply v2 sizing now, without re-rolling.
     state.pendingEvent = rawEvent ? prepareEvent(state, rawEvent) : null
     delete state._pendingEventId
-    state.completedMilestoneIds = state.completedMilestoneIds ?? []
-    state.pendingMilestoneToasts = state.pendingMilestoneToasts ?? []
     state.recentFeatureResults = state.recentFeatureResults ?? []
     state.fullMetricsHistory = state.fullMetricsHistory ?? []
 

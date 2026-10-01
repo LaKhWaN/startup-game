@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { formatProfit, profitMonthly } from '../finance'
-import { makeState } from './fixtures'
+import { makeState, member, withTeam } from './fixtures'
 
 describe('profit', () => {
   it('is MRR minus monthly burn (infra + salaries)', () => {
-    const s = makeState({ mrr: 1500, infraCostMonthly: 300, employees: [{ id: 'a', salary: 800 } as never] })
+    const s = withTeam(makeState({ mrr: 1500, infraCostMonthly: 300 }), member({ id: 'a', salary: 800 }))
     expect(profitMonthly(s)).toBe(400)
   })
 

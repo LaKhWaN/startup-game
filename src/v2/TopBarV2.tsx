@@ -1,22 +1,17 @@
-import { useGameStore } from '../store/gameStore'
-import type { GameSpeed } from '../store/gameStore'
+import { setSpeed as setGameSpeed, useV2 } from './actions'
+import type { GameSpeed } from './store'
 import { useRef, useState, useEffect } from 'react'
 import { useAudioStore } from '../audio/audioStore'
 import { playSfx } from '../audio/sfx'
 import { tierLabel, tierColor } from '../ai/gemini'
-import {
-  getMonthlyBurn,
-  getCompanyValuation,
-  dayOfMonth,
-  monthOfYear,
-  yearNumber,
-} from '../engine/gameEngine'
+import { clockLabel, totalDays as daysOf } from './engine/clock'
+import { monthlyBurn, valuation } from './engine/money'
 import { saveGameV2, listSavesV2, type SlotId, type SaveMetaV2 } from './saveV2'
 import type { V2GameState } from './state'
 import { formatProfit, profitMonthly } from './finance'
-import { Avatar } from '../components/Avatar'
-import { SellCompanyModal } from '../components/SellCompanyModal'
-import '../components/TopBar.css'
+import { Avatar } from './ui/Avatar'
+import { SellCompanyModal } from './ui/SellCompanyModal'
+import './ui/TopBar.css'
 
 function fmt(n: number): string {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}m`
@@ -142,9 +137,9 @@ function PillItem({ icon, value, label, rawValue, higherIsBetter = true, warn, d
 const SPEEDS: GameSpeed[] = import.meta.env.DEV ? [1, 2, 3, 5, 10] : [1, 2, 3, 5]
 
 function SpeedControl() {
-  const gameSpeed    = useGameStore(s => s.gameSpeed)
-  const setSpeed     = useGameStore(s => s.setSpeed)
-  const pendingEvent = useGameStore(s => s.pendingEvent)
+  const gameSpeed    = useV2(s => s.gameSpeed)
+  const setSpeed     = (() => setGameSpeed)()
+  const pendingEvent = useV2(s => s.pendingEvent)
 
   const isPaused = gameSpeed === 0 || !!pendingEvent
 
@@ -185,16 +180,16 @@ interface TopBarProps {
 }
 
 export function TopBarV2({ onShowTutorial }: TopBarProps) {
-  const startupName      = useGameStore(s => s.startupName)
-  const gameTime         = useGameStore(s => s.gameTime)
-  const mrr              = useGameStore(s => s.mrr)
-  const customers        = useGameStore(s => s.customers)
-  const churnRate        = useGameStore(s => s.churnRate)
-  const cash             = useGameStore(s => s.cash)
-  const pendingEvent     = useGameStore(s => s.pendingEvent)
-  const difficultyMod    = useGameStore(s => s.difficultyModifier)
-  const ideaScore        = useGameStore(s => s.ideaScore)
-  const state            = useGameStore(s => s)
+  const startupName      = useV2(s => s.startupName)
+  const gameTime         = useV2(s => s.gameTime)
+  const mrr              = useV2(s => s.mrr)
+  const customers        = useV2(s => s.customers)
+  const churnRate        = useV2(s => s.churnRate)
+  const cash             = useV2(s => s.cash)
+  const pendingEvent     = useV2(s => s.pendingEvent)
+  const difficultyMod    = useV2(s => s.difficultyModifier)
+  const ideaScore        = useV2(s => s.ideaScore)
+  const state            = useV2(s => s)
   const musicVolume    = useAudioStore(s => s.musicVolume)
   const sfxVolume      = useAudioStore(s => s.sfxVolume)
   const setMusicVolume = useAudioStore(s => s.setMusicVolume)
@@ -210,13 +205,11 @@ export function TopBarV2({ onShowTutorial }: TopBarProps) {
     setTimeout(() => setSavedMsg(null), 2000)
   }
 
-  const burn = getMonthlyBurn(state)
+  const burn = monthlyBurn(state)
   const profit = profitMonthly(state)
 
-  const dom = dayOfMonth(gameTime)
-  const mo  = monthOfYear(gameTime)
-  const yr  = yearNumber(gameTime)
-  const totalDays = (yr - 1) * 360 + (mo - 1) * 30 + dom
+  const totalDays = daysOf(gameTime) + 1
+  const clock = clockLabel(gameTime.totalHours)
 
   const runwayMonths = burn > 0 ? cash / burn : Infinity
   const cashWarn   = runwayMonths < 6
@@ -265,7 +258,7 @@ export function TopBarV2({ onShowTutorial }: TopBarProps) {
         <div className="tb-brand-info">
           <span className="tb-name">{startupName}</span>
           <span className="tb-sub">
-            Day {totalDays}
+            Day {totalDays} · {clock}
             <span className="tb-sub-dot">·</span>
             {stage}
             {difficultyMod && (
@@ -304,7 +297,7 @@ export function TopBarV2({ onShowTutorial }: TopBarProps) {
         <button
           className="tb-sell-btn"
           onClick={() => setShowSellModal(true)}
-          title={`Sell company — est. $${getCompanyValuation(state).valuation.toLocaleString()}`}
+          title={`Sell company — est. $${valuation(state).toLocaleString()}`}
         >
           💰 Sell
         </button>

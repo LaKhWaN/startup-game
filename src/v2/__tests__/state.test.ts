@@ -10,11 +10,8 @@ describe('createV2State', () => {
     expect(s.cash).toBe(FOUNDER_START_CASH)
     expect(s.cash).toBe(500)
     expect(s.infraCostMonthly).toBe(0)
-    expect(s.employees).toEqual([])
-    expect(s.candidates).toEqual([])
-    expect(s.deskCount).toBe(0)
-    expect(s.workspace).toBe('home')
-    expect(s.lastConfig?.workspace).toBe('home')
+    expect(s.v2.team).toEqual({})
+    expect(s.v2.location).toBe('home')
     expect(s.phase).toBe('playing')
   })
 

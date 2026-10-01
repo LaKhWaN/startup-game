@@ -5,7 +5,7 @@ import type { FeatureTemplate } from '../data/featureTemplates'
 import type { OnboardingConfig } from '../types'
 import { loadV2, newGameV2 } from './actions'
 import { deleteSaveV2, listSavesV2, type SaveMetaV2, type SlotId } from './saveV2'
-import '../components/Onboarding.css'
+import './ui/Onboarding.css'
 
 type Step = 'idea' | 'assessment' | 'name'
 

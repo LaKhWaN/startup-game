@@ -1,0 +1,107 @@
+.frt-container {
+  position: fixed;
+  top: 108px;
+  left: 1.5rem;
+  z-index: 90;
+  pointer-events: none;
+}
+
+.frt-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  width: 300px;
+  cursor: pointer;
+  animation: frt-slide-in 0.3s ease;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.05);
+  border-left-width: 3px;
+}
+
+.frt-toast--positive { border-left-color: var(--green); }
+.frt-toast--mixed    { border-left-color: var(--orange); }
+.frt-toast--negative { border-left-color: var(--red); }
+
+@keyframes frt-slide-in {
+  from { transform: translateX(-20px); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+
+.frt-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+  flex-shrink: 0;
+  padding-top: 0.1rem;
+}
+
+.frt-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.frt-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.frt-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.frt-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.frt-dev {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.frt-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+}
+
+.frt-chip {
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: 'Roboto Mono', monospace;
+  padding: 0.12rem 0.45rem;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.frt-chip--pos {
+  color: var(--green);
+  background: rgba(var(--success-rgb), 0.1);
+}
+
+.frt-chip--neg {
+  color: var(--red);
+  background: rgba(var(--error-rgb), 0.08);
+}
+
+.frt-chip--neutral {
+  color: var(--muted);
+  background: rgba(107, 114, 128, 0.08);
+}

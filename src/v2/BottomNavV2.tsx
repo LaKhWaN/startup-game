@@ -1,4 +1,4 @@
-import '../components/BottomNav.css'
+import './ui/BottomNav.css'
 
 export type V2Panel = 'founder' | 'team' | 'map' | 'metrics'
 

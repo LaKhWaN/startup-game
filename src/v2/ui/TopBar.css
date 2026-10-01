@@ -1,0 +1,542 @@
+/* ─── Shell ──────────────────────────────────────────────────────────────── */
+
+.top-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 96px;
+  z-index: 10;
+  background: rgba(var(--bg-rgb), 0.93);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 var(--border), 0 2px 8px rgba(0,0,0,0.04);
+
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  padding: 0 1.9rem;
+  gap: 1.5rem;
+}
+
+/* ─── Left: Brand ────────────────────────────────────────────────────────── */
+
+.tb-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-shrink: 0;
+}
+
+.tb-logo {
+  width: 40px;
+  height: 40px;
+  background: var(--accent);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(var(--accent-rgb), 0.3);
+}
+
+.tb-brand-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.tb-name {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+}
+
+.tb-sub {
+  font-size: 0.72rem;
+  color: var(--accent);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  line-height: 1;
+}
+
+.tb-sub-dot {
+  color: var(--border);
+  font-size: 0.7rem;
+}
+
+.tb-difficulty-badge {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: white;
+  padding: 0.08rem 0.45rem;
+  border-radius: 10px;
+  margin-left: 0.3rem;
+  letter-spacing: 0.02em;
+}
+
+.tb-event-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--yellow);
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  animation: pulse-badge 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ─── Center: Pill ───────────────────────────────────────────────────────── */
+
+.tb-pill-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.tb-pill {
+  display: flex;
+  align-items: center;
+  background: var(--brand-primary);
+  border-radius: 9999px;
+  padding: 0 0.25rem;
+  height: 54px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18), 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.tb-pill-sep {
+  width: 1px;
+  height: 18px;
+  background: rgba(255,255,255,0.1);
+  flex-shrink: 0;
+}
+
+.tb-pill-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.38rem;
+  padding: 0 0.9rem;
+  cursor: default;
+  height: 100%;
+}
+
+.tb-pill-item:hover .tb-pill-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.tb-pill-icon {
+  font-size: 0.92rem;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+.tb-pill-value {
+  font-size: 1.02rem;
+  font-weight: 700;
+  font-family: 'Roboto Mono', monospace;
+  color: var(--on-dark);
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.tb-pill-mini-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  margin-left: 0.15rem;
+  white-space: nowrap;
+}
+
+.tb-pill-value--warn   { color: var(--warning); }
+.tb-pill-value--danger { color: var(--error); }
+
+/* ─── Flash animations (work on dark pill) ───────────────────────────────── */
+
+.tb-flash-up   { animation: flash-green 0.9s ease-out forwards; }
+.tb-flash-down { animation: flash-red   0.9s ease-out forwards; }
+
+@keyframes flash-green {
+  0%   { color: var(--success); transform: scale(1.12); }
+  60%  { color: var(--success); transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+@keyframes flash-red {
+  0%   { color: var(--error); transform: scale(1.12); }
+  60%  { color: var(--error); transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+/* ─── Floating delta ─────────────────────────────────────────────────────── */
+
+.tb-delta {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.72rem;
+  font-weight: 800;
+  font-family: 'Roboto Mono', monospace;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: delta-float 1.4s ease-out forwards;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.tb-delta-up   { color: var(--success); }
+.tb-delta-down { color: var(--error); }
+
+@keyframes delta-float {
+  0%   { opacity: 1;   transform: translateX(-50%) translateY(0); }
+  30%  { opacity: 1;   transform: translateX(-50%) translateY(-8px); }
+  100% { opacity: 0;   transform: translateX(-50%) translateY(-22px); }
+}
+
+/* ─── Pill tooltip ───────────────────────────────────────────────────────── */
+
+.tb-pill-tooltip {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  width: 200px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.06);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  z-index: 200;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 8px; height: 8px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    border-top:  1px solid var(--border);
+  }
+}
+
+.tb-tooltip-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.35rem;
+}
+
+.tb-tooltip-desc {
+  font-size: 0.68rem;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+
+.tb-tooltip-tip {
+  font-size: 0.65rem;
+  color: var(--accent);
+  font-family: 'Roboto Mono', monospace;
+  line-height: 1.4;
+  border-top: 1px solid var(--border);
+  padding-top: 0.4rem;
+}
+
+/* ─── Right zone ─────────────────────────────────────────────────────────── */
+
+.tb-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.tb-settings {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.tb-settings-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 26px;
+  background: rgba(0,0,0,0.04);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.15s ease;
+}
+
+.tb-settings-btn:hover {
+  color: var(--text);
+  border-color: rgba(0,0,0,0.2);
+}
+
+.tb-settings-btn--on {
+  background: rgba(var(--accent-rgb), 0.1);
+  border-color: rgba(var(--accent-rgb), 0.35);
+  color: var(--accent);
+}
+
+.tb-settings-pop {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 280px;
+  padding: 0.85rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.12);
+  z-index: 200;
+  animation: fade-in 0.12s ease;
+}
+
+.tb-settings-section-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 0.45rem;
+}
+
+.tb-settings-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0.75rem 0;
+}
+
+.tb-settings-save-row {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.tb-settings-save-row .tb-save-slot-btn {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.tb-save-toast-inline {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--green);
+  margin-bottom: 0.4rem;
+}
+
+.tb-tutorial-btn {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: rgba(var(--accent-rgb), 0.07);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
+  border-radius: 8px;
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.tb-tutorial-btn:hover {
+  background: rgba(var(--accent-rgb), 0.13);
+  border-color: rgba(var(--accent-rgb), 0.45);
+}
+
+.tb-audio-row {
+  display: grid;
+  grid-template-columns: 52px 1fr 44px;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.3rem 0;
+}
+
+.tb-audio-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.tb-audio-slider {
+  width: 100%;
+}
+
+.tb-audio-val {
+  font-size: 0.72rem;
+  font-family: 'Roboto Mono', monospace;
+  color: var(--muted);
+  text-align: right;
+}
+
+.tb-avatar-wrap {
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+
+/* ─── Speed control ──────────────────────────────────────────────────────── */
+
+.tb-speed {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.tb-speed-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+  margin: 0 0.2rem;
+}
+
+.tb-speed-pause {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 26px;
+  background: rgba(0,0,0,0.04);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.tb-speed-pause:hover:not(:disabled) {
+  color: var(--text);
+  border-color: rgba(0,0,0,0.2);
+}
+
+.tb-speed-pause--on {
+  background: rgba(245,158,11,0.1);
+  border-color: rgba(245,158,11,0.35);
+  color: var(--yellow);
+}
+
+.tb-speed-pause:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.tb-speed-btn {
+  height: 26px;
+  padding: 0 0.5rem;
+  background: rgba(0,0,0,0.04);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-family: 'Roboto Mono', monospace;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.tb-speed-btn:hover:not(:disabled) {
+  color: var(--text);
+  border-color: rgba(0,0,0,0.2);
+}
+
+.tb-speed-btn--active {
+  background: rgba(var(--accent-rgb), 0.1);
+  border-color: rgba(var(--accent-rgb), 0.35);
+  color: var(--accent);
+}
+
+.tb-speed-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ─── Save button ─────────────────────────────────────────────────────────── */
+
+
+.tb-save-slot-btn {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.3rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.tb-save-slot-btn:hover {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.04);
+}
+
+.tb-save-slot-btn:last-child {
+  margin-bottom: 0;
+}
+
+.tb-save-slot-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.tb-save-slot-info {
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-top: 0.1rem;
+}
+
+
+/* ── Sell button ──────────────────────────────────────────── */
+
+.tb-sell-btn {
+  background: var(--green);
+  color: #fff;
+  border: none;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  transition: opacity 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.tb-sell-btn:hover {
+  opacity: 0.88;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}

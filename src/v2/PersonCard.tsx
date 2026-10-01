@@ -35,7 +35,6 @@ export function PersonCard({ m }: { m: TeamMember }) {
   // Stored refs / primitives only; derive below.
   const v2 = useV2(s => s.v2)
   const features = useV2(s => s.features)
-  const employees = useV2(s => s.employees)
   const state = { v2, features } as V2GameState
 
   const [armed, setArmed] = useState<Armed | null>(null)
@@ -55,7 +54,7 @@ export function PersonCard({ m }: { m: TeamMember }) {
   const daysLeft = m.task
     ? Math.max(0, Math.ceil((1 - m.task.progress) * workerDurationDays(state, m.task.type, m.task.featureId, hireSpeed(m.role, m.task.type, m.tier))))
     : 0
-  const joined = employees.find(e => e.id === m.id)?.hiredAtDay
+  const joined = m.hiredAtDay
   const promote = canPromote(state, m.id)
 
   return (

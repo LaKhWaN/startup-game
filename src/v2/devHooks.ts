@@ -1,7 +1,7 @@
 import { scoreToDifficulty } from '../ai/gemini'
 import { FEATURE_TEMPLATES } from '../data/featureTemplates'
 import { assignTeamMember, ensureCandidates, fireTeamMember, getV2State, hireCandidate, moveToLocation, newGameV2, refreshCandidates, startFounderTask, stepGame } from './actions'
-import { useGameStore } from '../store/gameStore'
+import { gameStore } from './store'
 import { locationDef, LOCATIONS } from './locations'
 import { closeModal } from './ui'
 import type { LocationId } from './state'
@@ -25,7 +25,7 @@ export function installDevHooks(): void {
     /** Skip Chapter 1 (complete, with cash) so the Team tab and hiring are open. */
     skipChapter1: (cash = 5000) => {
       const s = getV2State()
-      useGameStore.setState({ cash, v2: { ...s.v2, chapter: { ...s.v2.chapter, beat: 5, complete: true } } } as never)
+      gameStore.setState({ cash, v2: { ...s.v2, chapter: { ...s.v2.chapter, beat: 5, complete: true } } } as never)
     },
     /** Hire the first available candidate; returns the hire check result. */
     hireFirst: () => {
@@ -36,11 +36,11 @@ export function installDevHooks(): void {
     assignTeamMember,
     closeModal,
     /** Drop a pending random event (screenshots shouldn't depend on event luck). */
-    clearEvent: () => useGameStore.setState({ pendingEvent: null } as never),
+    clearEvent: () => gameStore.setState({ pendingEvent: null } as never),
     /** Jump to Chapter 3: Chapters 1–2 done, peak MRR $2,600 (unlocks up to the Villa). */
     skipToChapter3: (cash = 50_000) => {
       const s = getV2State()
-      useGameStore.setState({
+      gameStore.setState({
         cash,
         mrr: 2600,
         v2: {
@@ -56,7 +56,7 @@ export function installDevHooks(): void {
     /** Unlock everything, move to `loc` and fill a few seats (screenshots). */
     jumpTo: (loc: LocationId) => {
       const s = getV2State()
-      useGameStore.setState({
+      gameStore.setState({
         cash: 500_000,
         v2: {
           ...s.v2,

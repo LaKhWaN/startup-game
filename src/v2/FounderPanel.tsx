@@ -3,7 +3,7 @@ import { isTaskUnlocked } from './chapter'
 import { TASK_INFO, taskReason } from './founderTasks'
 import { FOUNDER_BUILD_SPEED, FOUNDER_ID, taskDurationDays } from './founder'
 import type { FounderSkill, FounderTaskType } from './state'
-import '../components/RightPanel.css'
+import './ui/RightPanel.css'
 import './v2.css'
 
 

@@ -1,5 +1,5 @@
-import { getMonthlyBurn } from '../engine/gameEngine'
-import type { GameEvent, GameState } from '../types'
+import type { EventDef as GameEvent } from './engine/eventData'
+import { monthlyBurn } from './engine/money'
 import { locationIndex } from './locations'
 import type { Rng, V2GameState } from './state'
 
@@ -49,8 +49,8 @@ function mark(event: GameEvent): GameEvent {
   return { ...event, [SCALED]: true } as GameEvent
 }
 
-export function costFactor(state: GameState): number {
-  return Math.min(1, Math.max(0.2, getMonthlyBurn(state) / 10_000))
+export function costFactor(state: Pick<V2GameState, 'infraCostMonthly' | 'v2'>): number {
+  return Math.min(1, Math.max(0.2, monthlyBurn(state) / 10_000))
 }
 
 /** Scales a cost by f, rounded to $50 and never below $50. Keeps the sign. */
@@ -67,7 +67,7 @@ export function scaleText(text: string, f: number): string {
 }
 
 function scaleEffect(effect: GameEvent['choices'][0]['effect'], f: number): GameEvent['choices'][0]['effect'] {
-  return (s: GameState) => {
+  return (s: Parameters<GameEvent['choices'][0]['effect']>[0]) => {
     const out = { ...effect(s) }
     if (typeof out.cash === 'number' && out.cash < s.cash) out.cash = s.cash + scaleCost(out.cash - s.cash, f)
     if (typeof out.infraCostMonthly === 'number' && out.infraCostMonthly > s.infraCostMonthly) {
@@ -85,7 +85,7 @@ function scaleEffect(effect: GameEvent['choices'][0]['effect'], f: number): Game
 }
 
 function capPayout(event: GameEvent, cap: number): GameEvent {
-  const capEffect = (effect: GameEvent['choices'][0]['effect']) => (s: GameState) => {
+  const capEffect = (effect: GameEvent['choices'][0]['effect']) => (s: Parameters<GameEvent['choices'][0]['effect']>[0]) => {
     const out = { ...effect(s) }
     if (typeof out.cash === 'number' && out.cash - s.cash > cap) out.cash = s.cash + cap
     return out
@@ -116,8 +116,8 @@ export function filterPendingEvent(state: V2GameState, rng: Rng): V2GameState {
 }
 
 /** The v2 version of a kept event: payouts capped, exempt events whole, everything else cost-scaled. */
-export function prepareEvent(state: GameState, event: GameEvent): GameEvent {
-  if (PAYOUT_MONTHS[event.id]) return capPayout(event, Math.max(5000, getMonthlyBurn(state) * PAYOUT_MONTHS[event.id]))
+export function prepareEvent(state: V2GameState, event: GameEvent): GameEvent {
+  if (PAYOUT_MONTHS[event.id]) return capPayout(event, Math.max(5000, monthlyBurn(state) * PAYOUT_MONTHS[event.id]))
   if (EXEMPT_EVENTS.has(event.id)) return mark(event)
   return scaleEvent(event, costFactor(state))
 }

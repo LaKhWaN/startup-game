@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { currentCard, dismissCard, reshowCurrentCard } from '../chapter'
 import { loadGameV2, saveGameV2 } from '../saveV2'
 import type { InternCandidate, V2GameState } from '../state'
-import { advanceTeam, hireIntern, syncPayroll, teamFinances } from '../team'
+import { advanceTeam, hireIntern, teamFinances } from '../team'
 import { stepV2 } from '../v2Tick'
 import { makeState, seq, withChapter, withV2 } from './fixtures'
 
@@ -13,14 +13,6 @@ const cand = (over: Partial<InternCandidate> = {}): InternCandidate => ({
 
 const ready = (cash = 5000) => withChapter(makeState({ cash }), { beat: 5, complete: true, seenCards: ['beat-0', 'beat-1', 'beat-2', 'beat-3', 'beat-4'] })
 const hire = (s: V2GameState, c = cand()) => hireIntern(withV2(s, { candidates: [c] }), c.id)
-
-describe('payroll mirror salary', () => {
-  it('copies a salary a legacy event changed back onto the team member', () => {
-    let s = hire(ready())
-    s = { ...s, employees: s.employees.map(e => ({ ...e, salary: 2000 })) }
-    expect(syncPayroll(s).v2.team.c1.salary).toBe(2000)
-  })
-})
 
 describe('teamFinances', () => {
   it('uses net burn (burn minus MRR) for runway, like the legacy banner', () => {
@@ -97,6 +89,5 @@ describe('spec §7.7 coverage', () => {
     saveGameV2(2, s)
     const loaded = loadGameV2(2)!
     expect(loaded.v2.team.c1).toEqual(s.v2.team.c1)
-    expect(loaded.employees.map(e => e.id)).toEqual(['c1'])
   })
 })

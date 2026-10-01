@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { EVENTS } from '../../data/events'
+import { EVENTS } from '../engine/eventData'
+import { eventView } from '../engine/events'
 import { EVENT_MIN_STAGE, filterPendingEvent, isScaled, PAYOUT_MONTHS } from '../eventsV2'
 import { loadGameV2, saveGameV2 } from '../saveV2'
 import { createV2Slice, migrateV2Slice, type LocationId, type V2GameState } from '../state'
@@ -21,7 +22,7 @@ describe('payout events sized for v2', () => {
     const s = at('villa', { pendingEvent: ev('investor-seed') })
     const kept = filterPendingEvent(s, seq(0))
     expect(isScaled(kept.pendingEvent!)).toBe(true)
-    const out = kept.pendingEvent!.choices[0].effect(kept)
+    const out = kept.pendingEvent!.choices[0].effect(eventView(kept))
     expect(out.cash! - s.cash).toBe(900 * PAYOUT_MONTHS['investor-seed'])
   })
 
@@ -56,20 +57,5 @@ describe('migrating a Phase 3 save past Chapter 2', () => {
     const v = migrateV2Slice({ ...phase3, chapter2: { beat: 2, complete: true, firstMistake: false } })!
     expect(v.peakMrr).toBe(1000)
     expect(v.unlockedLocations).toEqual(['home', 'biggerHome'])
-  })
-})
-
-describe('a hire a legacy event removed', () => {
-  it('is dropped before the team works that hour', async () => {
-    const { v2Tick } = await import('../v2Tick')
-    const { hireIntern } = await import('../team')
-    const { withChapter } = await import('./fixtures')
-    let s = withChapter(makeState({ cash: 5000 }), { beat: 5, complete: true })
-    s = withV2(s, { candidates: [{ id: 'c1', name: 'Sam', gender: 'male', role: 'marketing', tier: 'intern', skills: { research: 1, build: 1, outreach: 3, sales: 1 }, salary: 700, bio: '', characterModel: 'character-male-c' }] })
-    s = hireIntern(s, 'c1')
-    s = withV2(s, { leads: 0, team: { c1: { ...s.v2.team.c1, task: { type: 'emails', progress: 0.9999 } } } })
-    const out = v2Tick({ ...s, employees: [] }, 1, seq(0.99))
-    expect(out.v2.team.c1).toBeUndefined()
-    expect(out.v2.leads).toBe(0)
   })
 })

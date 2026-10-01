@@ -1,12 +1,16 @@
 import { playSfx } from '../audio/sfx'
-import { createDefaultState } from '../engine/gameEngine'
-import { useGameStore, type GameSpeed } from '../store/gameStore'
 import type { OnboardingConfig } from '../types'
+import { syncAnalytics } from './analytics'
 import { claimFamilyMoney as claimFamilyMoneyPure, dismissCard, onMoved, reshowCurrentCard } from './chapter'
+import { applyEventChoice } from './engine/events'
+import type { EventPatch } from './engine/eventData'
+import { totalDays } from './engine/clock'
+import { valuation } from './engine/money'
 import { startTask, type StartTaskError } from './founder'
 import { loadGameV2, type SlotId } from './saveV2'
 import { canMove, moveTo, type MoveCheck } from './locations'
-import { createV2State, isV2Game, type Assignment, type FounderTaskType, type LocationId, type V2GameState, type V2Slice } from './state'
+import { createSetupState, createV2State, type Assignment, type FounderTaskType, type LocationId, type V2GameState } from './state'
+import { gameStore, type GameSpeed, type V2Store } from './store'
 import {
   canHire, canPromote, fireMember, generateCandidates, hireIntern, isFullTimeUnlocked, promoteMember, setAssignment,
   type HireCheck, type PromoteCheck,
@@ -14,39 +18,36 @@ import {
 import { stepV2 } from './v2Tick'
 import { resetUi } from './ui'
 
-type LegacyStore = ReturnType<typeof useGameStore.getState>
-export type V2Store = LegacyStore & { v2: V2Slice }
+export type { V2Store } from './store'
 
 /**
- * Selector hook over the shared store. The selector MUST return a stored
+ * Selector hook over the v2 store. The selector MUST return a stored
  * reference or a primitive. Never build arrays or objects inside it
  * (Zustand v5 would re-render forever).
  */
 export function useV2<T>(selector: (s: V2Store) => T): T {
-  return useGameStore(s => selector(s as V2Store))
+  return gameStore(selector)
 }
 
 export function getV2State(): V2Store {
-  return useGameStore.getState() as V2Store
+  return gameStore.getState()
 }
 
 function setV2State(next: Partial<V2Store> | V2GameState): void {
-  useGameStore.setState(next as Partial<LegacyStore>)
+  gameStore.setState(next as Partial<V2Store>)
 }
 
-function syncAnalytics(state: V2GameState): void {
-  void import('../analytics/persistDayAnalytics')
-    .then(({ persistDayAnalytics }) => persistDayAnalytics(state))
-    .catch(err => { console.error('[analytics] v2 sync failed', err) })
-}
-
-/** Called on /new mount and unmount so a game never leaks between routes. */
-export function resetStoreForV2(): void {
-  setV2State({ ...createDefaultState(), gameSpeed: 1, v2: undefined } as unknown as Partial<V2Store>)
+/** Back to the onboarding screen with a clean store. */
+export function resetStore(): void {
+  gameStore.setState({ ...createSetupState(), gameSpeed: 1 }, true)
+  resetUi()
 }
 
 export function stepGame(): void {
-  useGameStore.setState(s => stepV2(s as V2Store))
+  const before = gameStore.getState()
+  const next = stepV2(before)
+  gameStore.setState(next)
+  if (totalDays(next.gameTime) > totalDays(before.gameTime)) syncAnalytics(next)
 }
 
 export function newGameV2(config: OnboardingConfig): void {
@@ -99,15 +100,33 @@ export function claimFamilyMoney(): void {
   speedBeforeModal = null
 }
 
-/**
- * Legacy PostMortem's "Play Again" calls the legacy quickRestart, which
- * builds a legacy-rules game. Inside /new, turn that into a v2 game.
- */
-export function upgradeLegacyRestart(): void {
+export function setSpeed(speed: GameSpeed): void {
+  setV2State({ gameSpeed: speed })
+}
+
+// ── Events, selling, restarting ─────────────────────────────────────────────
+
+export function chooseEvent(index: 0 | 1, patch?: EventPatch): void {
+  setV2State(applyEventChoice(getV2State(), index, patch))
+}
+
+/** Sell at the current valuation; ends the game. */
+export function sellCompany(): void {
   const s = getV2State()
-  if (s.phase !== 'playing' || isV2Game(s)) return
-  if (s.lastConfig) newGameV2(s.lastConfig)
-  else resetStoreForV2()
+  setV2State({ phase: 'sold', soldAt: { day: totalDays(s.gameTime), valuation: valuation(s) } })
+  syncAnalytics({ ...s, phase: 'sold' })
+}
+
+export function dismissFeatureResult(completedAtDay: number): void {
+  const s = getV2State()
+  setV2State({ recentFeatureResults: s.recentFeatureResults.filter(r => r.completedAtDay !== completedAtDay) })
+}
+
+/** "Play again" with the same idea. */
+export function quickRestart(): void {
+  const config = getV2State().lastConfig
+  if (config) newGameV2(config)
+  else resetStore()
 }
 
 // ── Team ────────────────────────────────────────────────────────────────────

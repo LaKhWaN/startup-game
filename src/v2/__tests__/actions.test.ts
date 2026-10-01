@@ -1,26 +1,26 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('../../audio/sfx', () => ({ playSfx: vi.fn() }))
-vi.mock('../../analytics/persistDayAnalytics', () => ({ persistDayAnalytics: vi.fn(async () => {}) }))
+vi.mock('../analytics', () => ({ syncAnalytics: vi.fn() }))
 
-import { useGameStore } from '../../store/gameStore'
+import { gameStore } from '../store'
 import {
-  claimFamilyMoney, getV2State, newGameV2, pauseForModal, resetStoreForV2,
-  startFounderTask, stepGame, upgradeLegacyRestart,
+  claimFamilyMoney, getV2State, newGameV2, pauseForModal, resetStore,
+  startFounderTask, stepGame, quickRestart,
   assignTeamMember, ensureCandidates, fireTeamMember, hireCandidate, moveToLocation, promoteTeamMember,
 } from '../actions'
 import { isV2Game } from '../state'
 import { makeConfig } from './fixtures'
 
-beforeEach(() => resetStoreForV2())
+beforeEach(() => resetStore())
 
-describe('resetStoreForV2', () => {
-  it('leaves a clean setup state with no v2 slice', () => {
+describe('resetStore', () => {
+  it('leaves a clean setup state', () => {
     newGameV2(makeConfig())
-    resetStoreForV2()
+    resetStore()
     const s = getV2State()
     expect(s.phase).toBe('setup')
-    expect(s.v2).toBeUndefined()
+    expect(s.v2.team).toEqual({})
     expect(s.gameSpeed).toBe(1)
   })
 })
@@ -64,7 +64,7 @@ describe('family money modal', () => {
   it('pauses, then restores the previous speed and pays out on claim', () => {
     newGameV2(makeConfig())
     const s = getV2State()
-    useGameStore.setState({
+    gameStore.setState({
       gameSpeed: 3,
       v2: { ...s.v2, chapter: { ...s.v2.chapter, beat: 5, familyMoney: { giver: 'Your cousin', amount: 900, claimed: false } } },
     } as never)
@@ -78,21 +78,21 @@ describe('family money modal', () => {
   })
 })
 
-describe('upgradeLegacyRestart', () => {
-  it('turns a legacy "Play Again" inside /new into a fresh v2 game', () => {
+describe('quickRestart', () => {
+  it('starts a fresh game with the same idea', () => {
     newGameV2(makeConfig())
-    useGameStore.getState().quickRestart() // legacy action → legacy-rules state, stale v2 slice
-    expect(isV2Game(getV2State())).toBe(false)
-    upgradeLegacyRestart()
+    gameStore.setState({ cash: 9999 })
+    quickRestart()
     const s = getV2State()
     expect(isV2Game(s)).toBe(true)
     expect(s.cash).toBe(500)
   })
+})
 
-  it('does nothing for a legacy "New Game" (setup phase)', () => {
+describe('resetStore', () => {
+  it('goes back to setup', () => {
     newGameV2(makeConfig())
-    useGameStore.getState().restartGame()
-    upgradeLegacyRestart()
+    resetStore()
     expect(getV2State().phase).toBe('setup')
   })
 })
@@ -101,7 +101,7 @@ describe('team actions', () => {
   function chapterOneDone() {
     newGameV2(makeConfig())
     const s = getV2State()
-    useGameStore.setState({ cash: 3000, v2: { ...s.v2, chapter: { ...s.v2.chapter, beat: 5, complete: true } } } as never)
+    gameStore.setState({ cash: 3000, v2: { ...s.v2, chapter: { ...s.v2.chapter, beat: 5, complete: true } } } as never)
   }
 
   it('fills candidates on demand and hires through the store', () => {
@@ -112,13 +112,12 @@ describe('team actions', () => {
     expect(hireCandidate(c.id)).toBe('ok')
     const s = getV2State()
     expect(s.v2.team[c.id]).toBeDefined()
-    expect(s.employees.map(e => e.id)).toContain(c.id)
   })
 
   it('reports why a hire is blocked', () => {
     chapterOneDone()
     ensureCandidates()
-    useGameStore.setState({ cash: 100 } as never)
+    gameStore.setState({ cash: 100 } as never)
     expect(hireCandidate(getV2State().v2.candidates[0].id)).toBe('cash')
   })
 
@@ -138,7 +137,7 @@ describe('location actions', () => {
   function chapterTwoDone(cash = 50_000) {
     newGameV2(makeConfig())
     const s = getV2State()
-    useGameStore.setState({
+    gameStore.setState({
       cash,
       v2: {
         ...s.v2,
@@ -173,7 +172,7 @@ describe('location actions', () => {
     hireCandidate(c.id)
     const s = getV2State()
     const m = s.v2.team[c.id]
-    useGameStore.setState({ v2: { ...s.v2, team: { [c.id]: { ...m, skills: { research: 5, build: 5, outreach: 5, sales: 5 } } } } } as never)
+    gameStore.setState({ v2: { ...s.v2, team: { [c.id]: { ...m, skills: { research: 5, build: 5, outreach: 5, sales: 5 } } } } } as never)
     expect(promoteTeamMember(c.id)).toBe('ok')
     expect(getV2State().v2.team[c.id].tier).toBe('fulltime')
   })

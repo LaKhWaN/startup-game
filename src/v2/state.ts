@@ -1,5 +1,8 @@
-import { createInitialState, totalDays } from '../engine/gameEngine'
-import type { EmployeeRole, GameState, MetricsSnapshot, OnboardingConfig } from '../types'
+import type { EmployeeRole, OnboardingConfig } from '../types'
+import { FEATURE_TEMPLATES } from '../data/featureTemplates'
+import { scoreToDifficulty } from '../ai/gemini'
+import { totalDays } from './engine/clock'
+import { createCompany, type CompanyState } from './engine/company'
 import { LOCATIONS } from './locations'
 
 export type FounderTaskType = 'research' | 'develop' | 'emails' | 'sales'
@@ -38,6 +41,8 @@ export interface TeamMember {
   seat: number
   characterModel: string
   salary: number
+  /** Game day they joined (missing on older saves). */
+  hiredAtDay?: number
   /** Their one-liner from the hiring card (missing on saves from before it was kept). */
   bio?: string
   /** Manager this member reports to (managers arrive in a later phase). */
@@ -107,7 +112,8 @@ export interface V2Slice {
   stats: V2Stats
 }
 
-export type V2GameState = GameState & { v2: V2Slice }
+/** The whole v2 game: company state + the v2 slice. */
+export type V2GameState = CompanyState & { v2: V2Slice }
 
 export const FOUNDER_START_CASH = 500
 export const STARTING_SKILL = 4
@@ -141,26 +147,10 @@ export function createV2Slice(): V2Slice {
 }
 
 export function createV2State(config: OnboardingConfig): V2GameState {
-  const base = createInitialState({ ...config, workspace: 'home' })
-  const snapshot: MetricsSnapshot = {
-    ...base.metricsHistory[0],
-    cash: FOUNDER_START_CASH,
-    burn: 0,
-    runway: 999,
-    valuation: FOUNDER_START_CASH,
-  }
+  const base = createCompany(config, FOUNDER_START_CASH)
   const ideaLine = config.idea.length > 80 ? `${config.idea.slice(0, 80)}...` : config.idea
-
   return {
     ...base,
-    cash: FOUNDER_START_CASH,
-    infraCostMonthly: 0,
-    employees: [],
-    candidates: [],
-    deskCount: 0,
-    gameId: `v2-${base.gameId}`,
-    metricsHistory: [snapshot],
-    fullMetricsHistory: [snapshot],
     storyLog: [{
       day: 0,
       lines: [
@@ -170,6 +160,15 @@ export function createV2State(config: OnboardingConfig): V2GameState {
     }],
     v2: createV2Slice(),
   }
+}
+
+/** Placeholder state before onboarding finishes. */
+export function createSetupState(): V2GameState {
+  const config: OnboardingConfig = {
+    idea: '', ideaScore: 5, ideaFeedback: '', workspace: 'home', startupName: '',
+    aiRoadmap: FEATURE_TEMPLATES, difficulty: scoreToDifficulty(5),
+  }
+  return { ...createV2State(config), phase: 'setup' }
 }
 
 export function isValidV2Slice(v: unknown): v is V2Slice {
@@ -210,12 +209,12 @@ export function migrateV2Slice(v: unknown): V2Slice | null {
   }
 }
 
-/** True only for a genuine v2 game — a legacy restart leaves a stale v2 slice but a legacy id. */
-export function isV2Game(state: GameState & { v2?: unknown }): boolean {
+/** True for a real v2 game (v2 id and a valid slice). */
+export function isV2Game(state: { gameId?: string; v2?: unknown }): boolean {
   return typeof state.gameId === 'string' && state.gameId.startsWith('v2-') && isValidV2Slice(state.v2)
 }
 
-export function addStory<T extends GameState>(state: T, lines: string[]): T {
+export function addStory<T extends Pick<CompanyState, 'gameTime' | 'storyLog'>>(state: T, lines: string[]): T {
   const day = totalDays(state.gameTime)
   return { ...state, storyLog: [{ day, lines }, ...state.storyLog].slice(0, 20) }
 }

@@ -4,7 +4,7 @@ import { FOUNDER_ID, startTask } from '../founder'
 import type { InternCandidate, V2GameState } from '../state'
 import {
   advanceTeam, canHire, chooseNextTask, fireMember, generateInternCandidates, HOME_CAPACITY,
-  hireIntern, INTERN_MODELS, setAssignment, syncPayroll,
+  hireIntern, INTERN_MODELS, setAssignment,
 } from '../team'
 import { makeFeature, makeState, seq, withChapter, withV2 } from './fixtures'
 
@@ -50,13 +50,10 @@ describe('hiring', () => {
     expect(canHire(withCandidates(s, candidate({ id: 'c9' })), 'c9')).toBe('full')
   })
 
-  it('adds a team member, an inert legacy payroll mirror, and takes the lowest free seat', () => {
+  it('adds a team member and takes the lowest free seat', () => {
     const s = hired(ready(), candidate())
     const m = s.v2.team['cand-1']
     expect(m).toMatchObject({ tier: 'intern', role: 'marketing', assignment: 'emails', seat: 0, salary: 800, mistakes: 0 })
-    const mirror = s.employees.find(e => e.id === 'cand-1')!
-    expect(mirror).toMatchObject({ role: 'developer', status: 'idle', salary: 800 })
-    expect(mirror.currentFeatureId).toBeUndefined()
     expect(s.v2.candidates).toHaveLength(0)
     expect(s.v2.chapter2.beat).toBe(1)
     expect(hired(s, candidate({ id: 'cand-2' })).v2.team['cand-2'].seat).toBe(1)
@@ -78,7 +75,6 @@ describe('firing', () => {
     expect(s.features[0].status).toBe('in_development')
     s = fireMember(s, 'cand-1')
     expect(s.features[0]).toMatchObject({ status: 'proposed', buildProgress: 0 })
-    expect(s.employees.find(e => e.id === 'cand-1')).toBeUndefined()
     expect(s.v2.team['cand-1']).toBeUndefined()
   })
 })
@@ -137,27 +133,15 @@ describe('standing assignment', () => {
   })
 })
 
-describe('syncPayroll', () => {
-  it('keeps the legacy mirror inert and resets morale/stress', () => {
-    let s = hired(ready(), candidate())
-    s = advanceTeam(s, 1, seq(0.5)).state
-    s = { ...s, employees: s.employees.map(e => ({ ...e, morale: 5, stress: 99, xp: 400, level: 3 })) }
-    s = syncPayroll(s)
-    expect(s.employees[0]).toMatchObject({ morale: 72, stress: 15, xp: 0, level: 1, status: 'busy' })
-  })
-
-  it('drops a member a legacy event removed, and frees their feature', () => {
+describe('feature ownership', () => {
+  it('a departing hire frees their feature', async () => {
+    const { departMember } = await import('../engine/events')
     let s = hired(withV2(ready(), { firstSaleDone: true }), candidate({ role: 'developer', skills: { research: 1, build: 3, outreach: 1, sales: 1 } }))
     s = { ...s, features: [makeFeature()] }
     s = advanceTeam(s, 1, seq(0.5)).state
-    s = syncPayroll({ ...s, employees: [] })
+    s = departMember(s, 'cand-1')
     expect(s.v2.team['cand-1']).toBeUndefined()
     expect(s.features[0].status).toBe('proposed')
-  })
-
-  it('never touches non-team employees', () => {
-    const s = syncPayroll(ready())
-    expect(s.employees).toEqual([])
   })
 
   it('founder and an intern building never share a feature', () => {
