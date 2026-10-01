@@ -157,3 +157,11 @@ Decisions made autonomously during the build, with what each costs if wrong, and
 - Incident damage (customers, ticket flood) lands when it fires; the popup is only the follow-up decision. Incidents are never suppressed by chapter gating or event thinning — cost if wrong: an incident during the tutorial if the player racks up debt.
 - Support uses the outreach skill and Refactor the build skill; no new roles — cost if wrong: a dedicated support role would come in C.
 - Simulation players: the original "sensible" player now neglects support/debt and still reaches Co-working on days 237–279; a careful variant is compared against it — cost if wrong: none.
+
+## 2026-10-02-v2-C-people
+
+### Rulings
+- Energy tuned from the spec draft (−7/+45 → −5 busy / −1 idle per work hour, +50 overnight; founder −3 working, +15 asleep) — the draft made a normal work week unsustainable and stalled the simulation — cost if wrong: grinding feels softer.
+- The founder now sleeps 23:00–07:00 by default even mid-task (no progress, +15 energy/h); a 🌙 Work late toggle keeps them working at an energy cost — without it a multi-day task meant working 24/7 with no way to rest — cost if wrong: one more toggle to learn.
+- Burnout → notice is told through the story log, the person card (warning + "Convince them to stay", once per person) and the stats rail, not a blocking popup — cost if wrong: a player who never opens cards may miss a notice (the head shows 😫).
+- Pacing after B+C: simulation reaches Bigger home on days 174–231 and Co-working on 314–415 (was 46–157 before B); careful play ends day 300 with churn 10% vs 15% — final tuning is F's job — cost if wrong: the mid-game may feel slow until F.
