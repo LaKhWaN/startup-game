@@ -3,6 +3,7 @@ import { FEATURE_TEMPLATES } from '../data/featureTemplates'
 import { assignTeamMember, ensureCandidates, fireTeamMember, getV2State, hireCandidate, moveToLocation, newGameV2, refreshCandidates, startFounderTask, stepGame } from './actions'
 import { useGameStore } from '../store/gameStore'
 import { locationDef, LOCATIONS } from './locations'
+import { closeModal } from './ui'
 import type { LocationId } from './state'
 
 /** Dev-only helpers so scripts/v2-screenshot.mjs can drive /new without the Groq onboarding. */
@@ -33,6 +34,7 @@ export function installDevHooks(): void {
       return c ? hireCandidate(c.id) : 'missing'
     },
     assignTeamMember,
+    closeModal,
     /** Drop a pending random event (screenshots shouldn't depend on event luck). */
     clearEvent: () => useGameStore.setState({ pendingEvent: null } as never),
     /** Jump to Chapter 3: Chapters 1–2 done, peak MRR $2,600 (unlocks up to the Villa). */

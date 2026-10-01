@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { EventCard } from '../components/EventCard'
 import { FeatureResultToasts } from '../components/FeatureResultToast'
 import { MilestoneToastQueue } from '../components/MilestoneToast'
@@ -12,6 +12,11 @@ import { MoveTransition } from './MoveTransition'
 import { TeamPanel } from './TeamPanel'
 import { FamilyMoneyModal } from './FamilyMoneyModal'
 import { FounderPanel } from './FounderPanel'
+import { CoachOverlay } from './CoachOverlay'
+import { FounderBar } from './FounderBar'
+import { MemberCard } from './MemberCard'
+import { Modal } from './Modal'
+import { closeModal, openModal, useUi, type Modal as ModalState } from './ui'
 import { RoomView } from './RoomView'
 import { useBackgroundMusic, useTypingLoop } from './audio'
 import { Founder, LaptopGlow } from './scene/Founder'
@@ -30,10 +35,9 @@ export function GameScreenV2() {
   const v2 = useV2(s => s.v2)
   const pendingMilestoneToasts = useV2(s => s.pendingMilestoneToasts)
   const dismissMilestoneToast = useV2(s => s.dismissMilestoneToast)
-  const [panel, setPanelState] = useState<V2Panel>('founder')
-  const [focusId, setFocusId] = useState<string | null>(null)
-  const setPanel = (p: V2Panel) => { setPanelState(p); setFocusId(null) }
-  const selectHire = (id: string) => { setPanelState('team'); setFocusId(id) }
+  const modal = useUi(s => s.modal)
+  const onTab = (p: V2Panel) => openModal({ kind: p } as ModalState)
+  const active: V2Panel | null = modal && modal.kind !== 'person' ? modal.kind : null
 
   useBackgroundMusic()
   useTypingLoop(founderPose(v2.founder.task).typing && phase === 'playing' && gameSpeed > 0)
@@ -66,19 +70,40 @@ export function GameScreenV2() {
       <RunwayBanner />
       <div className="game-main">
         <div className="game-canvas-area">
-          <RoomView><Founder onSelect={() => setPanel('founder')} /><Hires onSelect={selectHire} /><LaptopGlow /></RoomView>
+          <RoomView>
+            <Founder onSelect={() => openModal({ kind: 'founder' })} />
+            <Hires onSelect={id => openModal({ kind: 'person', id })} />
+            <LaptopGlow />
+          </RoomView>
+          <CoachOverlay />
+          <FounderBar />
           <MoveTransition />
-          <BottomNavV2 active={panel} metricsUnlocked={metricsUnlocked} teamUnlocked={teamUnlocked} mapUnlocked={mapUnlocked} onTabClick={setPanel} />
+          <BottomNavV2 active={active} metricsUnlocked={metricsUnlocked} teamUnlocked={teamUnlocked} mapUnlocked={mapUnlocked} onTabClick={onTab} />
         </div>
-        {panel === 'metrics' && metricsUnlocked ? <RightPanel activePanel="metrics" />
-          : panel === 'team' && teamUnlocked ? <TeamPanel focusId={focusId} />
-          : panel === 'map' && mapUnlocked ? <MapPanel />
-          : <FounderPanel />}
       </div>
+      <ScreenModal modal={modal} />
       <FeatureResultToasts />
       <MilestoneToastQueue toasts={pendingMilestoneToasts} onDismiss={dismissMilestoneToast} />
       {chapter.complete && v2.chapter2.complete && <EventCard />}
       {showFamilyMoney && <FamilyMoneyModal />}
     </div>
   )
+}
+
+/** Whatever modal the UI store says is open. */
+function ScreenModal({ modal }: { modal: ModalState | null }) {
+  const team = useV2(s => s.v2.team)
+  if (!modal) return null
+  switch (modal.kind) {
+    case 'founder': return <Modal title="Founder" onClose={closeModal}><FounderPanel /></Modal>
+    case 'team': return <Modal title="Team" onClose={closeModal}><TeamPanel /></Modal>
+    case 'map': return <Modal title="Map" onClose={closeModal}><MapPanel /></Modal>
+    case 'metrics': return <Modal title="Metrics" onClose={closeModal} wide><RightPanel activePanel="metrics" /></Modal>
+    case 'person': {
+      const m = team[modal.id]
+      // They left (fired, quit): nothing to show.
+      if (!m) return null
+      return <Modal title={m.name} onClose={closeModal}><MemberCard m={m} /></Modal>
+    }
+  }
 }

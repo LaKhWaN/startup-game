@@ -72,13 +72,14 @@ async function shoot(viewport, tag) {
   await page.waitForTimeout(3500)
   await page.evaluate(() => window.__v2.clearEvent())
   await page.screenshot({ path: join(out, `${tag}-6-villa.png`) })
-  await page.evaluate(() => window.__v2.clearEvent())
+  await page.evaluate(() => { window.__v2.clearEvent(); window.__v2.closeModal() })
   await page.getByRole('button', { name: /map/i }).first().click().catch(() => errors.push(`[${tag}] no Map tab`))
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
   if (overflow > 0) errors.push(`[${tag}] horizontal overflow ${overflow}px`)
   await page.waitForTimeout(1000)
   await page.screenshot({ path: join(out, `${tag}-7-map.png`) })
 
+  await page.evaluate(() => window.__v2.closeModal())
   // Phase 5: every location, themed, with a few hires.
   for (const loc of ['biggerHome', 'coworking', 'smallOffice', 'bigOffice', 'building']) {
     const r = await page.evaluate((loc) => window.__v2.jumpTo(loc), loc)

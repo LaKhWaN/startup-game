@@ -293,7 +293,7 @@ export function TopBarV2({ onShowTutorial }: TopBarProps) {
           <div className="tb-pill-sep" />
           <PillItem icon="🔥" value={`${fmt(burn)}/mo`}               label="Burn"   rawValue={burn}      higherIsBetter={false} />
           <div className="tb-pill-sep" />
-          <PillItem icon={profit >= 0 ? '📈' : '📉'} value={formatProfit(profit)} label="Profit" rawValue={profit} danger={profit < 0} good={profit > 0} />
+          <PillItem icon="💰" value={formatProfit(profit)} label="Profit" rawValue={profit} danger={profit < 0} good={profit > 0} />
           <div className="tb-pill-sep" />
           <PillItem icon="📉" value={`${churnRate.toFixed(1)}% churn`} label="Churn" rawValue={churnRate}  higherIsBetter={false} warn={churnWarn} danger={churnDanger} />
         </div>

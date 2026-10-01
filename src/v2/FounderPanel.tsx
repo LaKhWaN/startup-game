@@ -1,24 +1,11 @@
-import { dismissCoachCard, startFounderTask, useV2 } from './actions'
-import { currentCard, isTaskUnlocked } from './chapter'
-import { nextLocation } from './locations'
+import { startFounderTask, useV2 } from './actions'
+import { isTaskUnlocked } from './chapter'
+import { TASK_INFO, taskReason } from './founderTasks'
 import { FOUNDER_BUILD_SPEED, FOUNDER_ID, taskDurationDays } from './founder'
 import type { FounderSkill, FounderTaskType } from './state'
 import '../components/RightPanel.css'
 import './v2.css'
 
-const TASK_INFO: Record<FounderTaskType, { icon: string; name: string; hint: string }> = {
-  research: { icon: '🔍', name: 'Research', hint: 'Find 2 concrete things worth building' },
-  develop:  { icon: '🛠️', name: 'Develop', hint: 'Build a feature yourself' },
-  emails:   { icon: '✉️', name: 'Send emails', hint: 'Cold outreach brings in leads' },
-  sales:    { icon: '🤝', name: 'Sell', hint: 'Turn leads into paying customers' },
-}
-
-const UNLOCK_HINT: Record<FounderTaskType, string> = {
-  research: '',
-  develop: 'Unlocks after your first research',
-  emails: 'Unlocks after you ship your first feature',
-  sales: 'Unlocks after your first emails',
-}
 
 const SKILL_LABEL: Record<FounderSkill, string> = {
   research: 'Research',
@@ -35,8 +22,6 @@ export function FounderPanel() {
   const features = useV2(s => s.features)
   const customers = useV2(s => s.customers)
 
-  const card = currentCard({ v2 })
-  const next = nextLocation({ v2 })
   const task = v2.founder.task
   const busy = task !== null
   const proposed = features.filter(f => f.status === 'proposed')
@@ -51,12 +36,7 @@ export function FounderPanel() {
     ? `Building ${features.find(f => f.id === task.featureId)?.title ?? 'a feature'}`
     : task ? TASK_INFO[task.type].name : ''
 
-  function reasonFor(type: FounderTaskType): string | null {
-    if (!isTaskUnlocked({ v2 }, type)) return UNLOCK_HINT[type]
-    if (busy) return 'Finish your current task first'
-    if (type === 'sales' && v2.leads < 1) return 'No leads yet. Send emails first'
-    return null
-  }
+  const reasonFor = (type: FounderTaskType) => taskReason(v2, type)
 
   return (
     <aside className="right-panel right-panel--open">
@@ -66,33 +46,6 @@ export function FounderPanel() {
       <div className="rp-body">
         <div className="rp-scroll">
           <div className="rp-content v2-founder">
-            {v2.chapter.complete && !v2.chapter2.complete && (
-              <div className="v2-banner">
-                <strong>Chapter 2: build a team.</strong> Hire interns in the Team tab and grow to $1,000 MRR.
-              </div>
-            )}
-            {v2.chapter2.complete && !v2.chapter3.complete && (
-              <div className="v2-banner">
-                <strong>Chapter 3: a bigger space.</strong> Move up from the Map tab and grow to $5,000 MRR.
-              </div>
-            )}
-            {v2.chapter3.complete && next && (
-              <div className="v2-banner">
-                <strong>Climb the ladder:</strong> next stop {next.icon} {next.name} at ${next.unlockMrr.toLocaleString()} MRR.
-              </div>
-            )}
-            {v2.chapter3.complete && !next && (
-              <div className="v2-banner"><strong>🏙️ You made it:</strong> your own building.</div>
-            )}
-
-            {card && (
-              <div className="v2-coach">
-                <div className="v2-coach-title">{card.title}</div>
-                <p className="v2-coach-body">{card.body}</p>
-                <button className="v2-btn v2-btn-ghost" onClick={() => dismissCoachCard(card.id)}>Got it</button>
-              </div>
-            )}
-
             <section className="rp-section">
               <div className="rp-section-label">Right now</div>
               {task ? (

@@ -10,7 +10,7 @@ const TABS: { id: V2Panel; label: string; icon: string }[] = [
 ]
 
 interface Props {
-  active: V2Panel
+  active: V2Panel | null
   metricsUnlocked: boolean
   teamUnlocked: boolean
   mapUnlocked: boolean
