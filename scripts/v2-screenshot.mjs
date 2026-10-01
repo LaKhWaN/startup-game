@@ -74,6 +74,14 @@ async function shoot(viewport, tag) {
   await page.waitForTimeout(1000)
   await page.screenshot({ path: join(out, `${tag}-7-map.png`) })
 
+  // Phase 5: every location, themed, with a few hires.
+  for (const loc of ['biggerHome', 'coworking', 'smallOffice', 'bigOffice', 'building']) {
+    const r = await page.evaluate((loc) => window.__v2.jumpTo(loc), loc)
+    if (r !== 'ok') errors.push(`[${tag}] jumpTo ${loc}: ${r}`)
+    await page.waitForTimeout(3000)
+    await page.screenshot({ path: join(out, `${tag}-8-${loc}.png`) })
+  }
+
   // Blank check: sample the canvas-area pixels from a real screenshot of that element.
   const area = page.locator('.game-canvas-area')
   const png = await area.screenshot()

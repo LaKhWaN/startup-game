@@ -29,6 +29,8 @@ export interface RoomLayout {
   /** The bedroom's hand-placed wall picture. */
   pictureFrame?: boolean
   theme: Theme
+  /** Draw workstations nobody sits at yet (offices show their capacity; the bedroom doesn't). */
+  showEmptySeats: boolean
   /** Generated rooms: the x-range on the right that holds the theme's amenities. */
   amenityStrip?: { x0: number; x1: number }
 }
@@ -45,6 +47,7 @@ const HOME: RoomLayout = {
   lamp: [0.33, 0.95, -3.52],
   pictureFrame: true,
   theme: THEMES.home,
+  showEmptySeats: false,
 }
 
 // ── Generated rooms ─────────────────────────────────────────────────────────
@@ -164,6 +167,7 @@ export function generateRoom(capacity: number, theme: Theme): RoomLayout {
     laptopGlow: [0.3 + 0.34, 0.52, back + BACK_GAP + DESK[1] - 0.2],
     lamp: [0.13, 0.95, back + 0.76],
     theme,
+    showEmptySeats: true,
     amenityStrip: { x0: stripX0, x1: stripX0 + AMENITY_STRIP },
   }
 }

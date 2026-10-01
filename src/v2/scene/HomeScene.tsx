@@ -46,13 +46,13 @@ function Lights({ room }: { room: RoomLayout }) {
   return (
     <>
       <primitive object={target} position={aim} />
-      <hemisphereLight args={['#ffe9cc', '#4a3a2c', 0.9]} />
+      <hemisphereLight args={[room.theme.hemi.sky, room.theme.hemi.ground, room.theme.hemi.intensity]} />
       {/* Warm evening light coming in through the back-wall window */}
       <directionalLight
         target={target}
         position={[aim[0] + 1.5, 5, aim[2] - 7]}
-        intensity={2.2}
-        color="#ffd9a8"
+        intensity={room.theme.sun.intensity}
+        color={room.theme.sun.color}
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-reach}
@@ -62,7 +62,7 @@ function Lights({ room }: { room: RoomLayout }) {
         shadow-bias={-0.0005}
       />
       {/* Soft front fill so the cut-away side isn't black */}
-      <directionalLight position={[8, 6, 6]} intensity={0.55} color="#ffe2c2" />
+      <directionalLight position={[aim[0] + 8, 6, aim[2] + 6]} intensity={room.theme.fill.intensity} color={room.theme.fill.color} />
       {/* Floor lamp by the founder's desk */}
       {room.lamp && <pointLight position={room.lamp} intensity={3} distance={3.5} decay={2} color="#ffb46b" />}
     </>
@@ -81,7 +81,7 @@ export default function HomeScene({ children }: { children?: ReactNode }) {
         gl={{ antialias: true, preserveDrawingBuffer: import.meta.env.DEV }}
         onCreated={({ gl }) => { gl.toneMapping = ACESFilmicToneMapping }}
       >
-        <color attach="background" args={['#2b2119']} />
+        <color attach="background" args={[room.theme.background]} />
         <RoomContext.Provider value={room}>
           {/* Remount everything on a move so characters start at their new seats. */}
           <group key={location}>

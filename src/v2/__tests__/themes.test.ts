@@ -18,6 +18,8 @@ describe('location themes', () => {
   it('leaves the bedroom as modelled', () => {
     expect(THEMES.home).toMatchObject({ floorTint: '#ffffff', wallTint: '#ffffff', background: '#2b2119' })
     expect(roomFor('home').amenityStrip).toBeUndefined()
+    expect(roomFor('home').showEmptySeats).toBe(false)
+    expect(roomFor('coworking').showEmptySeats).toBe(true)
   })
 
   for (const l of LOCATIONS.slice(1)) {

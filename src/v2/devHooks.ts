@@ -1,7 +1,9 @@
 import { scoreToDifficulty } from '../ai/gemini'
 import { FEATURE_TEMPLATES } from '../data/featureTemplates'
-import { assignTeamMember, ensureCandidates, getV2State, hireCandidate, moveToLocation, newGameV2, refreshCandidates, startFounderTask, stepGame } from './actions'
+import { assignTeamMember, ensureCandidates, fireTeamMember, getV2State, hireCandidate, moveToLocation, newGameV2, refreshCandidates, startFounderTask, stepGame } from './actions'
 import { useGameStore } from '../store/gameStore'
+import { locationDef, LOCATIONS } from './locations'
+import type { LocationId } from './state'
 
 /** Dev-only helpers so scripts/v2-screenshot.mjs can drive /new without the Groq onboarding. */
 export function installDevHooks(): void {
@@ -47,6 +49,30 @@ export function installDevHooks(): void {
       } as never)
     },
     moveToLocation,
+    /** Unlock everything, move to `loc` and fill a few seats (screenshots). */
+    jumpTo: (loc: LocationId) => {
+      const s = getV2State()
+      useGameStore.setState({
+        cash: 500_000,
+        v2: {
+          ...s.v2,
+          chapter: { ...s.v2.chapter, beat: 5, complete: true },
+          chapter2: { beat: 2, complete: true, firstMistake: false },
+          peakMrr: 100_000,
+          unlockedLocations: LOCATIONS.map(l => l.id),
+        },
+      } as never)
+      for (const id of Object.keys(getV2State().v2.team).slice(locationDef(loc).capacity)) fireTeamMember(id)
+      const moved = moveToLocation(loc)
+      const target = Math.min(locationDef(loc).capacity, 8)
+      for (let i = 0; i < target * 4 && Object.keys(getV2State().v2.team).length < target; i++) {
+        ensureCandidates()
+        const c = getV2State().v2.candidates[0]
+        if (!c || hireCandidate(c.id) !== 'ok') refreshCandidates()
+      }
+      stepGame()
+      return moved
+    },
     /** Hire up to n candidates, rerolling the pool as needed; returns how many were hired. */
     hireMany: (n: number) => {
       let hired = 0
