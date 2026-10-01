@@ -113,3 +113,26 @@ Slots: bedroom 1 · bigger home 2 · villa 3 · co-working 3 · small office 4 �
 | 4 | MacBook Pro | $3,500 | ×1.3 | ×0.8 |
 
 Tier 3+ desks show a monitor next to the laptop. Buying is blocked when cash < price.
+
+## 7. Sub-project E — infra desktop (built autonomously)
+
+A **💻 Infra** tab (unlocked with Chapter 1) opens a macOS-style desktop: menu bar with the clock, a dock of apps, one window per app. Services are monthly costs added to burn.
+
+**🖥️ Hosting** — every product needs it; customers beyond capacity overload it:
+
+| Tier | Plan | $/mo | Capacity | Migration |
+|---|---|---|---|---|
+| 1 | Free tier | 0 | 20 customers | — |
+| 2 | Shared VPS | 50 | 150 | 1 day |
+| 3 | Dedicated server | 300 | 600 | 2 days |
+| 4 | Cloud cluster | 1,200 | 2,500 | 3 days |
+| 5 | Global CDN + autoscaling | 4,000 | 10,000 | 4 days |
+
+- Upgrading starts a **migration** that takes the listed days; the new price applies at once, the new capacity when it finishes. You can't stack migrations.
+- Above 90% load: +1% churn ("the app feels slow"). Above 100%: a daily **outage** chance of min(50%, (load − 1) × 0.8 + 5%) → lose 2% of customers, tickets flood in, and an Outage popup ("Status page and apologies" = +2 churn shock / "Credit affected customers" = pay a month of their ARPU, no shock).
+
+**📶 Wi-Fi** — Home Wi-Fi (free, work speed ×0.95) · Fiber ($80/mo, ×1.0) · Business fiber ($250/mo, ×1.05). Applies to everyone.
+
+**🧰 Tools** — Helpdesk ($100/mo, Support clears 50% more tickets) · Monitoring ($150/mo, incidents and outages 40% less likely) · CI/CD ($200/mo, builds 10% faster, build mistakes ×0.7).
+
+The stats rail shows hosting load; the Metrics churn breakdown adds "Slow app".
