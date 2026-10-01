@@ -122,3 +122,45 @@ export function claimFamilyMoney(state: V2GameState): V2GameState {
   }
   return addStory(next, [`${money.giver} believed in you before anyone else did: +$${money.amount.toLocaleString()}.`])
 }
+
+// ── Chapter 2: first hires ──────────────────────────────────────────────────
+
+export function isTeamUnlocked(state: Pick<V2GameState, 'v2'>): boolean {
+  return state.v2.chapter.complete
+}
+
+export const CHAPTER2_GOAL_MRR = 1000
+
+type Chapter2CardId = 'c2-0' | 'c2-1' | 'c2-2' | 'c2-mistake' | 'c2-done'
+
+export const CHAPTER2_CARDS: Record<Chapter2CardId, CoachCard> = {
+  'c2-0': { id: 'c2-0', title: 'Time to hire', body: "You can't do everything yourself. Hire an intern: cheap, eager, a bit messy. Open the Team tab." },
+  'c2-1': { id: 'c2-1', title: 'Give them a job', body: "Interns keep doing their assignment until you change it. Pick what each person works on in the Team tab." },
+  'c2-2': { id: 'c2-2', title: 'That’s leverage', body: 'Work just got done without you. Keep growing to $1,000 MRR.' },
+  'c2-mistake': { id: 'c2-mistake', title: 'Interns make mistakes', body: 'Rushed work, typos, fumbled calls. They make fewer mistakes as their skills grow.' },
+  'c2-done': { id: 'c2-done', title: 'Chapter 2 done', body: 'Your bedroom is getting crowded… Chapter 3: a bigger space is coming soon.' },
+}
+
+export function currentChapter2Card(state: Pick<V2GameState, 'v2'>): CoachCard | null {
+  const { chapter, chapter2 } = state.v2
+  if (!chapter.complete) return null
+  const unseen = (id: Chapter2CardId) => (chapter.seenCards.includes(id) ? null : CHAPTER2_CARDS[id])
+  if (chapter2.complete) return unseen('c2-done')
+  if (chapter2.firstMistake && !chapter.seenCards.includes('c2-mistake')) return CHAPTER2_CARDS['c2-mistake']
+  return unseen(`c2-${chapter2.beat}` as Chapter2CardId)
+}
+
+export function onTeamProgress(state: V2GameState, r: { completedBy: string[]; mistakes: string[] }): V2GameState {
+  const c2 = state.v2.chapter2
+  const beat = c2.beat === 1 && r.completedBy.length > 0 ? 2 : c2.beat
+  const firstMistake = c2.firstMistake || r.mistakes.length > 0
+  if (beat === c2.beat && firstMistake === c2.firstMistake) return state
+  return { ...state, v2: { ...state.v2, chapter2: { ...c2, beat, firstMistake } } }
+}
+
+export function checkChapter2Complete(state: V2GameState): V2GameState {
+  const { chapter, chapter2 } = state.v2
+  if (!chapter.complete || chapter2.complete || state.mrr < CHAPTER2_GOAL_MRR) return state
+  const next: V2GameState = { ...state, v2: { ...state.v2, chapter2: { ...chapter2, complete: true } } }
+  return addStory(next, [`$${CHAPTER2_GOAL_MRR.toLocaleString()} MRR. ${state.startupName} has outgrown the bedroom.`])
+}

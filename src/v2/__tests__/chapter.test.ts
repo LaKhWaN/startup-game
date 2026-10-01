@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   claimFamilyMoney, currentCoachCard, dismissCard, FAMILY_GIVERS, isMetricsUnlocked,
   isTaskUnlocked, onTaskCompleted, reshowCurrentCard, rollFamilyMoney,
+  checkChapter2Complete, currentChapter2Card, isTeamUnlocked, onTeamProgress,
 } from '../chapter'
 import { makeState, seq, withChapter, withV2 } from './fixtures'
 
@@ -106,5 +107,44 @@ describe('coach cards', () => {
   it('reshowCurrentCard brings the current card back', () => {
     const s = dismissCard(makeState(), 'beat-0')
     expect(currentCoachCard(reshowCurrentCard(s))?.id).toBe('beat-0')
+  })
+})
+
+describe('Chapter 2', () => {
+  const done1 = () => withChapter(makeState(), { beat: 5, complete: true })
+  const ch2 = (s: ReturnType<typeof makeState>, patch: Partial<ReturnType<typeof makeState>['v2']['chapter2']>) =>
+    withV2(s, { chapter2: { ...s.v2.chapter2, ...patch } })
+
+  it('unlocks the team only after Chapter 1', () => {
+    expect(isTeamUnlocked(makeState())).toBe(false)
+    expect(isTeamUnlocked(done1())).toBe(true)
+  })
+
+  it('shows no Chapter 2 card before Chapter 1 is done, then the hire card', () => {
+    expect(currentChapter2Card(makeState())).toBeNull()
+    expect(currentChapter2Card(done1())?.id).toBe('c2-0')
+    expect(currentChapter2Card(ch2(done1(), { beat: 1 }))?.id).toBe('c2-1')
+  })
+
+  it('advances to beat 2 when a hire completes a task, and flags the first mistake', () => {
+    const s = ch2(done1(), { beat: 1 })
+    const a = onTeamProgress(s, { completedBy: ['h1'], mistakes: [] })
+    expect(a.v2.chapter2.beat).toBe(2)
+    const b = onTeamProgress(a, { completedBy: ['h1'], mistakes: ['h1'] })
+    expect(b.v2.chapter2.firstMistake).toBe(true)
+    expect(currentChapter2Card(b)?.id).toBe('c2-mistake')
+    expect(currentChapter2Card(dismissCard(b, 'c2-mistake'))?.id).toBe('c2-2')
+  })
+
+  it('does not jump from beat 0 to 2 without a hire', () => {
+    expect(onTeamProgress(done1(), { completedBy: ['h1'], mistakes: [] }).v2.chapter2.beat).toBe(0)
+  })
+
+  it('completes at $1,000 MRR, only after Chapter 1', () => {
+    expect(checkChapter2Complete({ ...makeState(), mrr: 5000 }).v2.chapter2.complete).toBe(false)
+    expect(checkChapter2Complete({ ...done1(), mrr: 999 }).v2.chapter2.complete).toBe(false)
+    const s = checkChapter2Complete({ ...done1(), mrr: 1000 })
+    expect(s.v2.chapter2.complete).toBe(true)
+    expect(currentChapter2Card(s)?.id).toBe('c2-done')
   })
 })

@@ -1,7 +1,8 @@
 import { tick } from '../engine/gameEngine'
-import { onTaskCompleted } from './chapter'
+import { checkChapter2Complete, onTaskCompleted, onTeamProgress } from './chapter'
 import { advanceFounder } from './founder'
 import type { Rng, V2GameState } from './state'
+import { advanceTeam, syncPayroll } from './team'
 
 /**
  * The v2 layer that runs after the legacy tick.
@@ -11,15 +12,20 @@ export function v2Tick(state: V2GameState, hours: number, rng: Rng = Math.random
   if (state.phase !== 'playing') return state
 
   let s = state
-  // No crises during the tutorial, nor while the founder is still solo: legacy
-  // events are sized for a funded company with staff. The legacy tick pauses
-  // on pendingEvent, so clear it here.
-  const solo = !s.v2.chapter.complete || s.employees.length === 0
-  if (solo && s.pendingEvent) s = { ...s, pendingEvent: null }
-  if (s.pendingEvent) return s
+  // Legacy events are sized for a funded company with staff. Keep them off
+  // through the tutorial chapters and while the founder is still solo.
+  // The legacy tick pauses on pendingEvent, so clear it here.
+  const eventsAllowed = s.v2.chapter.complete && s.v2.chapter2.complete && s.employees.length > 0
+  if (!eventsAllowed && s.pendingEvent) s = { ...s, pendingEvent: null }
+  if (s.pendingEvent) return syncPayroll(s)
 
   const { state: advanced, completed } = advanceFounder(s, hours, rng)
-  return completed ? onTaskCompleted(advanced, completed, rng) : advanced
+  s = completed ? onTaskCompleted(advanced, completed, rng) : advanced
+
+  const team = advanceTeam(s, hours, rng)
+  s = onTeamProgress(team.state, team)
+  s = syncPayroll(s)
+  return checkChapter2Complete(s)
 }
 
 /** One game hour: legacy simulation first, then the v2 layer. Preserves extra store keys. */
