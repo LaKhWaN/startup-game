@@ -174,3 +174,20 @@ Decisions made autonomously during the build, with what each costs if wrong, and
 - Setups belong to desks (seat index), not people: a new hire sits at an upgraded desk, the founder desk is separate; tier-3+ desks show a monitor — cost if wrong: an upgrade "moves" if seats renumber after a move.
 - Test fixtures use neutral tier-2 desks so other timing tests stay exact; real games start on the tier-1 XP laptop (checked in shop.test) — cost if wrong: none.
 - The balance simulation still starts on neutral desks and never shops; F rebuilds the simulated player to start on real XP laptops and buy perks/setups — cost if wrong: D's balance unverified until F.
+
+## 2026-10-02-v2-E-infra
+
+### Rulings
+- Home Wi-Fi is the ×1.0 baseline; Fiber ×1.05 ($80) and Business ×1.1 ($250) are upgrades (spec draft had home at ×0.95) — keeps a neutral start and makes Wi-Fi a pure upgrade — cost if wrong: Wi-Fi feels optional.
+- Outages are never suppressed or thinned (like incidents); the outage popup's "credit customers" choice costs 20% of customers × ARPU — cost if wrong: none.
+- The macOS-style desktop uses generic window dots and a "◆ Infra" menu (no Apple branding) — cost if wrong: none.
+
+## 2026-10-02-v2-F-balance
+
+### Rulings
+- B+C review fixes: shipped churn reductions are now a lasting `churnRelief` (max 6%) instead of vanishing at midnight; good-news events leave a negative, fading shock; support/reputation use max(20, customers) so tiny companies aren't punished for one ticket; everyone answers Support at main-task speed — cost if wrong: support and retention are friendlier than the first draft.
+- People re-tuned so burnout is reachable: busy −7 energy/h, +0.45 stress/h; overnight +45 energy/−1 stress; weekend −4 stress; a hire busy every work hour hands in notice after ~8 weeks without perks, one with regular idle time never does — cost if wrong: grinding still feels lenient for a few weeks.
+- Early-game boosts after the full simulation: intern speed 0.7/0.35 → 0.8/0.4, old laptop ×0.85 → ×0.9 — the bedroom phase took ~300 game days — cost if wrong: interns slightly stronger.
+- Simulation: a "manager" player (real XP-laptop start, buys perks/setups/hosting/Wi-Fi/tools, rests stressed hires, convinces leavers, one hire on support per 250 customers, moves with 2 months' reserve) reaches Bigger home on days 167–225 and Co-working on 317–485 without going broke; a neglectful player ends day 300 with ~40% fewer customers and 13× the support backlog — cost if wrong: real players may be faster or slower than the scripted one.
+- Tips (support, debt, hosting, stress, notice, shop, night, market) show once each, only when no chapter card is up — cost if wrong: one more card at a busy moment.
+- The landing page screenshot still shows the old game (no browser screenshots this session) — cost if wrong: marketing lags the game.
