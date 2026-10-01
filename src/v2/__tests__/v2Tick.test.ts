@@ -38,8 +38,8 @@ describe('v2Tick', () => {
     const base = withChapter(makeState({ employees: [employee] }), { beat: 5, complete: true })
     const s = start({ ...base, v2: { ...base.v2, chapter2: { beat: 2, complete: true, firstMistake: false } } }, 'research')
     const pending = { ...s, pendingEvent: EVENTS[0] }
-    const next = v2Tick(pending, 1)
-    expect(next.pendingEvent).toBe(EVENTS[0])
+    const next = v2Tick(pending, 1, () => 0) // 0 → always kept (Phase 4 thinning)
+    expect(next.pendingEvent?.id).toBe(EVENTS[0].id)
     expect(next.v2.founder.task?.progress).toBe(0)
   })
 

@@ -1,5 +1,6 @@
 import { tick } from '../engine/gameEngine'
 import { checkChapter2Complete, checkChapter3Complete, onTaskCompleted, onTeamProgress } from './chapter'
+import { filterPendingEvent } from './eventsV2'
 import { updateUnlocks } from './locations'
 import { advanceFounder } from './founder'
 import type { Rng, V2GameState } from './state'
@@ -18,6 +19,8 @@ export function v2Tick(state: V2GameState, hours: number, rng: Rng = Math.random
   // The legacy tick pauses on pendingEvent, so clear it here.
   const eventsAllowed = s.v2.chapter.complete && s.v2.chapter2.complete && s.employees.length > 0
   if (!eventsAllowed && s.pendingEvent) s = { ...s, pendingEvent: null }
+  // Thin, gate and scale whatever the legacy tick picked (spec §8.5).
+  s = filterPendingEvent(s, rng)
   if (s.pendingEvent) return syncPayroll(s)
 
   const { state: advanced, completed } = advanceFounder(s, hours, rng)
