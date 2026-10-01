@@ -16,9 +16,9 @@ describe('founderPose', () => {
   })
 
   it('matches the spec table', () => {
-    expect(founderPose(null)).toEqual({ spot: 'bed', clip: 'sit', typing: false, pace: false, icon: null })
-    expect(founderPose(task('research'))).toEqual({ spot: 'bookshelf', clip: 'interact-right', typing: false, pace: false, icon: null })
-    expect(founderPose(task('develop'))).toEqual({ spot: 'desk', clip: 'sit', typing: true, pace: false, icon: null })
+    expect(founderPose(null)).toEqual({ spot: 'bed', clip: 'sit', typing: false, pace: false, icon: '💤' })
+    expect(founderPose(task('research'))).toEqual({ spot: 'bookshelf', clip: 'interact-right', typing: false, pace: false, icon: '🔍' })
+    expect(founderPose(task('develop'))).toEqual({ spot: 'desk', clip: 'sit', typing: true, pace: false, icon: '🛠️' })
     expect(founderPose(task('emails'))).toEqual({ spot: 'desk', clip: 'sit', typing: true, pace: false, icon: '✉️' })
     expect(founderPose(task('sales'))).toEqual({ spot: 'paceA', clip: 'walk', typing: false, pace: true, icon: '📞' })
   })

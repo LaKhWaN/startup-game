@@ -13,6 +13,7 @@ import {
 } from '../engine/gameEngine'
 import { saveGameV2, listSavesV2, type SlotId, type SaveMetaV2 } from './saveV2'
 import type { V2GameState } from './state'
+import { formatProfit, profitMonthly } from './finance'
 import { Avatar } from '../components/Avatar'
 import { SellCompanyModal } from '../components/SellCompanyModal'
 import '../components/TopBar.css'
@@ -67,6 +68,11 @@ const METRIC_INFO: Record<string, { title: string; desc: string; tip: string }> 
     desc:  'How much cash you spend each month beyond your revenue.',
     tip:   'Lower burn = longer runway. Hire carefully.',
   },
+  Profit: {
+    title: 'Monthly Profit',
+    desc:  'MRR minus burn (rent + salaries). Positive means you make money every month.',
+    tip:   'Get this above $0 and your runway stops shrinking.',
+  },
   Runway: {
     title: 'Runway',
     desc:  'Months before you run out of cash at the current burn rate.',
@@ -82,9 +88,10 @@ interface PillItemProps {
   higherIsBetter?: boolean
   warn?:           boolean
   danger?:         boolean
+  good?:           boolean
 }
 
-function PillItem({ icon, value, label, rawValue, higherIsBetter = true, warn, danger }: PillItemProps) {
+function PillItem({ icon, value, label, rawValue, higherIsBetter = true, warn, danger, good }: PillItemProps) {
   const prevRaw  = useRef<number | undefined>(undefined)
   const [flash,  setFlash]  = useState<'up' | 'down' | null>(null)
   const [delta,  setDelta]  = useState<{ text: string; dir: 'up' | 'down' } | null>(null)
@@ -111,7 +118,7 @@ function PillItem({ icon, value, label, rawValue, higherIsBetter = true, warn, d
   const valueClass = [
     'tb-pill-value',
     flash  ? `tb-flash-${flash}` : '',
-    danger ? 'tb-pill-value--danger' : warn ? 'tb-pill-value--warn' : '',
+    danger ? 'tb-pill-value--danger' : warn ? 'tb-pill-value--warn' : good ? 'tb-pill-value--good' : '',
   ].filter(Boolean).join(' ')
 
   return (
@@ -204,6 +211,7 @@ export function TopBarV2({ onShowTutorial }: TopBarProps) {
   }
 
   const burn = getMonthlyBurn(state)
+  const profit = profitMonthly(state)
 
   const dom = dayOfMonth(gameTime)
   const mo  = monthOfYear(gameTime)
@@ -284,6 +292,8 @@ export function TopBarV2({ onShowTutorial }: TopBarProps) {
           <PillItem icon="🏦" value={fmt(cash)}                       label="Cash"   rawValue={cash}      warn={cashWarn}   danger={cashDanger}   />
           <div className="tb-pill-sep" />
           <PillItem icon="🔥" value={`${fmt(burn)}/mo`}               label="Burn"   rawValue={burn}      higherIsBetter={false} />
+          <div className="tb-pill-sep" />
+          <PillItem icon={profit >= 0 ? '📈' : '📉'} value={formatProfit(profit)} label="Profit" rawValue={profit} danger={profit < 0} good={profit > 0} />
           <div className="tb-pill-sep" />
           <PillItem icon="📉" value={`${churnRate.toFixed(1)}% churn`} label="Churn" rawValue={churnRate}  higherIsBetter={false} warn={churnWarn} danger={churnDanger} />
         </div>

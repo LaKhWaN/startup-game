@@ -140,3 +140,5 @@
 }
 .v2-feature--building { opacity: 0.85; }
 .v2-feature--building .v2-feature-desc { color: var(--brand-primary); font-weight: 500; }
+.v2-game .tb-pill-value--good { color: #7ee2a0; }
+.v2-good strong { color: var(--success); }

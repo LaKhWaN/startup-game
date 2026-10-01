@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { armedNow, CONFIRM_MS, type Armed } from './confirm'
 import { assignTeamMember, ensureCandidates, fireTeamMember, hireCandidate, promoteTeamMember, refreshCandidates, useV2 } from './actions'
 import { MAIN_TASK } from './work'
+import { formatProfit } from './finance'
 import { canHire, canPromote, isFullTimeUnlocked, PROMOTE_SKILL, teamCapacity, teamFinances } from './team'
 import type { Assignment, FounderSkill, InternCandidate, TeamRole, Tier, V2GameState } from './state'
 import '../components/RightPanel.css'
@@ -115,6 +116,7 @@ export function TeamPanel({ focusId = null }: { focusId?: string | null }) {
             <div className="v2-team-summary">
               <span><strong>{members.length}/{capacity}</strong> seats</span>
               <span>burn <strong>{fmtMoney(burn)}/mo</strong></span>
+              <span className={mrr - burn < 0 ? 'v2-warn' : 'v2-good'}>profit <strong>{formatProfit(mrr - burn)}</strong></span>
               <span className={runway < 3 ? 'v2-warn' : undefined}>
                 runway <strong>{Number.isFinite(runway) ? `~${Math.max(0, runway)} mo` : '∞'}</strong>
               </span>

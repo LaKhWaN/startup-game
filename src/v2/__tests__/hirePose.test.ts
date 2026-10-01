@@ -10,7 +10,7 @@ describe('hirePose', () => {
   })
 
   it('types at the seat for desk work, with an icon per task', () => {
-    expect(hirePose(task('develop'))).toMatchObject({ spot: 'seat', typing: true, icon: null })
+    expect(hirePose(task('develop'))).toMatchObject({ spot: 'seat', typing: true, icon: '🛠️' })
     expect(hirePose(task('research'))).toMatchObject({ spot: 'seat', typing: true, icon: '🔍' })
     expect(hirePose(task('emails'))).toMatchObject({ spot: 'seat', typing: true, icon: '✉️' })
   })

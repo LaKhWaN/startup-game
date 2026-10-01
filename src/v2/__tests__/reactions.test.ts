@@ -9,7 +9,7 @@ describe('reactionIcon', () => {
 
   it('shows 💤 when idle, otherwise the task icon', () => {
     expect(reactionIcon({ idle: true, taskIcon: null, mistakeAt: null, now: 0 })).toBe('💤')
-    expect(reactionIcon({ idle: false, taskIcon: null, mistakeAt: null, now: 0 })).toBeNull()
+    expect(reactionIcon({ idle: false, taskIcon: null, mistakeAt: null, now: 0 })).toBe('⏳') // waiting for work
     expect(reactionIcon({ idle: false, taskIcon: '📞', mistakeAt: null, now: 0 })).toBe('📞')
   })
 })
