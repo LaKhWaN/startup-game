@@ -148,3 +148,12 @@ Decisions made autonomously during the build, with what each costs if wrong, and
 - Final: minor (deferred): load forces 1× even if a popup hold is live.
 - Final: minor (deferred): investor interest ≥70 before stage 2 can occupy the event slot every day (legacy behaviour).
 - Final: minor (deferred): old localStorage keys (startup-game-v2-save-*, startup-game-leaderboard) left behind.
+
+## 2026-10-02-v2-B-market
+
+### Rulings
+- Unanswered support tickets also cut sales conversion (reputation factor ×(1 − backlog/customers × 0.5), floor 0.5) — added because the simulation showed neglecting support still won (time spent on support cost more sales than the churn it saved); now careful play ends with ~40% more customers by day 200 — cost if wrong: support may feel mandatory.
+- Incident "All hands" lowers tech debt by 8 (the spec's "−1 day of founder task" dropped: event effects only touch company state) — cost if wrong: incidents feel lighter.
+- Incident damage (customers, ticket flood) lands when it fires; the popup is only the follow-up decision. Incidents are never suppressed by chapter gating or event thinning — cost if wrong: an incident during the tutorial if the player racks up debt.
+- Support uses the outreach skill and Refactor the build skill; no new roles — cost if wrong: a dedicated support role would come in C.
+- Simulation players: the original "sensible" player now neglects support/debt and still reaches Co-working on days 237–279; a careful variant is compared against it — cost if wrong: none.
