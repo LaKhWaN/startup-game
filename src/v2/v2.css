@@ -138,3 +138,5 @@
   .v2-game .right-panel { width: 100%; flex: 1; min-height: 0; border-left: none; border-top: 1px solid var(--border); }
   .v2-game .bottom-nav { height: 56px; }
 }
+.v2-feature--building { opacity: 0.85; }
+.v2-feature--building .v2-feature-desc { color: var(--brand-primary); font-weight: 500; }

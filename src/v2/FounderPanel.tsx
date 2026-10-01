@@ -1,7 +1,7 @@
 import { dismissCoachCard, startFounderTask, useV2 } from './actions'
 import { currentCard, isTaskUnlocked } from './chapter'
 import { nextLocation } from './locations'
-import { FOUNDER_BUILD_SPEED, taskDurationDays } from './founder'
+import { FOUNDER_BUILD_SPEED, FOUNDER_ID, taskDurationDays } from './founder'
 import type { FounderSkill, FounderTaskType } from './state'
 import '../components/RightPanel.css'
 import './v2.css'
@@ -40,6 +40,8 @@ export function FounderPanel() {
   const task = v2.founder.task
   const busy = task !== null
   const proposed = features.filter(f => f.status === 'proposed')
+  // Features your hires are building (yours shows under "Right now").
+  const teamBuilds = features.filter(f => f.status === 'in_development' && f.assignedToDevId !== FOUNDER_ID)
   const shipped = features.filter(f => f.status === 'completed').length
   const developUnlocked = isTaskUnlocked({ v2 }, 'develop')
 
@@ -130,7 +132,17 @@ export function FounderPanel() {
             {developUnlocked && (
               <section className="rp-section">
                 <div className="rp-section-label">Build next · {shipped} shipped</div>
-                {proposed.length === 0 ? (
+                {teamBuilds.map(f => (
+                  <div key={f.id} className="v2-feature v2-feature--building">
+                    <div className="v2-feature-main">
+                      <div className="v2-feature-title">{f.title}</div>
+                      <div className="v2-feature-desc">
+                        🛠️ {v2.team[f.assignedToDevId ?? '']?.name ?? 'Your team'} is building this · {Math.round(f.buildProgress * 100)}%
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {proposed.length === 0 && teamBuilds.length === 0 ? (
                   <div className="v2-muted">No ideas queued. Research to find more.</div>
                 ) : (
                   proposed.map(f => (
