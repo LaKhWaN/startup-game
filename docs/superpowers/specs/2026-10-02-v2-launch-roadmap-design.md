@@ -85,3 +85,31 @@ Each hire has **energy, stress, morale, context** (0–100):
 - **Founder energy:** −3 per working hour (any hour), +15 per hour sleeping (no task at night, in bed), +3 per idle day hour. Founder speed × (0.5 + 0.5·energy/100). Working nights is possible but you pay for it the next day.
 - **UI:** person card bars (energy, stress, morale, context) and notice warning; hover card mood; head emoji 😫 (stress > 75) / 🥱 (energy < 25) override the task icon; founder energy in the founder bar; stats rail "stressed" count.
 - Saves: older team members default to energy 100, stress 10, morale 70, context 0.
+
+## 6. Sub-project D — shop (built autonomously)
+
+A **🛒 Shop** tab (modal) with two sections.
+
+**Perks** — bought once, placed in the room, kept when you move (only as many as the location has slots are active):
+
+| Perk | Price | Effect |
+|---|---|---|
+| ☕ Coffee machine | $400 | Busy hours drain 20% less energy |
+| 🪴 Plants | $120 | Morale target +3 |
+| 🖼️ Decor | $200 | Morale target +2, stress −0.1/work hour |
+| 🛋️ Sofa | $700 | +12 energy overnight |
+| 🎮 Game corner | $1,500 | Idle work hours lower stress 2× as fast; morale target +4 |
+| 🏓 Table tennis | $1,800 | Stress −0.3/work hour; morale target +5 |
+
+Slots: bedroom 1 · bigger home 2 · villa 3 · co-working 3 · small office 4 · big office 5 · building 6. Perks have spots in each room (a perk row in generated rooms, one spot in the bedroom); bought perks appear there.
+
+**Setups** — the computer at each desk (founder + every seat), upgraded per desk; kept at the desk when people come and go and when you move:
+
+| Tier | Machine | Price | Speed | Mistakes |
+|---|---|---|---|---|
+| 1 | Old laptop — Windows XP, 2 GB RAM, 500 GB HDD | (start) | ×0.85 | ×1.2 |
+| 2 | Office laptop — 8 GB RAM, SSD | $800 | ×1.0 | ×1.0 |
+| 3 | Dev workstation — 16 GB, SSD, second monitor | $2,000 | ×1.15 | ×0.9 |
+| 4 | MacBook Pro | $3,500 | ×1.3 | ×0.8 |
+
+Tier 3+ desks show a monitor next to the laptop. Buying is blocked when cash < price.
