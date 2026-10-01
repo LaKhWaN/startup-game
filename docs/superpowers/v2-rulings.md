@@ -191,3 +191,25 @@ Decisions made autonomously during the build, with what each costs if wrong, and
 - Simulation: a "manager" player (real XP-laptop start, buys perks/setups/hosting/Wi-Fi/tools, rests stressed hires, convinces leavers, one hire on support per 250 customers, moves with 2 months' reserve) reaches Bigger home on days 167–225 and Co-working on 317–485 without going broke; a neglectful player ends day 300 with ~40% fewer customers and 13× the support backlog — cost if wrong: real players may be faster or slower than the scripted one.
 - Tips (support, debt, hosting, stress, notice, shop, night, market) show once each, only when no chapter card is up — cost if wrong: one more card at a busy moment.
 - The landing page screenshot still shows the old game (no browser screenshots this session) — cost if wrong: marketing lags the game.
+
+## Final review of D–F (fresh reviewer: 1 Critical, 4 Important, 13 Minor)
+
+### Fixed
+- Critical: an outage/incident before Chapter 2 froze time with no card (the event card was only mounted after Chapter 2) — the event card is now always mounted.
+- Services (hosting, Wi-Fi, tools) bill by the hour, so subscribing and cancelling within a day still costs.
+- Hosting can be downgraded instantly when customers fit the smaller plan.
+- Metrics churn breakdown adds a retention row and a "held at your idea's floor" note; the Churn cell uses the same live total.
+- The simulation now asserts the manager really bought perks, a founder setup and hosting tier ≥ 3; the neglect player never upgrades hosting (ends day 300 with ~20 customers and ~60% churn).
+- Minors fixed: desk computers follow their people when seats renumber on a move; the founder's desk row hides the irrelevant mistakes number; the ship toast reports the churn relief actually applied (cap 6); day snapshots use post-incident numbers.
+
+### Deferred minors
+- A "1-day" migration started late in the evening finishes at the next midnight (whole-day timing).
+- The player can't choose which perks are active after moving to a smaller place (oldest bought win).
+- Straight-line walking can pass through a perk spot (no path-finding).
+- Home seat 0 (lounge chair + coffee table) never shows a monitor.
+- Settings "re-show" brings back chapter cards, not tips.
+- CoachOverlay subscribes to the whole store (legal, re-renders each tick).
+- Old saves load on free hosting and XP laptops; unknown perk ids aren't filtered.
+- Good-news churn shocks can stack (clamped at the idea's floor).
+- FounderPanel "days left" ignores desk/Wi-Fi/CI/energy factors.
+- The simulation still never triggers a burnout notice (people care keeps stress low); burnout is covered by a deterministic unit test instead.
