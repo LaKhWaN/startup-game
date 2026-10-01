@@ -70,16 +70,17 @@ export function dismissCard(state: V2GameState, id: string): V2GameState {
 
 /** The card the player is on right now, seen or not (what Settings re-shows). */
 export function currentCardId(state: Pick<V2GameState, 'v2'>): string {
-  const { chapter, chapter2 } = state.v2
+  const { chapter, chapter2, chapter3 } = state.v2
   if (!chapter.complete || !chapter.seenCards.includes('beat-4')) return cardIdFor(chapter.beat)
+  if (chapter2.complete && chapter.seenCards.includes('c2-done')) return chapter3Id(state)
   if (chapter2.complete) return 'c2-done'
   if (chapter2.firstMistake && !chapter.seenCards.includes('c2-mistake')) return 'c2-mistake'
   return `c2-${chapter2.beat}`
 }
 
-/** The coach card to show: Chapter 1 cards first (until dismissed), then Chapter 2. */
+/** The coach card to show: each chapter's cards in turn, until dismissed. */
 export function currentCard(state: Pick<V2GameState, 'v2'>): CoachCard | null {
-  return currentCoachCard(state) ?? currentChapter2Card(state)
+  return currentCoachCard(state) ?? currentChapter2Card(state) ?? currentChapter3Card(state)
 }
 
 export function reshowCurrentCard(state: V2GameState): V2GameState {
@@ -177,4 +178,48 @@ export function checkChapter2Complete(state: V2GameState): V2GameState {
   if (!chapter.complete || chapter2.complete || state.mrr < CHAPTER2_GOAL_MRR) return state
   const next: V2GameState = { ...state, v2: { ...state.v2, chapter2: { ...chapter2, complete: true } } }
   return addStory(next, [`$${CHAPTER2_GOAL_MRR.toLocaleString()} MRR. ${state.startupName} has outgrown the bedroom.`])
+}
+
+// ── Chapter 3: a bigger space ───────────────────────────────────────────────
+
+export function isMapUnlocked(state: Pick<V2GameState, 'v2'>): boolean {
+  return state.v2.chapter2.complete
+}
+
+export const CHAPTER3_GOAL_MRR = 5000
+
+type Chapter3CardId = 'c3-0' | 'c3-1' | 'c3-done'
+
+export const CHAPTER3_CARDS: Record<Chapter3CardId, CoachCard> = {
+  'c3-0': { id: 'c3-0', title: 'Time to move', body: 'Your bedroom is full. Open the Map and move somewhere bigger.' },
+  'c3-1': { id: 'c3-1', title: 'More room, more people', body: 'At the Villa you can hire full-time staff and promote your best interns.' },
+  'c3-done': { id: 'c3-done', title: 'Chapter 3 done', body: "You're a real company now, and the ladder goes all the way to your own building." },
+}
+
+function chapter3Id(state: Pick<V2GameState, 'v2'>): Chapter3CardId {
+  const c3 = state.v2.chapter3
+  if (c3.complete) return 'c3-done'
+  return c3.beat === 1 ? 'c3-1' : 'c3-0'
+}
+
+/** Shown once Chapter 2's closing card is dismissed. Earlier unseen cards come first. */
+export function currentChapter3Card(state: Pick<V2GameState, 'v2'>): CoachCard | null {
+  const { chapter, chapter2, chapter3 } = state.v2
+  if (!chapter2.complete || !chapter.seenCards.includes('c2-done')) return null
+  const unseen = (id: Chapter3CardId) => (chapter.seenCards.includes(id) ? null : CHAPTER3_CARDS[id])
+  if (chapter3.complete) return unseen('c3-0') ?? unseen('c3-done')
+  return unseen('c3-0') ?? (chapter3.beat === 1 ? unseen('c3-1') : null)
+}
+
+export function onMoved(state: V2GameState): V2GameState {
+  const c3 = state.v2.chapter3
+  if (c3.beat !== 0) return state
+  return { ...state, v2: { ...state.v2, chapter3: { ...c3, beat: 1 } } }
+}
+
+export function checkChapter3Complete(state: V2GameState): V2GameState {
+  const { chapter2, chapter3 } = state.v2
+  if (!chapter2.complete || chapter3.complete || state.mrr < CHAPTER3_GOAL_MRR) return state
+  const next: V2GameState = { ...state, v2: { ...state.v2, chapter3: { ...chapter3, complete: true } } }
+  return addStory(next, [`$${CHAPTER3_GOAL_MRR.toLocaleString()} MRR. ${state.startupName} is a real company now.`])
 }

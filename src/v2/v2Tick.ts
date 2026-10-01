@@ -1,5 +1,6 @@
 import { tick } from '../engine/gameEngine'
-import { checkChapter2Complete, onTaskCompleted, onTeamProgress } from './chapter'
+import { checkChapter2Complete, checkChapter3Complete, onTaskCompleted, onTeamProgress } from './chapter'
+import { updateUnlocks } from './locations'
 import { advanceFounder } from './founder'
 import type { Rng, V2GameState } from './state'
 import { advanceTeam, syncPayroll } from './team'
@@ -25,7 +26,9 @@ export function v2Tick(state: V2GameState, hours: number, rng: Rng = Math.random
   const team = advanceTeam(s, hours, rng)
   s = onTeamProgress(team.state, team)
   s = syncPayroll(s)
-  return checkChapter2Complete(s)
+  s = checkChapter2Complete(s)
+  s = updateUnlocks(s)
+  return checkChapter3Complete(s)
 }
 
 /** One game hour: legacy simulation first, then the v2 layer. Preserves extra store keys. */
