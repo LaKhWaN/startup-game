@@ -42,7 +42,7 @@ function fmtMoney(n: number): string {
   return `$${Math.round(n).toLocaleString()}`
 }
 
-export function TeamPanel() {
+export function TeamPanel({ focusId = null }: { focusId?: string | null }) {
   // Stored refs / primitives only; everything else is derived below.
   const v2 = useV2(s => s.v2)
   const cash = useV2(s => s.cash)
@@ -52,6 +52,10 @@ export function TeamPanel() {
   const features = useV2(s => s.features)
 
   useEffect(() => { ensureCandidates() }, [])
+  // Clicked in the room: bring that person into view.
+  useEffect(() => {
+    if (focusId) document.getElementById(`v2-member-${focusId}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }, [focusId])
 
   const members = Object.values(v2.team).sort((a, b) => a.seat - b.seat)
   const capacity = teamCapacity({ v2 } as V2GameState)
@@ -110,7 +114,7 @@ export function TeamPanel() {
               {members.map(m => {
                 const building = m.task?.type === 'develop' ? features.find(f => f.id === m.task?.featureId)?.title : undefined
                 return (
-                  <div key={m.id} className="v2-member">
+                  <div key={m.id} id={`v2-member-${m.id}`} className={`v2-member${m.id === focusId ? ' v2-member--focus' : ''}`}>
                     <div className="v2-member-top">
                       <span className="v2-member-name">{ROLE_INFO[m.role].icon} {m.name}<TierBadge tier={m.tier} /></span>
                       <span className="v2-member-salary">{fmtMoney(m.salary)}/mo</span>

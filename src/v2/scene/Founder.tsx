@@ -7,7 +7,7 @@ import { Character } from './Character'
 import { founderPose } from './founderPose'
 import { useRoom } from './RoomContext'
 
-export function Founder() {
+export function Founder({ onSelect }: { onSelect?: () => void }) {
   const task = useV2(s => s.v2.founder.task)
   const room = useRoom()
   return (
@@ -17,6 +17,7 @@ export function Founder() {
       pose={founderPose(task)}
       startSpot="bed"
       progress={task ? task.progress : null}
+      onSelect={onSelect}
     />
   )
 }

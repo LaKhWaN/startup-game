@@ -78,6 +78,10 @@ async function shoot(viewport, tag) {
   for (const loc of ['biggerHome', 'coworking', 'smallOffice', 'bigOffice', 'building']) {
     const r = await page.evaluate((loc) => window.__v2.jumpTo(loc), loc)
     if (r !== 'ok') errors.push(`[${tag}] jumpTo ${loc}: ${r}`)
+    if (loc === 'smallOffice') {
+      await page.waitForTimeout(500)
+      await page.screenshot({ path: join(out, `${tag}-8-${loc}-moving.png`) })
+    }
     await page.waitForTimeout(3000)
     await page.screenshot({ path: join(out, `${tag}-8-${loc}.png`) })
   }

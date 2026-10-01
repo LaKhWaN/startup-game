@@ -8,6 +8,7 @@ import { getV2State, reshowCoachCard, stepGame, useV2 } from './actions'
 import { BottomNavV2, type V2Panel } from './BottomNavV2'
 import { isMapUnlocked, isMetricsUnlocked, isTeamUnlocked } from './chapter'
 import { MapPanel } from './MapPanel'
+import { MoveTransition } from './MoveTransition'
 import { TeamPanel } from './TeamPanel'
 import { FamilyMoneyModal } from './FamilyMoneyModal'
 import { FounderPanel } from './FounderPanel'
@@ -29,7 +30,10 @@ export function GameScreenV2() {
   const v2 = useV2(s => s.v2)
   const pendingMilestoneToasts = useV2(s => s.pendingMilestoneToasts)
   const dismissMilestoneToast = useV2(s => s.dismissMilestoneToast)
-  const [panel, setPanel] = useState<V2Panel>('founder')
+  const [panel, setPanelState] = useState<V2Panel>('founder')
+  const [focusId, setFocusId] = useState<string | null>(null)
+  const setPanel = (p: V2Panel) => { setPanelState(p); setFocusId(null) }
+  const selectHire = (id: string) => { setPanelState('team'); setFocusId(id) }
 
   useBackgroundMusic()
   useTypingLoop(founderPose(v2.founder.task).typing && phase === 'playing' && gameSpeed > 0)
@@ -62,11 +66,12 @@ export function GameScreenV2() {
       <RunwayBanner />
       <div className="game-main">
         <div className="game-canvas-area">
-          <RoomView><Founder /><Hires /><LaptopGlow /></RoomView>
+          <RoomView><Founder onSelect={() => setPanel('founder')} /><Hires onSelect={selectHire} /><LaptopGlow /></RoomView>
+          <MoveTransition />
           <BottomNavV2 active={panel} metricsUnlocked={metricsUnlocked} teamUnlocked={teamUnlocked} mapUnlocked={mapUnlocked} onTabClick={setPanel} />
         </div>
         {panel === 'metrics' && metricsUnlocked ? <RightPanel activePanel="metrics" />
-          : panel === 'team' && teamUnlocked ? <TeamPanel />
+          : panel === 'team' && teamUnlocked ? <TeamPanel focusId={focusId} />
           : panel === 'map' && mapUnlocked ? <MapPanel />
           : <FounderPanel />}
       </div>

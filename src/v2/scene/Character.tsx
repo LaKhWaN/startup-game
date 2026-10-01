@@ -25,13 +25,15 @@ export interface CharacterProps<S extends string> {
   startSpot: S
   /** Task progress 0..1 for the floor ring, or null when there's no task. */
   progress: number | null
+  /** Clicking the character (e.g. opens their panel). */
+  onSelect?: () => void
 }
 
 /**
  * One animated Kenney mini character. Each instance clones the GLB's skinned
  * scene, so the founder and several hires can share a model.
  */
-export function Character<S extends string>({ url, spots, pose, startSpot, progress }: CharacterProps<S>) {
+export function Character<S extends string>({ url, spots, pose, startSpot, progress, onSelect }: CharacterProps<S>) {
   const gltf = useGLTF(url)
   const scene = useMemo(() => cloneSkinned(gltf.scene), [gltf.scene])
   const root = useRef<Group>(null)
@@ -148,7 +150,13 @@ export function Character<S extends string>({ url, spots, pose, startSpot, progr
   })
 
   return (
-    <group ref={root} scale={CHARACTER_SCALE}>
+    <group
+      ref={root}
+      scale={CHARACTER_SCALE}
+      onClick={onSelect ? e => { e.stopPropagation(); onSelect() } : undefined}
+      onPointerOver={onSelect ? e => { e.stopPropagation(); document.body.style.cursor = 'pointer' } : undefined}
+      onPointerOut={onSelect ? () => { document.body.style.cursor = '' } : undefined}
+    >
       <primitive object={scene} />
       {progress !== null && (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
@@ -157,7 +165,7 @@ export function Character<S extends string>({ url, spots, pose, startSpot, progr
         </mesh>
       )}
       {pose.icon && (
-        <Html position={[0, 0.95, 0]} center style={{ pointerEvents: 'none' }}>
+        <Html position={[0, 0.95, 0]} center zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
           <div className="v2-scene-icon">{pose.icon}</div>
         </Html>
       )}

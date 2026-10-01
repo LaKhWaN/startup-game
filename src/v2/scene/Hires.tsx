@@ -8,7 +8,7 @@ import { MISTAKE_FLASH_MS, reactionIcon } from './reactions'
 import { useRoom } from './RoomContext'
 import type { HireSpots } from './layout'
 
-function Hire({ m, spots }: { m: TeamMember; spots: HireSpots }) {
+function Hire({ m, spots, onSelect }: { m: TeamMember; spots: HireSpots; onSelect?: (id: string) => void }) {
   const pose = hirePose(m.task)
   // Grimace for a moment whenever their mistake count goes up.
   const seen = useRef(m.mistakes)
@@ -20,7 +20,7 @@ function Hire({ m, spots }: { m: TeamMember; spots: HireSpots }) {
     const t = setTimeout(() => setMistakeAt(null), MISTAKE_FLASH_MS)
     return () => clearTimeout(t)
   }, [m.mistakes])
-  const icon = reactionIcon({ idle: !m.task, taskIcon: pose.icon, mistakeAt, now: Date.now() })
+  const icon = reactionIcon({ idle: m.assignment === 'idle', taskIcon: pose.icon, mistakeAt, now: Date.now() })
   return (
     <Character
       url={characterUrl(m.characterModel)}
@@ -28,19 +28,20 @@ function Hire({ m, spots }: { m: TeamMember; spots: HireSpots }) {
       pose={{ ...pose, icon }}
       startSpot="seat"
       progress={m.task ? m.task.progress : null}
+      onSelect={onSelect ? () => onSelect(m.id) : undefined}
     />
   )
 }
 
 /** One character per team member, at their seat. */
-export function Hires() {
+export function Hires({ onSelect }: { onSelect?: (id: string) => void }) {
   const team = useV2(s => s.v2.team)
   const room = useRoom()
   return (
     <>
       {Object.values(team).map(m => {
         const spots = room.seats[m.seat]?.spots
-        return spots ? <Hire key={m.id} m={m} spots={spots} /> : null
+        return spots ? <Hire key={m.id} m={m} spots={spots} onSelect={onSelect} /> : null
       })}
     </>
   )
