@@ -1,4 +1,4 @@
-import { EVENTS } from './engine/eventData'
+import { eventById } from './engine/eventData'
 import { prepareEvent } from './eventsV2'
 import { totalDays } from './engine/clock'
 import { reconcileFounderFeatures } from './founder'
@@ -67,7 +67,7 @@ export function loadGameV2(slot: SlotId): V2GameState | null {
     state.v2 = v2
 
     const eventId = state._pendingEventId
-    const rawEvent = eventId ? EVENTS.find(e => e.id === eventId) ?? null : null
+    const rawEvent = eventId ? eventById(eventId) ?? null : null
     // It was already kept before saving: re-apply v2 sizing now, without re-rolling.
     state.pendingEvent = rawEvent ? prepareEvent(state, rawEvent) : null
     delete state._pendingEventId

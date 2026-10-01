@@ -1,4 +1,5 @@
 import type { CompanyState } from './company'
+import { INCIDENT } from './incidents'
 
 /**
  * The event list, ported from the legacy game. Effects see the company plus an
@@ -1363,3 +1364,9 @@ export const EVENTS: EventDef[] = [
     ],
   },
 ]
+
+/** Any event by id, including ones outside the random pool (incidents). Used when loading saves. */
+export function eventById(id: string): EventDef | undefined {
+  if (id === INCIDENT.id) return INCIDENT
+  return EVENTS.find(e => e.id === id)
+}

@@ -4,6 +4,7 @@ import { DAYS_PER_MONTH, totalDays } from './clock'
 import { EVENTS } from './eventData'
 import { pickEvent } from './events'
 import { churnBreakdown, SHOCK_FADE_PER_DAY } from './churn'
+import { INCIDENT, INCIDENT_CUSTOMER_LOSS, INCIDENT_TICKETS_PER_CUSTOMER, incidentChance } from './incidents'
 import { monthlyBurn, valuation } from './money'
 import type { GameV2 } from './types'
 
@@ -48,6 +49,13 @@ export function processDay<T extends GameV2>(state: T, day: number, rng: Rng): T
   investorInterest = Math.max(0, Math.min(100, investorInterest - 0.05))
 
   let pendingEvent = state.pendingEvent
+  // Tech debt sends the bill: an incident costs customers and floods support, then asks what to do.
+  let afterIncident = { customers, tickets }
+  if (!pendingEvent && rng() < incidentChance(state.techDebt)) {
+    const hit = Math.ceil(customers * INCIDENT_CUSTOMER_LOSS)
+    afterIncident = { customers: customers - hit, tickets: tickets + Math.ceil(customers * INCIDENT_TICKETS_PER_CUSTOMER) }
+    pendingEvent = INCIDENT
+  }
   if (!pendingEvent && investorInterest >= 70 && !state.usedEventIds.includes('investor-seed')) {
     pendingEvent = EVENTS.find(e => e.id === 'investor-seed') ?? null
   } else if (!pendingEvent && investorInterest >= 85 && state.usedEventIds.includes('investor-seed') && !state.usedEventIds.includes('investor-series-a')) {
@@ -59,11 +67,11 @@ export function processDay<T extends GameV2>(state: T, day: number, rng: Rng): T
 
   const next: T = {
     ...state,
-    v2: { ...state.v2, leads: state.v2.leads - coldLeads, tickets },
+    v2: { ...state.v2, leads: state.v2.leads - coldLeads, tickets: afterIncident.tickets },
     churnShock,
     churnRate,
-    customers,
-    customersLostThisMonth: (state.customersLostThisMonth ?? 0) + lost,
+    customers: afterIncident.customers,
+    customersLostThisMonth: (state.customersLostThisMonth ?? 0) + lost + (customers - afterIncident.customers),
     mrr,
     cash,
     brand: Math.max(0, Math.min(100, state.brand - 0.01)),

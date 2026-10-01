@@ -18,7 +18,8 @@ export function v2Tick(state: V2GameState, hours: number, rng: Rng = Math.random
   // Events are sized for a company with staff. Keep them off through the
   // tutorial chapters and while the founder is still solo.
   const eventsAllowed = s.v2.chapter.complete && s.v2.chapter2.complete && Object.keys(s.v2.team).length > 0
-  if (!eventsAllowed && s.pendingEvent) s = { ...s, pendingEvent: null }
+  // Incidents come from the player's own tech debt, so they're never suppressed.
+  if (!eventsAllowed && s.pendingEvent && s.pendingEvent.id !== 'incident') s = { ...s, pendingEvent: null }
   // Thin, gate and scale whatever the legacy tick picked (spec §8.5).
   s = filterPendingEvent(s, rng)
   if (s.pendingEvent) return s
