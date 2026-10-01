@@ -1,4 +1,5 @@
 import type { GameV2 } from './types'
+import { infraServicesCost } from './infra'
 
 export const PAYMENT_FEE = 0.03
 export const TOOLS_PER_CUSTOMER = 1
@@ -12,7 +13,7 @@ export function variableCosts(state: BurnInput): number {
 
 /** Rent/infra + every hire's salary + variable costs, per month. */
 export function monthlyBurn(state: BurnInput): number {
-  return state.infraCostMonthly + Object.values(state.v2.team).reduce((sum, m) => sum + m.salary, 0) + variableCosts(state)
+  return state.infraCostMonthly + Object.values(state.v2.team).reduce((sum, m) => sum + m.salary, 0) + variableCosts(state) + infraServicesCost(state)
 }
 
 /** Months of cash left at the current net burn; 999 when profitable. */

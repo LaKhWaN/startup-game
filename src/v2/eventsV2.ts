@@ -36,6 +36,7 @@ export const PAYOUT_MONTHS: Record<string, number> = {
 /** Events that can pay out: kept whole and never thinned. */
 export const EXEMPT_EVENTS = new Set([
   'incident',
+  'outage',
   'investor-seed', 'investor-series-a', 'acquisition-lowball', 'acquisition-premium', 'angel-meeting',
   'enterprise-intro', 'custom-feature-request',
 ])

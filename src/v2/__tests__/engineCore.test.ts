@@ -46,7 +46,7 @@ describe('money', () => {
 
 describe('processDay', () => {
   it('churns small customer bases too (no rounding to zero)', () => {
-    let s = makeState({ customers: 50, churnRate: 12, cash: 100_000 })
+    let s = withV2(makeState({ customers: 50, churnRate: 12, cash: 100_000 }), { infra: { hosting: 5, wifi: 'home', tools: [] } })
     let lost = 0
     const rng = seeded(7)
     for (let d = 1; d <= 30; d++) { const n = processDay(s, d, rng); lost += s.customers - n.customers; s = { ...n, churnRate: 12, pendingEvent: null } }

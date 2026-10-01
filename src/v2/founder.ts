@@ -4,6 +4,7 @@ import { estimateFeatureEffects } from './engine/features'
 import { leadSaturation, marketRoom, reputationFactor, salesBaseOf } from './engine/market'
 import { founderSpeed } from './engine/people'
 import { deskSpeed } from './shop'
+import { toolEffects, wifiSpeed } from './engine/infra'
 import type { Feature, FeatureResult } from '../types'
 import { isTaskUnlocked } from './chapter'
 import { addStory, type FounderSkill, type FounderTask, type FounderTaskType, type Rng, type V2GameState } from './state'
@@ -67,7 +68,7 @@ export function taskDurationDays(
     case 'develop': {
       const feature = state.features.find(f => f.id === featureId)
       // Tech debt slows every build, up to twice as long (spec §4).
-      return ((feature?.baseDays ?? 1) / FOUNDER_BUILD_SPEED) * (1 + (state.techDebt ?? 0) / 100)
+      return ((feature?.baseDays ?? 1) / FOUNDER_BUILD_SPEED) * (1 + (state.techDebt ?? 0) / 100) / ('v2' in state ? toolEffects(state as V2GameState).buildSpeed : 1)
     }
   }
 }
@@ -288,7 +289,7 @@ function applySales(state: V2GameState, worker: Worker, rng: Rng, opts: OutcomeO
 // ── Support & refactor ──────────────────────────────────────────────────────
 
 function applySupport(state: V2GameState, worker: Worker, opts: OutcomeOptions): V2GameState {
-  const capacity = 8 + 2 * worker.skills.outreach
+  const capacity = (8 + 2 * worker.skills.outreach) * toolEffects(state).supportBoost
   const cleared = Math.min(state.v2.tickets ?? 0, Math.floor(opts.mistake ? capacity / 2 : capacity))
   const next: V2GameState = { ...state, v2: { ...state.v2, tickets: (state.v2.tickets ?? 0) - cleared } }
   const lines = [`${isFounder(worker) ? 'You' : worker.name} answered ${cleared} support ticket${cleared === 1 ? '' : 's'}.`]
@@ -352,7 +353,7 @@ export function advanceFounder(state: V2GameState, hours: number, rng: Rng): Adv
 
   const days = taskDurationDays(state, task.type, task.featureId)
   // A tired founder works slower (spec §5).
-  const progress = Math.min(1, task.progress + (hours * founderSpeed(state.v2.founder.energy) * deskSpeed(state, 'founder')) / (24 * days))
+  const progress = Math.min(1, task.progress + (hours * founderSpeed(state.v2.founder.energy) * deskSpeed(state, 'founder') * wifiSpeed(state)) / (24 * days))
 
   if (progress < 1 - EPSILON) {
     const features = task.type === 'develop'

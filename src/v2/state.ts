@@ -4,6 +4,7 @@ import { scoreToDifficulty } from '../ai/gemini'
 import { totalDays } from './engine/clock'
 import { createCompany, type CompanyState } from './engine/company'
 import type { PerkId } from './shop'
+import { START_INFRA, type InfraState } from './engine/infra'
 import { LOCATIONS } from './locations'
 
 export type FounderTaskType = 'research' | 'develop' | 'emails' | 'sales' | 'support' | 'refactor'
@@ -133,6 +134,8 @@ export interface V2Slice {
   perks: PerkId[]
   /** Computer tier per desk: the founder's and each hire seat (spec §6). */
   setups: { founder: number; seats: number[] }
+  /** Hosting, Wi-Fi and tools (spec §7). */
+  infra: InfraState
 }
 
 /** The whole v2 game: company state + the v2 slice. */
@@ -169,6 +172,7 @@ export function createV2Slice(): V2Slice {
     tickets: 0,
     perks: [],
     setups: { founder: 1, seats: [] },
+    infra: { ...START_INFRA },
   }
 }
 
@@ -235,6 +239,7 @@ export function migrateV2Slice(v: unknown): V2Slice | null {
     tickets: typeof s.tickets === 'number' ? s.tickets : 0,
     perks: Array.isArray(s.perks) ? s.perks : [],
     setups: s.setups && typeof s.setups.founder === 'number' && Array.isArray(s.setups.seats) ? s.setups : { founder: 1, seats: [] },
+    infra: s.infra && typeof s.infra.hosting === 'number' ? { ...START_INFRA, ...s.infra } : { ...START_INFRA },
   }
 }
 

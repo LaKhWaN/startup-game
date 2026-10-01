@@ -131,7 +131,7 @@ A **💻 Infra** tab (unlocked with Chapter 1) opens a macOS-style desktop: menu
 - Upgrading starts a **migration** that takes the listed days; the new price applies at once, the new capacity when it finishes. You can't stack migrations.
 - Above 90% load: +1% churn ("the app feels slow"). Above 100%: a daily **outage** chance of min(50%, (load − 1) × 0.8 + 5%) → lose 2% of customers, tickets flood in, and an Outage popup ("Status page and apologies" = +2 churn shock / "Credit affected customers" = pay a month of their ARPU, no shock).
 
-**📶 Wi-Fi** — Home Wi-Fi (free, work speed ×0.95) · Fiber ($80/mo, ×1.0) · Business fiber ($250/mo, ×1.05). Applies to everyone.
+**📶 Wi-Fi** — Home Wi-Fi (free, ×1.0) · Fiber ($80/mo, work speed ×1.05) · Business fiber ($250/mo, ×1.1). Applies to everyone.
 
 **🧰 Tools** — Helpdesk ($100/mo, Support clears 50% more tickets) · Monitoring ($150/mo, incidents and outages 40% less likely) · CI/CD ($200/mo, builds 10% faster, build mistakes ×0.7).
 

@@ -3,6 +3,7 @@ import { totalDays } from './engine/clock'
 import { monthlyBurn, runwayMonths } from './engine/money'
 import { FRESH_MOOD, mistakeFactor, workFactor } from './engine/people'
 import { deskMistakes, deskSpeed } from './shop'
+import { toolEffects, wifiSpeed } from './engine/infra'
 import { applyOutcome, pickResearchTemplates } from './founder'
 import { currentLocation, locationIndex } from './locations'
 import { addStory, type Assignment, type FounderSkill, type FounderTask, type FounderTaskType, type InternCandidate, type Rng, type TeamMember, type TeamRole, type Tier, type V2GameState } from './state'
@@ -248,7 +249,7 @@ export function advanceTeam(state: V2GameState, hours: number, rng: Rng): TeamTi
     if (hours <= 0 || !m.task) continue
 
     const task = m.task
-    const days = workerDurationDays(s, task.type, task.featureId, hireSpeed(m.role, task.type, m.tier) * workFactor(m) * deskSpeed(s, m.seat))
+    const days = workerDurationDays(s, task.type, task.featureId, hireSpeed(m.role, task.type, m.tier) * workFactor(m) * deskSpeed(s, m.seat) * wifiSpeed(s))
     // Hires count work hours: one work day = WORK_DAY_HOURS.
     const progress = Math.min(1, task.progress + hours / (WORK_DAY_HOURS * days))
     if (progress < 1 - EPSILON) {
@@ -265,7 +266,7 @@ export function advanceTeam(state: V2GameState, hours: number, rng: Rng): TeamTi
       s = addStory(cleared, [`${m.name} picked up the phone, but those leads were already called.`])
       continue
     }
-    const mistake = rng() < mistakeChance(m) * mistakeFactor(m.stress ?? 10) * deskMistakes(s, m.seat)
+    const mistake = rng() < mistakeChance(m) * mistakeFactor(m.stress ?? 10) * deskMistakes(s, m.seat) * (task.type === 'develop' ? toolEffects(s).buildMistakes : 1)
     const outcome = applyOutcome(cleared, { id, name: m.name, skills: m.skills }, task, rng, { mistake, firstSaleGuarantee: false })
     if (!outcome) { s = cleared; continue }
 

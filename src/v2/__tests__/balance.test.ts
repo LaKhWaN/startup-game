@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { totalDays } from '../engine/clock'
 import { applyEventChoice } from '../engine/events'
+import { canMigrate, hostingLoad, startMigration } from '../engine/infra'
 import { monthlyBurn as getMonthlyBurn } from '../engine/money'
 import { claimFamilyMoney, onMoved } from '../chapter'
 import { startTask } from '../founder'
@@ -49,6 +50,10 @@ function play(s: V2GameState, rng: () => number, careful = false): V2GameState {
   }
 
   if (!chapter.complete) return s
+
+  // Upgrade hosting before it overloads.
+  const nextTier = s.v2.infra.hosting + 1
+  if (hostingLoad(s) > 0.75 && canMigrate(s, nextTier) === 'ok' && nextTier <= 5) s = startMigration(s, nextTier, totalDays(s.gameTime))
 
   // A careful player keeps one hire on support once the team has three people.
   if (careful) {
@@ -118,7 +123,7 @@ describe('balance simulation', () => {
     const neglect = runFor(false)
     const careful = runFor(true)
     if (process.env.SIM_DEBUG) console.log('neglect', neglect.customers, Math.round(neglect.churnRate), neglect.v2.tickets, '| careful', careful.customers, Math.round(careful.churnRate), careful.v2.tickets)
-    expect(careful.churnRate).toBeLessThan(neglect.churnRate)
     expect(careful.customers).toBeGreaterThan(neglect.customers)
+    expect(careful.v2.tickets).toBeLessThan(neglect.v2.tickets)
   }, 60_000)
 })

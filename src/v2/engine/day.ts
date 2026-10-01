@@ -5,6 +5,7 @@ import { EVENTS } from './eventData'
 import { pickEvent } from './events'
 import { churnBreakdown, SHOCK_FADE_PER_DAY } from './churn'
 import { INCIDENT, INCIDENT_CUSTOMER_LOSS, INCIDENT_TICKETS_PER_CUSTOMER, incidentChance } from './incidents'
+import { finishMigrations, OUTAGE, OUTAGE_CUSTOMER_LOSS, OUTAGE_TICKETS_PER_CUSTOMER, outageChance, toolEffects } from './infra'
 import { monthlyBurn, valuation } from './money'
 import type { GameV2 } from './types'
 
@@ -26,7 +27,8 @@ export const LEAD_DECAY_PER_DAY = 0.08
 export const TICKETS_PER_CUSTOMER_DAY = 0.03
 
 /** Once per game day: churn, revenue − burn, investor interest, a possible event, a snapshot. */
-export function processDay<T extends GameV2>(state: T, day: number, rng: Rng): T {
+export function processDay<T extends GameV2>(raw: T, day: number, rng: Rng): T {
+  const state = finishMigrations(raw, day)
   // Product-health churn: shocks fade, the rest follows the product (spec §4).
   const churnShock = Math.max(0, (state.churnShock ?? 0) - SHOCK_FADE_PER_DAY)
   const churnRate = churnBreakdown({ ...state, churnShock }).total
@@ -51,10 +53,16 @@ export function processDay<T extends GameV2>(state: T, day: number, rng: Rng): T
   let pendingEvent = state.pendingEvent
   // Tech debt sends the bill: an incident costs customers and floods support, then asks what to do.
   let afterIncident = { customers, tickets }
-  if (!pendingEvent && rng() < incidentChance(state.techDebt)) {
+  if (!pendingEvent && rng() < incidentChance(state.techDebt) * toolEffects(state).incidentFactor) {
     const hit = Math.ceil(customers * INCIDENT_CUSTOMER_LOSS)
     afterIncident = { customers: customers - hit, tickets: tickets + Math.ceil(customers * INCIDENT_TICKETS_PER_CUSTOMER) }
     pendingEvent = INCIDENT
+  }
+  // Over hosting capacity: servers fall over (spec §7).
+  if (!pendingEvent && rng() < outageChance({ ...state, customers: afterIncident.customers })) {
+    const hit = Math.ceil(afterIncident.customers * OUTAGE_CUSTOMER_LOSS)
+    afterIncident = { customers: afterIncident.customers - hit, tickets: afterIncident.tickets + Math.ceil(afterIncident.customers * OUTAGE_TICKETS_PER_CUSTOMER) }
+    pendingEvent = OUTAGE
   }
   if (!pendingEvent && investorInterest >= 70 && !state.usedEventIds.includes('investor-seed')) {
     pendingEvent = EVENTS.find(e => e.id === 'investor-seed') ?? null

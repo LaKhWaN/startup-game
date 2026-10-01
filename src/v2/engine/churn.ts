@@ -1,4 +1,5 @@
 import type { GameV2 } from './types'
+import { slowAppChurn } from './infra'
 
 export interface ChurnBreakdown {
   /** The idea tier's floor. */
@@ -9,6 +10,8 @@ export interface ChurnBreakdown {
   support: number
   /** Not enough product yet. */
   thin: number
+  /** Hosting above 90% load. */
+  slow: number
   /** Recent events, fading. */
   shock: number
   total: number
@@ -21,7 +24,8 @@ export function churnBreakdown(s: Pick<GameV2, 'difficultyModifier' | 'techDebt'
   const support = Math.min(8, ((s.v2.tickets ?? 0) / Math.max(1, s.customers)) * 40)
   const thin = s.productProgress < 30 ? ((30 - s.productProgress) / 30) * 4 : 0
   const shock = Math.max(0, s.churnShock ?? 0)
-  return { floor, bugs, support, thin, shock, total: floor + bugs + support + thin + shock }
+  const slow = slowAppChurn(s)
+  return { floor, bugs, support, thin, slow, shock, total: floor + bugs + support + thin + slow + shock }
 }
 
 export const SHOCK_FADE_PER_DAY = 0.15

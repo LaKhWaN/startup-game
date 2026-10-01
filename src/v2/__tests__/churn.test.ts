@@ -6,16 +6,19 @@ import { EVENTS } from '../engine/eventData'
 import { migrateV2Slice, createV2Slice } from '../state'
 import { makeState, withV2 } from './fixtures'
 
+/** Plenty of hosting so the 'slow app' term stays out of these checks. */
+const BIG = { hosting: 5, wifi: 'home' as const, tools: [] }
+
 describe('churnBreakdown', () => {
   it('is the tier floor when the product is healthy', () => {
-    const s = makeState({ techDebt: 0, productProgress: 60, customers: 100, churnShock: 0 })
+    const s = withV2(makeState({ techDebt: 0, productProgress: 60, customers: 100, churnShock: 0 }), { infra: BIG })
     const b = churnBreakdown(s)
     expect(b).toMatchObject({ bugs: 0, support: 0, thin: 0, shock: 0 })
     expect(b.total).toBe(b.floor)
   })
 
   it('adds bugs, support backlog, a thin product and shocks', () => {
-    const s = withV2(makeState({ techDebt: 50, productProgress: 15, customers: 100, churnShock: 2 }), { tickets: 10 })
+    const s = withV2(makeState({ techDebt: 50, productProgress: 15, customers: 100, churnShock: 2 }), { tickets: 10, infra: BIG })
     const b = churnBreakdown(s)
     expect(b.bugs).toBeCloseTo(3)
     expect(b.support).toBeCloseTo(4) // 10/100 × 40
