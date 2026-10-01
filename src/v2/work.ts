@@ -1,5 +1,5 @@
 import { taskDurationDays } from './founder'
-import type { FounderSkill, FounderTaskType, TeamRole, V2GameState } from './state'
+import type { FounderSkill, FounderTaskType, TeamRole, Tier, V2GameState } from './state'
 
 export const MAIN_TASK: Record<TeamRole, FounderTaskType> = {
   developer: 'develop',
@@ -15,20 +15,42 @@ const TASK_SKILL_OF: Record<FounderTaskType, FounderSkill> = {
   sales: 'sales',
 }
 
-export const INTERN_MAIN_SPEED = 0.7
-export const INTERN_OFF_SPEED = 0.35
+export interface TierRule {
+  mainSpeed: number
+  offSpeed: number
+  skillMain: number
+  skillOther: number
+  gain: number
+  cap: number
+}
 
-export function hireSpeed(role: TeamRole, type: FounderTaskType): number {
-  return MAIN_TASK[role] === type ? INTERN_MAIN_SPEED : INTERN_OFF_SPEED
+/** Spec §7.2 (interns) and §8.3 (full-time). */
+export const TIER_RULES: Record<Tier, TierRule> = {
+  intern: { mainSpeed: 0.7, offSpeed: 0.35, skillMain: 3, skillOther: 1, gain: 0.25, cap: 6 },
+  fulltime: { mainSpeed: 1, offSpeed: 0.5, skillMain: 5, skillOther: 2, gain: 0.2, cap: 9 },
+}
+
+export const INTERN_MAIN_SPEED = TIER_RULES.intern.mainSpeed
+export const INTERN_OFF_SPEED = TIER_RULES.intern.offSpeed
+
+export function hireSpeed(role: TeamRole, type: FounderTaskType, tier: Tier = 'intern'): number {
+  const rule = TIER_RULES[tier]
+  return MAIN_TASK[role] === type ? rule.mainSpeed : rule.offSpeed
 }
 
 export function mainSkillOf(role: TeamRole): FounderSkill {
   return TASK_SKILL_OF[MAIN_TASK[role]]
 }
 
-/** 15% at main skill 3, −2% per point above, never below 5%. */
-export function mistakeChance(m: { role: TeamRole; skills: Record<FounderSkill, number> }): number {
-  return Math.max(0.05, 0.15 - 0.02 * (m.skills[mainSkillOf(m.role)] - 3))
+/**
+ * Interns: 15% at main skill 3, −2% per point above, never below 5%.
+ * Full-time: 5% at main skill 5, −1% per point above, never below 1%.
+ */
+export function mistakeChance(m: { role: TeamRole; skills: Record<FounderSkill, number>; tier?: Tier }): number {
+  const main = m.skills[mainSkillOf(m.role)]
+  return m.tier === 'fulltime'
+    ? Math.max(0.01, 0.05 - 0.01 * (main - 5))
+    : Math.max(0.05, 0.15 - 0.02 * (main - 3))
 }
 
 /** A worker's duration: the founder's duration stretched by 1/speed. */

@@ -2,15 +2,19 @@ import { generateCandidate, ROLE_LABELS } from '../data/candidates'
 import { getMonthlyBurn, getRunwayMonths, totalDays } from '../engine/gameEngine'
 import type { Employee } from '../types'
 import { applyOutcome, pickResearchTemplates } from './founder'
-import { currentLocation } from './locations'
-import { addStory, type Assignment, type FounderSkill, type FounderTask, type FounderTaskType, type InternCandidate, type Rng, type TeamMember, type TeamRole, type V2GameState } from './state'
-import { hireSpeed, MAIN_TASK, mainSkillOf, mistakeChance, workerDurationDays } from './work'
+import { currentLocation, locationIndex } from './locations'
+import { addStory, type Assignment, type FounderSkill, type FounderTask, type FounderTaskType, type InternCandidate, type Rng, type TeamMember, type TeamRole, type Tier, type V2GameState } from './state'
+import { hireSpeed, MAIN_TASK, mainSkillOf, mistakeChance, TIER_RULES, workerDurationDays } from './work'
 
 export const HOME_CAPACITY = 2
-export const INTERN_SKILL_MAIN = 3
-export const INTERN_SKILL_OTHER = 1
-export const INTERN_SKILL_GAIN = 0.25
-export const INTERN_SKILL_CAP = 6
+export const INTERN_SKILL_MAIN = TIER_RULES.intern.skillMain
+export const INTERN_SKILL_OTHER = TIER_RULES.intern.skillOther
+export const INTERN_SKILL_GAIN = TIER_RULES.intern.gain
+export const INTERN_SKILL_CAP = TIER_RULES.intern.cap
+/** Full-time hires unlock at this ladder index (the Villa). */
+export const FULLTIME_STAGE = 2
+export const PROMOTE_SKILL = 5
+export const FULLTIME_MIN_SALARY = 2000
 
 const EPSILON = 1e-9
 
@@ -36,21 +40,27 @@ export function teamCapacity(state: V2GameState): number {
 
 const pick = <T,>(arr: T[], rng: Rng): T => arr[Math.min(arr.length - 1, Math.floor(rng() * arr.length))]
 
-export function generateInternCandidates(rng: Rng, count = 3): InternCandidate[] {
+export function isFullTimeUnlocked(state: Pick<V2GameState, 'v2'>): boolean {
+  return locationIndex(state.v2.location) >= FULLTIME_STAGE
+}
+
+function makeCandidates(rng: Rng, count: number, tier: Tier): InternCandidate[] {
+  const rule = TIER_RULES[tier]
   return Array.from({ length: count }, () => {
     const role = pick(ROLES, rng)
     const base = generateCandidate(role) // names, gender, bio from the legacy pools
     const skills: Record<FounderSkill, number> = {
-      research: INTERN_SKILL_OTHER, build: INTERN_SKILL_OTHER, outreach: INTERN_SKILL_OTHER, sales: INTERN_SKILL_OTHER,
-      [mainSkillOf(role)]: INTERN_SKILL_MAIN,
+      research: rule.skillOther, build: rule.skillOther, outreach: rule.skillOther, sales: rule.skillOther,
+      [mainSkillOf(role)]: rule.skillMain,
     }
-    const salary = 600 + Math.min(4, Math.floor(rng() * 5)) * 100
+    const step = Math.min(4, Math.floor(rng() * 5))
+    const salary = tier === 'fulltime' ? FULLTIME_MIN_SALARY + step * 250 : 600 + step * 100
     return {
-      id: `intern-${base.id}`,
+      id: `${tier === 'fulltime' ? 'ft' : 'intern'}-${base.id}`,
       name: base.name,
       gender: base.gender,
       role,
-      tier: 'intern' as const,
+      tier,
       skills,
       salary,
       bio: base.bio,
@@ -59,11 +69,21 @@ export function generateInternCandidates(rng: Rng, count = 3): InternCandidate[]
   })
 }
 
-export type HireCheck = 'ok' | 'full' | 'cash' | 'missing'
+export function generateInternCandidates(rng: Rng, count = 3): InternCandidate[] {
+  return makeCandidates(rng, count, 'intern')
+}
+
+/** The hiring pool: 3 interns, plus 2 full-time candidates once full-time is unlocked. */
+export function generateCandidates(rng: Rng, opts: { fullTime: boolean }): InternCandidate[] {
+  return [...makeCandidates(rng, 3, 'intern'), ...(opts.fullTime ? makeCandidates(rng, 2, 'fulltime') : [])]
+}
+
+export type HireCheck = 'ok' | 'full' | 'cash' | 'missing' | 'locked'
 
 export function canHire(state: V2GameState, candidateId: string): HireCheck {
   const c = state.v2.candidates.find(x => x.id === candidateId)
   if (!c) return 'missing'
+  if (c.tier === 'fulltime' && !isFullTimeUnlocked(state)) return 'locked'
   if (Object.keys(state.v2.team).length >= teamCapacity(state)) return 'full'
   if (state.cash < c.salary) return 'cash'
   return 'ok'
@@ -84,7 +104,7 @@ export function hireIntern(state: V2GameState, candidateId: string): V2GameState
     name: c.name,
     gender: c.gender,
     role: c.role,
-    tier: 'intern',
+    tier: c.tier,
     skills: { ...c.skills },
     assignment: MAIN_TASK[c.role],
     task: null,
@@ -99,7 +119,7 @@ export function hireIntern(state: V2GameState, candidateId: string): V2GameState
     id: c.id,
     name: c.name,
     role: 'developer',
-    stats: { [mainSkillOf(c.role)]: INTERN_SKILL_MAIN },
+    stats: { [mainSkillOf(c.role)]: TIER_RULES[c.tier].skillMain },
     salary: c.salary,
     status: 'idle',
     gender: c.gender,
@@ -121,7 +141,8 @@ export function hireIntern(state: V2GameState, candidateId: string): V2GameState
       chapter2,
     },
   }
-  return addStory(next, [`${c.name} joined as a ${ROLE_LABELS[c.role].toLowerCase()} intern ($${c.salary}/mo).`])
+  const title = c.tier === 'fulltime' ? `full-time ${ROLE_LABELS[c.role].toLowerCase()}` : `${ROLE_LABELS[c.role].toLowerCase()} intern`
+  return addStory(next, [`${c.name} joined as a ${title} ($${c.salary.toLocaleString()}/mo).`])
 }
 
 function freeFeatureOf(state: V2GameState, memberId: string): V2GameState {
@@ -161,6 +182,29 @@ export function setAssignment(state: V2GameState, id: string, assignment: Assign
 
 function withMember(state: V2GameState, m: TeamMember): V2GameState {
   return { ...state, v2: { ...state.v2, team: { ...state.v2.team, [m.id]: m } } }
+}
+
+export type PromoteCheck = 'ok' | 'missing' | 'tier' | 'skill' | 'locked'
+
+export function canPromote(state: V2GameState, id: string): PromoteCheck {
+  const m = state.v2.team[id]
+  if (!m) return 'missing'
+  if (m.tier !== 'intern') return 'tier'
+  if (!isFullTimeUnlocked(state)) return 'locked'
+  if (m.skills[mainSkillOf(m.role)] < PROMOTE_SKILL) return 'skill'
+  return 'ok'
+}
+
+/** Intern → full-time: same person, skills and task; better rules; salary at least $2,000. */
+export function promoteMember(state: V2GameState, id: string): V2GameState {
+  if (canPromote(state, id) !== 'ok') return state
+  const m = state.v2.team[id]
+  const salary = Math.max(m.salary, FULLTIME_MIN_SALARY)
+  const next: V2GameState = {
+    ...withMember(state, { ...m, tier: 'fulltime', salary }),
+    employees: state.employees.map(e => (e.id === id ? { ...e, salary } : e)),
+  }
+  return addStory(next, [`${m.name} was promoted to full-time ($${salary.toLocaleString()}/mo).`])
 }
 
 /**
@@ -216,7 +260,7 @@ export function advanceTeam(state: V2GameState, hours: number, rng: Rng): TeamTi
     if (hours <= 0 || !m.task) continue
 
     const task = m.task
-    const days = workerDurationDays(s, task.type, task.featureId, hireSpeed(m.role, task.type))
+    const days = workerDurationDays(s, task.type, task.featureId, hireSpeed(m.role, task.type, m.tier))
     const progress = Math.min(1, task.progress + hours / (24 * days))
     if (progress < 1 - EPSILON) {
       if (task.type === 'develop') {
@@ -237,9 +281,10 @@ export function advanceTeam(state: V2GameState, hours: number, rng: Rng): TeamTi
     if (!outcome) { s = cleared; continue }
 
     const skill = SKILL_OF_TASK[task.type]
+    const rule = TIER_RULES[m.tier]
     const grown: TeamMember = {
       ...outcome.v2.team[id],
-      skills: { ...m.skills, [skill]: Math.min(INTERN_SKILL_CAP, m.skills[skill] + INTERN_SKILL_GAIN) },
+      skills: { ...m.skills, [skill]: Math.min(rule.cap, m.skills[skill] + rule.gain) },
       mistakes: m.mistakes + (mistake ? 1 : 0),
     }
     s = withMember(outcome, grown)
