@@ -82,3 +82,15 @@ describe('reconcileFounderFeatures', () => {
     expect(loadGameV2(1)!.features[0].status).toBe('proposed')
   })
 })
+
+describe('Phase 1/2 save compatibility', () => {
+  it('loads a save whose v2 slice has no team fields', () => {
+    const s = makeState()
+    const { team: _t, candidates: _c, chapter2: _ch, ...oldV2 } = s.v2
+    store.set(slotKeyV2(1), JSON.stringify({ meta: {}, state: { ...s, v2: oldV2 } }))
+    const loaded = loadGameV2(1)
+    expect(loaded).not.toBeNull()
+    expect(loaded!.v2.team).toEqual({})
+    expect(loaded!.v2.chapter2.complete).toBe(false)
+  })
+})

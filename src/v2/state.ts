@@ -1,5 +1,5 @@
 import { createInitialState, totalDays } from '../engine/gameEngine'
-import type { GameState, MetricsSnapshot, OnboardingConfig } from '../types'
+import type { EmployeeRole, GameState, MetricsSnapshot, OnboardingConfig } from '../types'
 
 export type FounderTaskType = 'research' | 'develop' | 'emails' | 'sales'
 export type FounderSkill = 'research' | 'build' | 'outreach' | 'sales'
@@ -18,6 +18,44 @@ export interface FamilyMoney {
   claimed: boolean
 }
 
+export type TeamRole = EmployeeRole
+export type Tier = 'intern'
+export type Assignment = FounderTaskType | 'idle'
+
+export interface TeamMember {
+  id: string
+  name: string
+  gender: 'male' | 'female'
+  role: TeamRole
+  tier: Tier
+  skills: Record<FounderSkill, number>
+  assignment: Assignment
+  task: FounderTask | null
+  mistakes: number
+  seat: number
+  characterModel: string
+  salary: number
+  /** Manager this member reports to (managers arrive in a later phase). */
+  reportsTo?: string
+}
+
+export interface InternCandidate {
+  id: string
+  name: string
+  gender: 'male' | 'female'
+  role: TeamRole
+  skills: Record<FounderSkill, number>
+  salary: number
+  bio: string
+  characterModel: string
+}
+
+export interface Chapter2State {
+  beat: 0 | 1 | 2
+  complete: boolean
+  firstMistake: boolean
+}
+
 export interface V2Slice {
   founder: {
     name: string
@@ -32,6 +70,9 @@ export interface V2Slice {
   }
   leads: number
   firstSaleDone: boolean
+  team: Record<string, TeamMember>
+  candidates: InternCandidate[]
+  chapter2: Chapter2State
 }
 
 export type V2GameState = GameState & { v2: V2Slice }
@@ -56,6 +97,9 @@ export function createV2Slice(): V2Slice {
     chapter: { beat: 0, complete: false, seenCards: [] },
     leads: 0,
     firstSaleDone: false,
+    team: {},
+    candidates: [],
+    chapter2: { beat: 0, complete: false, firstMistake: false },
   }
 }
 
@@ -104,6 +148,18 @@ export function isValidV2Slice(v: unknown): v is V2Slice {
   const beat = chapter.beat
   if (typeof beat !== 'number' || !Number.isInteger(beat) || beat < 0 || beat > 5) return false
   return typeof chapter.complete === 'boolean' && Array.isArray(chapter.seenCards)
+}
+
+/** Accepts a valid Phase 1+ slice and fills in fields added by later phases. */
+export function migrateV2Slice(v: unknown): V2Slice | null {
+  if (!isValidV2Slice(v)) return null
+  const s = v as Partial<V2Slice> & V2Slice
+  return {
+    ...s,
+    team: s.team && typeof s.team === 'object' ? s.team : {},
+    candidates: Array.isArray(s.candidates) ? s.candidates : [],
+    chapter2: s.chapter2 ?? { beat: 0, complete: false, firstMistake: false },
+  }
 }
 
 /** True only for a genuine v2 game — a legacy restart leaves a stale v2 slice but a legacy id. */

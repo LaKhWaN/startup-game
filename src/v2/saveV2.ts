@@ -1,7 +1,7 @@
 import { EVENTS } from '../data/events'
 import { totalDays } from '../engine/gameEngine'
 import { reconcileFounderFeatures } from './founder'
-import { isValidV2Slice, type V2GameState } from './state'
+import { migrateV2Slice, type V2GameState } from './state'
 
 export type SlotId = 1 | 2 | 3
 
@@ -61,7 +61,9 @@ export function loadGameV2(slot: SlotId): V2GameState | null {
     const state = envelope.state as unknown as (V2GameState & { _pendingEventId?: string | null }) | undefined
     if (!state || typeof state !== 'object') return null
     if (typeof state.gameId !== 'string' || !state.gameId.startsWith('v2-')) return null
-    if (!isValidV2Slice(state.v2)) return null
+    const v2 = migrateV2Slice(state.v2)
+    if (!v2) return null
+    state.v2 = v2
 
     const eventId = state._pendingEventId
     state.pendingEvent = eventId ? EVENTS.find(e => e.id === eventId) ?? null : null

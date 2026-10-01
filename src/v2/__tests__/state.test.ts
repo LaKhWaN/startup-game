@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createInitialState } from '../../engine/gameEngine'
-import { addStory, createV2State, createV2Slice, isV2Game, isValidV2Slice, FOUNDER_START_CASH } from '../state'
+import { addStory, createV2State, createV2Slice, isV2Game, isValidV2Slice, migrateV2Slice, FOUNDER_START_CASH } from '../state'
 import { makeConfig } from './fixtures'
 
 describe('createV2State', () => {
@@ -71,5 +71,28 @@ describe('addStory', () => {
     for (let i = 0; i < 25; i++) s = addStory(s, [`line ${i}`])
     expect(s.storyLog).toHaveLength(20)
     expect(s.storyLog[0]).toEqual({ day: 0, lines: ['line 24'] })
+  })
+})
+
+describe('Phase 3 slice fields', () => {
+  it('a fresh slice has an empty team, no candidates and Chapter 2 defaults', () => {
+    const v2 = createV2Slice()
+    expect(v2.team).toEqual({})
+    expect(v2.candidates).toEqual([])
+    expect(v2.chapter2).toEqual({ beat: 0, complete: false, firstMistake: false })
+  })
+})
+
+describe('migrateV2Slice', () => {
+  it('fills Phase 3 fields onto a Phase 1/2 slice', () => {
+    const { team: _t, candidates: _c, chapter2: _ch, ...old } = createV2Slice()
+    const migrated = migrateV2Slice(old)
+    expect(migrated?.team).toEqual({})
+    expect(migrated?.chapter2.beat).toBe(0)
+  })
+
+  it('rejects junk', () => {
+    expect(migrateV2Slice({})).toBeNull()
+    expect(migrateV2Slice(undefined)).toBeNull()
   })
 })
