@@ -1,0 +1,62 @@
+# v2 Launch — "Run a company, not a money printer": Roadmap + Sub-project A
+
+**Status:** Roadmap and sub-project A approved 2026-10-02. B–F get their own design review before building.
+**Base:** the current v2 build (interns, location ladder, themed rooms, 2.5D city, room-first UI).
+
+## 1. Why the game is too easy (diagnosis)
+
+1. Infinite market: every email round finds ~10 leads regardless of size; sales converts ~37%. Revenue grows linearly forever.
+2. Flat churn: one monthly rate with a difficulty floor; product quality, support and outages don't matter.
+3. People are machines: no fatigue, no leaving, no company knowledge; morale/stress are pinned.
+4. Flat costs: rent + salaries only; nothing scales with customers.
+5. The idea barely matters: difficulty nudges multipliers, not the market.
+
+## 2. Roadmap
+
+| # | Sub-project | Scope |
+|---|---|---|
+| A | **Own engine + take over `/`** | v2-owned state, store and tick (clock, money, churn, events); legacy game/Phaser removed; pause on game popups; 9–5 office hours, nights, weekends, skip-to-morning |
+| B | **Market reality** | Market size from the idea score; email returns shrink near saturation; leads go cold; churn from product health (bugs/tech debt, outages, support backlog, missing features); **Support** as a 5th task; tech debt that slows builds and triggers incidents; costs that scale with customers |
+| C | **People** | Energy, stress, morale and **context** (company experience) per person; grind raises stress, idle/perks/weekends lower it; low morale → slower, more mistakes; burnout → notice → resignation; context makes veterans faster and losing them hurt; founder energy, night work costs energy, sleeping in bed restores |
+| D | **Shop** | Per-location item slots (coffee machine, plants, PlayStation, table tennis, decor) placed in the room; bigger spaces have more slots; **setups** per seat from an XP laptop (2 GB RAM, 500 GB HDD) to a Mac — better setups = faster work, fewer mistakes |
+| E | **Infra desktop** | macOS-style screen with service apps: hosting tiers with customer caps (free ≈ 20 customers → VPS → cloud), wifi, tools; over capacity → outages → churn; upgrading takes time |
+| F | **Balance + polish** | Balance simulation across all systems (no strategy prints money; a careful player can win), tutorial cards introducing each system as it unlocks |
+
+Process: each sub-project gets a short design review, is built fully (tsc + unit tests as gates, no browser checks by the agent), then the user tests from one table. Push/PR only at the very end.
+
+## 3. Sub-project A — own engine + take over `/`
+
+### 3.1 Engine
+- v2 owns its state (`CompanyState` + the existing `v2` slice), a v2 Zustand store, and an hourly tick. 1 real second = 1 game hour at 1×.
+- **Clock:** total hours → hour of day, day, weekday (day 0 = Monday).
+- **Daily:** churn (simple monthly rate applied daily, visibly moving; B replaces it with product-health churn), metrics snapshot for charts.
+- **Monthly (every 30 days):** payroll (all team salaries) + rent; month summary story line.
+- **Game over:** cash < 0 → lost. Selling the company (Sell button / acquisition offers) still ends the game.
+- **Events:** the event list is ported to v2 with v2-native effects, keeping today's v2 rules (stage gating, thinning, cost scaling, payout caps, suppression until Chapter 2). Effects that touched legacy employee morale are dropped until C.
+- Legacy `employees` payroll mirror is removed: payroll comes from `v2.team` directly.
+
+### 3.2 Office hours, nights, weekends
+- Hires work **09:00–17:00, Monday–Friday**. At 17:00 they walk out the door and the room empties; at 09:00 they walk back in.
+- Hire task durations are counted in **work hours** (1 work day = 8 h), so a "2-day" task takes two working days.
+- The **founder** can work any hour, any day (energy cost arrives in C).
+- **Night look:** after 18:00 the window darkens, lamps/laptop glow, light warms; morning returns to day light.
+- **⏭ Skip to morning:** shown when no hire is at work; fast-forwards to 09:00 of the next work day (still running payroll/churn/events on the way).
+
+### 3.3 Pause on popups
+Game-raised popups (event cards, family money, chapter/result popups, sell offers) pause the game and restore the previous speed when dismissed. Sheets the player opens (Team, Metrics, person card, Founder) do not pause.
+
+### 3.4 Taking over `/`
+- `/` → landing page → v2 onboarding → v2 game. `/new` redirects to `/`.
+- Delete the legacy game: Phaser office scene, legacy engine/store/save, legacy panels and components, the Phaser dependency, legacy tests.
+- Keep: landing, blog, changelog, leaderboard, idea-rater pages, admin dashboard, server/Mongo analytics (game ids keep the `v2-` prefix).
+- Reuse as data only: feature templates, candidate name pools, idea scoring, sound effects.
+- v2-native copies of what v2 still needs: event card, metrics charts, runway banner, feature toasts, sell modal, post-mortem + leaderboard entry, investor check-in feedback, onboarding styling. Legacy milestone toasts are dropped (chapters/coach cards cover progression).
+
+### 3.5 Saves
+Fresh launch: the save shape changes, so old v2 saves and the old leaderboard are not loaded (new keys).
+
+### 3.6 Testing and acceptance
+- Unit tests: clock + office hours + weekends; work-hour task durations; payroll/rent; churn moves; game over; pause/resume rules; skip-to-morning; event port (gating/scaling still hold); save round-trip.
+- Balance simulation rebuilt on the new engine (still reaches Co-working, never broke).
+- Gates: `tsc`, `npm test`, `npm run build`; no Phaser/legacy engine imports remain; marketing pages still build.
+- One manual test table for the user.
