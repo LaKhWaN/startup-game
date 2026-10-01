@@ -1,7 +1,7 @@
 # Startup Game — Claude Context
 
 ## Stack
-Vite + React + TypeScript + Zustand + Phaser 3 (office scene) + MongoDB
+Vite + React + TypeScript + Zustand + React Three Fiber (2.5D rooms/city) + MongoDB
 
 ## Dev
 ```
@@ -9,61 +9,33 @@ npm run dev
 ```
 
 ## Entry Points
-- `src/App.tsx` — routes: setup → Onboarding, playing → GameScreen, sold/lost → PostMortem
-- `src/store/gameStore.ts` — Zustand store (GameState + actions)
-- `src/engine/gameEngine.ts` — all game logic (tick, campaigns, events, features, churn)
-- `src/types/index.ts` — all TypeScript interfaces
+- `src/App.tsx` — `/`: landing page, then the game (`src/v2/AppV2.tsx`: onboarding → GameScreenV2 → PostMortem). `/new` redirects to `/?play`.
+- `src/v2/store.ts` — Zustand store; `src/v2/actions.ts` — every state-changing action + `useV2` selector hook
+- `src/v2/engine/` — own engine: `clock.ts` (office hours), `day.ts` (churn, cash, events, snapshots), `events.ts`/`eventData.ts`, `money.ts`
+- `src/v2/v2Tick.ts` — `stepV2` (one game hour) and `skipToMorning`; founder/team/chapters layer
+- `src/v2/state.ts` — `V2GameState` = company state + `v2` slice (founder, team, chapters, location…)
+- `src/types/index.ts`, `src/data/featureTemplates.ts`, `src/data/candidates.ts` — shared types/data
+- Plans/specs/decisions: `docs/superpowers/` (`v2-rulings.md` lists every autonomous decision)
 
 ## Game Loop
-- 1 real second = 1 game hour at 1× speed (2×/3×/5× available)
-- `processDayTick` every 24 hours: features build, campaigns run, churn applies, XP gained
-- `processMonthTick` every 30 days: salaries deducted, MRR calculated, events triggered
-- Win: $10k MRR (200 customers × $50 ARPU) | Lose: cash = $0
+- 1 real second = 1 game hour at 1× (2×/3×/5×; 10× in dev). Games start Monday 09:00.
+- Hires work 09:00–17:00 Mon–Fri (task durations in 8-hour work days); the founder works any hour.
+- Daily: churn (probabilistic), cash += (MRR − burn)/30, event roll, metrics snapshot. Monthly: summary line.
+- Game-raised popups (events, family money, check-in) pause the game (`src/v2/pause.ts`).
+- Lose: cash < $0. End by selling (Sell button / acquisition events).
 
 ## Key Financial Numbers
-- ARPU: $50/user/month
-- Starting cash: Home $85k, Coworking $70k, Office $55k
-- Infra: $200 / $1k / $2.5k/mo
-- Dev salary: ~$8k/mo, PM ~$7k, Marketing ~$5.75k, Sales ~$5.25k
-- Desk cost: $1,500 each, max 6
-- Acquisition offer events only become eligible at $5k+ MRR and 500+
-  customers, and even then only a 20% chance per roll — see
-  `ACQUISITION_MIN_MRR`/`ACQUISITION_MIN_CUSTOMERS`/`ACQUISITION_SHOW_CHANCE`
-  in `gameEngine.ts`
-- Seed/Series A investor events scale funding to current monthly burn
-  (5x/8x, clamped) instead of a flat $200k/$500k
+- Start: $500 founder savings, $0 burn, ARPU $50. Family money ($800–1,500) at the end of Chapter 1.
+- Interns $600–1,000/mo, full-time $2,000–3,000/mo. Location ladder (rent/move-in/capacity) in `src/v2/locations.ts`.
 
-## UI Layout
-```
-TopBar (fixed, 96px) → RunwayBanner (fixed, 36px, only when runway ≤ 3mo)
-game-main:
-  game-canvas-area: OfficeCanvas (Phaser) + BottomNav (6 tabs)
-  RightPanel: panel content based on active tab
-Overlays: EventCard, TutorialModal, CampaignResultToast, FeatureResultToast,
-          MilestoneToast, InvestorCheckin
-```
+## UI Layout (room-first)
+- TopBarV2 (metrics pill incl. Profit, clock, speed) → room canvas full width + StatsRail on the right
+- FounderBar (bottom), CoachOverlay (top-left), NightBanner (skip to morning), BottomNav (Founder/Team/Map/Metrics)
+- Founder/Team/Metrics/person cards open as Modal sheets; Map swaps the canvas to the 2.5D city
+- Overlays: EventCard, FeatureResultToasts, RunwayBanner, FamilyMoneyModal, InvestorCheckin (all in `src/v2/ui/`)
 
-## BottomNav Tabs
-product, team, hire, shop, gtm, metrics, goals
-
-## Key Components
-- `TopBar.tsx` — metrics pill, speed controls (1×/2×/3×/5×), ⚙️ Settings modal
-- `TutorialModal.tsx` — spotlight tutorial, shown once via `localStorage: startup-game-tutorial-completed`, re-accessible via Settings
-- `InvestorCheckin.tsx` — feedback modal, triggers Day 30 + game over, saves to MongoDB `game_feedback`
-- `RunwayBanner.tsx` — pulsing warning at 3/2/1 months runway
-- `CampaignResultToast.tsx` — shows GREAT/OK/FLOPPED after campaign ends
-- `FeatureResultToast.tsx` — shows after feature ships
-- `EventCard.tsx` — binary-choice events (pauses game), 5-day cooldown, 55% daily chance
-- `PostMortem.tsx` — win/loss screen with leaderboard + triggers InvestorCheckin
-
-## Office Scene (Phaser)
-- `OfficeCanvas.tsx` → `OfficeScene.ts`
-- `onReady` callback fires after scene `create()` + 800ms minimum
-- Loader shown until ready; tutorial shown after loader
-
-## Save System
-- 3 slots (slot 1 = auto-save every 30s): `src/save/saveManager.ts`
-- Leaderboard in localStorage: `src/save/leaderboard.ts`
+## Saves
+- 3 slots, slot 1 autosaves every 30s: `src/v2/saveV2.ts` (keys `startup-v2-save-*`). Leaderboard: `src/v2/ui/leaderboard.ts`.
 
 ## MongoDB / Analytics Pattern
 3-layer architecture:

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { FEATURE_TEMPLATES } from '../../data/featureTemplates'
-import { estimateFeatureEffects } from '../../engine/gameEngine'
+import { estimateFeatureEffects } from '../engine/features'
 import { advanceFounder, FOUNDER_ID, pickResearchTemplates, startTask, type AdvanceResult } from '../founder'
 import type { V2GameState } from '../state'
 import { makeFeature, makeState, seq, withChapter, withFounder, withV2 } from './fixtures'

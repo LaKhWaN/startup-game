@@ -26,7 +26,7 @@ import { founderPose } from './scene/founderPose'
 import { saveGameV2 } from './saveV2'
 import { isV2Game } from './state'
 import { TopBarV2 } from './TopBarV2'
-import '../App.css'
+import './ui/App.css'
 
 const AUTOSAVE_MS = 30_000
 

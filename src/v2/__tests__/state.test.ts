@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { createInitialState } from '../../engine/gameEngine'
 import { addStory, createV2State, createV2Slice, isV2Game, isValidV2Slice, migrateV2Slice, FOUNDER_START_CASH } from '../state'
 import { makeConfig } from './fixtures'
 
@@ -55,10 +54,9 @@ describe('isV2Game', () => {
     expect(isV2Game(createV2State(makeConfig()))).toBe(true)
   })
 
-  it('is false for a legacy game, even with a stale v2 slice left in the store', () => {
-    const legacy = createInitialState(makeConfig())
-    expect(isV2Game(legacy)).toBe(false)
-    expect(isV2Game({ ...legacy, v2: createV2Slice() })).toBe(false)
+  it('is false without a v2 id or slice', () => {
+    expect(isV2Game({ gameId: 'game-123', v2: createV2Slice() })).toBe(false)
+    expect(isV2Game({ gameId: 'v2-game-1' })).toBe(false)
   })
 })
 

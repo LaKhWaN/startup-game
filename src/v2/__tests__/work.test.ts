@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { estimateFeatureEffects } from '../../engine/gameEngine'
+import { estimateFeatureEffects } from '../engine/features'
 import { applyOutcome, pickResearchTemplates } from '../founder'
 import { hireSpeed, MAIN_TASK, mistakeChance, workerDurationDays } from '../work'
 import type { V2GameState } from '../state'

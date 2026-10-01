@@ -1,11 +1,10 @@
 import { lazy, Suspense } from 'react'
 import type { ReactNode } from 'react'
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 
-/* The game pulls in Phaser + three.js + sql.js. Keep that out of the
-   marketing/SEO pages' initial payload. */
+/* The game pulls in three.js + R3F. Keep that out of the marketing/SEO
+   pages' initial payload. */
 const App            = lazy(() => import('./App'))
-const AppV2          = lazy(() => import('./v2/AppV2'))
 const AdminDashboard = lazy(() => import('./components/AdminDashboard').then(m => ({ default: m.AdminDashboard })))
 const BlogListPage   = lazy(() => import('./pages/BlogListPage').then(m => ({ default: m.BlogListPage })))
 const BlogPostPage   = lazy(() => import('./pages/BlogPostPage').then(m => ({ default: m.BlogPostPage })))
@@ -35,7 +34,8 @@ function route(element: ReactNode) {
 }
 
 export const router = createBrowserRouter([
-  { path: '/new', element: route(<AppV2 />) },
+  // The new game used to live at /new during development.
+  { path: '/new', element: <Navigate to="/?play" replace /> },
   { path: '/admin', element: route(<AdminDashboard />) },
   { path: '/blog', element: route(<BlogListPage />) },
   { path: '/blog/:slug', element: route(<BlogPostPage />) },
