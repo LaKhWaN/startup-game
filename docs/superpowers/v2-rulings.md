@@ -165,3 +165,12 @@ Decisions made autonomously during the build, with what each costs if wrong, and
 - The founder now sleeps 23:00–07:00 by default even mid-task (no progress, +15 energy/h); a 🌙 Work late toggle keeps them working at an energy cost — without it a multi-day task meant working 24/7 with no way to rest — cost if wrong: one more toggle to learn.
 - Burnout → notice is told through the story log, the person card (warning + "Convince them to stay", once per person) and the stats rail, not a blocking popup — cost if wrong: a player who never opens cards may miss a notice (the head shows 😫).
 - Pacing after B+C: simulation reaches Bigger home on days 174–231 and Co-working on 314–415 (was 46–157 before B); careful play ends day 300 with churn 10% vs 15% — final tuning is F's job — cost if wrong: the mid-game may feel slow until F.
+
+## 2026-10-02-v2-D-shop
+
+### Rulings
+- There's no PlayStation or ping-pong model in the Kenney kits: "Game corner" is a TV on a cabinet, "Table tennis" uses the kit's plain table — cost if wrong: a closer model later.
+- Perks are kept when you move but only as many as the new place has slots are active (the rest show "In storage") — cost if wrong: none.
+- Setups belong to desks (seat index), not people: a new hire sits at an upgraded desk, the founder desk is separate; tier-3+ desks show a monitor — cost if wrong: an upgrade "moves" if seats renumber after a move.
+- Test fixtures use neutral tier-2 desks so other timing tests stay exact; real games start on the tier-1 XP laptop (checked in shop.test) — cost if wrong: none.
+- The balance simulation still starts on neutral desks and never shops; F rebuilds the simulated player to start on real XP laptops and buy perks/setups — cost if wrong: D's balance unverified until F.
