@@ -6,7 +6,8 @@ import './v2.css'
 /** Chapter banner + the current coach card, floating in the room's top-left corner. */
 export function CoachOverlay() {
   const v2 = useV2(s => s.v2)
-  const card = currentCard({ v2 })
+  const state = useV2(s => s)
+  const card = currentCard(state)
   const next = nextLocation({ v2 })
 
   let banner: JSX.Element | null = null

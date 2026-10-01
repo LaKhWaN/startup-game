@@ -1,3 +1,4 @@
+import { currentTip } from './tips'
 import { addStory, type Beat, type FamilyMoney, type FounderTaskType, type Rng, type V2GameState } from './state'
 
 export const TASK_UNLOCK_BEAT: Record<FounderTaskType, Beat> = {
@@ -83,7 +84,10 @@ export function currentCardId(state: Pick<V2GameState, 'v2'>): string {
 
 /** The coach card to show: each chapter's cards in turn, until dismissed. */
 export function currentCard(state: Pick<V2GameState, 'v2'>): CoachCard | null {
-  return currentCoachCard(state) ?? currentChapter2Card(state) ?? currentChapter3Card(state)
+  const chapterCard = currentCoachCard(state) ?? currentChapter2Card(state) ?? currentChapter3Card(state)
+  if (chapterCard) return chapterCard
+  // System tips need the whole game state; panels pass it, older callers pass only { v2 }.
+  return 'gameTime' in state ? currentTip(state as V2GameState) : null
 }
 
 export function reshowCurrentCard(state: V2GameState): V2GameState {

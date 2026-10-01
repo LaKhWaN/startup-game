@@ -43,7 +43,7 @@ describe('Chapter 3', () => {
 
   it('re-shows the current Chapter 3 card', () => {
     const s = dismissCard(onMoved(dismissCard(afterChapter2(), 'c3-0')), 'c3-1')
-    expect(currentCard(s)).toBeNull()
+    expect(currentCard({ v2: s.v2 })).toBeNull() // chapter cards only (tips need full state)
     expect(currentCard(reshowCurrentCard(s))?.id).toBe('c3-1')
   })
 })

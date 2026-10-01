@@ -52,7 +52,7 @@ describe('coach card selection across chapters', () => {
   it('re-shows the current Chapter 2 card from Settings', () => {
     let s = withV2(ready(), { chapter2: { beat: 1, complete: false, firstMistake: false } })
     s = dismissCard(s, 'c2-1')
-    expect(currentCard(s)).toBeNull()
+    expect(currentCard({ v2: s.v2 })).toBeNull() // chapter cards only (tips need full state)
     expect(currentCard(reshowCurrentCard(s))?.id).toBe('c2-1')
   })
 })
