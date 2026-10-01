@@ -1,6 +1,7 @@
 import { useV2 } from './actions'
 import { railStats } from './stats'
 import { marketCeiling } from './engine/market'
+import { hostingLoad } from './engine/infra'
 import './v2.css'
 
 function Row({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
@@ -38,6 +39,7 @@ export function StatsRail() {
         {conversion !== null && <Row label="Lead → customer" value={`${conversion}%`} hint="Customers won from sales ÷ leads found" />}
         <Row label="🌍 Market" value={`${customers}/${marketCeiling({ difficultyModifier, features, brand })}`} hint="Customers you can win; grows with shipped features and brand" />
         <Row label="🎧 Open tickets" value={v2.tickets} hint="Unanswered tickets raise churn and scare off buyers" />
+        <Row label="🖥️ Hosting load" value={`${Math.round(hostingLoad({ v2, customers }) * 100)}%`} hint="Above 90% the app feels slow; above 100% it goes down. Upgrade in 💻 Infra" />
       </section>
 
       <section className="v2-rail-section">

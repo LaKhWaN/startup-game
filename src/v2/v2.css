@@ -264,3 +264,24 @@
 .v2-shop-name { font-weight: 700; font-size: 0.88rem; color: var(--text); }
 .v2-shop-tag { font-size: 0.78rem; font-weight: 600; color: var(--brand-primary); }
 .v2-shop-desk { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); }
+
+/* ── Infra desktop (spec §7) ────────────────────────────────────────────── */
+.v2-desktop { width: min(820px, 100%); height: min(600px, 88vh); display: flex; flex-direction: column; border-radius: 14px; overflow: hidden; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45); border: 1px solid rgba(0, 0, 0, 0.3); }
+.v2-desk-menubar { display: flex; align-items: center; gap: 18px; padding: 4px 12px; font-size: 0.78rem; color: #1b1b1f; background: rgba(240, 240, 245, 0.92); }
+.v2-desk-menubar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; font-family: 'Roboto Mono', monospace; }
+.v2-desk-close { border: none; background: transparent; cursor: pointer; font-size: 0.9rem; }
+.v2-desk-wallpaper { position: relative; flex: 1; min-height: 0; padding: 18px 18px 84px; background: linear-gradient(135deg, #3b5f9e 0%, #7c5ea8 55%, #e08a6a 100%); }
+.v2-window { height: 100%; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; background: rgba(250, 250, 252, 0.97); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); }
+.v2-window-bar { display: flex; align-items: center; gap: 7px; padding: 9px 12px; background: #ececf0; border-bottom: 1px solid #d8d8de; }
+.v2-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.v2-dot--r { background: #ff5f57; cursor: pointer; } .v2-dot--y { background: #febc2e; } .v2-dot--g { background: #28c840; }
+.v2-window-title { margin-left: 10px; font-size: 0.82rem; font-weight: 600; color: #2b2b30; }
+.v2-window-body { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; color: #1b1b1f; }
+.v2-desk-gauge { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 10px; background: #f0f1f6; font-size: 0.84rem; }
+.v2-desk-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border-radius: 10px; border: 1px solid #e2e3ea; background: #fff; font-size: 0.85rem; }
+.v2-desk-row--on { border-color: #4b7bec; box-shadow: 0 0 0 1px #4b7bec inset; }
+.v2-dock { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 10px; padding: 8px 12px; border-radius: 18px; background: rgba(255, 255, 255, 0.35); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25); }
+.v2-dock-app { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 62px; padding: 6px 0; border: none; border-radius: 12px; background: transparent; cursor: pointer; font-size: 1.7rem; }
+.v2-dock-app--on { background: rgba(255, 255, 255, 0.45); }
+.v2-dock-label { font-size: 0.66rem; font-weight: 600; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }
+@media (max-width: 768px) { .v2-desktop { width: 100%; height: 100%; border-radius: 0; } }

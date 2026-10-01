@@ -74,6 +74,7 @@ export function MetricsPanel() {
           <span>🐛 Bugs (tech debt {Math.round(state.techDebt)})</span><strong>{churn.bugs.toFixed(1)}%</strong>
           <span>🎧 Support backlog ({state.v2.tickets} tickets)</span><strong>{churn.support.toFixed(1)}%</strong>
           <span>📦 Thin product</span><strong>{churn.thin.toFixed(1)}%</strong>
+          <span>🖥️ Slow app (hosting near capacity)</span><strong>{churn.slow.toFixed(1)}%</strong>
           <span>⚡ Recent events</span><strong>{churn.shock.toFixed(1)}%</strong>
         </div>
         <div className="v2-muted">Variable costs: ${variableCosts(state).toLocaleString()}/mo (3% payment fees + $1 per customer for tools)</div>

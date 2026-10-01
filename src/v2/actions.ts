@@ -17,6 +17,7 @@ import {
 } from './team'
 import { skipToMorning, stepV2 } from './v2Tick'
 import { resetUi } from './ui'
+import { canMigrate, setWifi, startMigration, toggleTool, type MigrateCheck, type ToolId, type WifiPlan } from './engine/infra'
 import { buyPerk, canBuyPerk, canUpgradeSetup, upgradeSetup, type Desk, type PerkCheck, type PerkId, type SetupCheck } from './shop'
 
 export type { V2Store } from './store'
@@ -107,6 +108,25 @@ export function toggleWorkLate(): void {
 export function convinceTeamMemberToStay(id: string): void {
   playSfx('success1', 0.6)
   setV2State(convinceToStay(getV2State(), id))
+}
+
+// ── Infra ────────────────────────────────────────────────────────────────────
+
+export function migrateHosting(tier: number): MigrateCheck {
+  const s = getV2State()
+  const check = canMigrate(s, tier)
+  if (check !== 'ok') return check
+  playSfx('click', 0.5)
+  setV2State(startMigration(s, tier, totalDays(s.gameTime)))
+  return 'ok'
+}
+
+export function chooseWifi(plan: WifiPlan): void {
+  setV2State(setWifi(getV2State(), plan))
+}
+
+export function toggleInfraTool(id: ToolId): void {
+  setV2State(toggleTool(getV2State(), id))
 }
 
 // ── Shop ────────────────────────────────────────────────────────────────────

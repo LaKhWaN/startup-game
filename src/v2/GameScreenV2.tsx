@@ -18,6 +18,7 @@ import { FounderBar } from './FounderBar'
 import { PersonCard } from './PersonCard'
 import { StatsRail } from './StatsRail'
 import { ShopPanel } from './ShopPanel'
+import { InfraDesktop } from './InfraDesktop'
 import { Modal } from './Modal'
 import { closeModal, openModal, showCity, showOffice, useUi, type Modal as ModalState } from './ui'
 import { CityOverlay } from './CityOverlay'
@@ -106,6 +107,7 @@ function ScreenModal({ modal }: { modal: ModalState | null }) {
   switch (modal.kind) {
     case 'founder': return <Modal title="Founder" onClose={closeModal}><FounderPanel /></Modal>
     case 'team': return <Modal title="Team" onClose={closeModal}><TeamPanel /></Modal>
+    case 'infra': return <InfraDesktop onClose={closeModal} />
     case 'shop': return <Modal title="Shop" onClose={closeModal} wide><ShopPanel /></Modal>
     case 'metrics': return <Modal title="Metrics" onClose={closeModal} wide><MetricsPanel /></Modal>
     case 'person': {

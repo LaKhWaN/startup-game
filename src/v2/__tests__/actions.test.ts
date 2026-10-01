@@ -234,3 +234,15 @@ describe('shop actions', () => {
     expect(getV2State().v2.setups.founder).toBe(2)
   })
 })
+
+describe('infra actions', () => {
+  it('migrates hosting, picks Wi-Fi and toggles tools through the store', async () => {
+    const { migrateHosting, chooseWifi, toggleInfraTool } = await import('../actions')
+    newGameV2(makeConfig())
+    expect(migrateHosting(2)).toBe('ok')
+    expect(getV2State().v2.infra.migratingTo).toBe(2)
+    chooseWifi('fiber')
+    toggleInfraTool('ci')
+    expect(getV2State().v2.infra).toMatchObject({ wifi: 'fiber', tools: ['ci'] })
+  })
+})
