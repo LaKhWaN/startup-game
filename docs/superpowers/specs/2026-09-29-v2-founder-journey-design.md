@@ -389,3 +389,86 @@ Other rooms/locations (Phases 4–5), employees in the scene (Phase 5), clicking
 ### 7.8 Out of scope for Phase 3
 
 Full-time hires, managers, the map and moving (Phase 4), resizing events, and morale effects on intern speed.
+
+## 8. Phase 4 detailed design — location ladder, map, full-time hires (autonomous, 2026-10-01)
+
+*Written while the user was away, under their blanket approval ("continue to integrate all the phases left… I approve everything"). Every choice here is logged as a ruling and reported back.*
+
+### 8.1 Decisions
+
+| Topic | Decision |
+|---|---|
+| Ladder | Seven locations in a fixed order. Each has a hire capacity, monthly rent (`infraCostMonthly`), a one-time move-in cost and an unlock threshold on **peak MRR**. Unlocks are permanent. |
+| Moving | From a new **Map** tab. Allowed to any unlocked location whose capacity fits the current team. Costs the move-in fee; rent switches immediately. Moving down the ladder is allowed (cheaper rent) if the team fits. |
+| Full-time hires | A second tier. Better than interns, priced like real (rebalanced) salaries. Unlocks at the Villa or above. Skilled interns can be **promoted**. |
+| Chapter 3 | Short chapter that teaches the map and full-time hires, completing at $5,000 MRR. After it: free play up the ladder. |
+| Events | Kept, but gated by stage, thinned out early, and their costs scaled to the company's burn. |
+| Rooms | Home keeps its handcrafted room. Every other location gets a generated room sized to its capacity (desk grid). Phase 5 gives each its own look. |
+
+### 8.2 Locations
+
+| # | id | Name | Hire capacity | Rent / mo | Move-in | Unlock (peak MRR) |
+|---|---|---|---|---|---|---|
+| 0 | home | Your bedroom | 2 | $0 | — | start |
+| 1 | biggerHome | Bigger home | 4 | $300 | $800 | $1,000 |
+| 2 | villa | Villa | 6 | $900 | $2,500 | $2,500 |
+| 3 | coworking | Co-working space | 10 | $2,000 | $4,000 | $5,000 |
+| 4 | smallOffice | Small office | 16 | $4,500 | $10,000 | $10,000 |
+| 5 | bigOffice | Big office | 28 | $9,000 | $25,000 | $25,000 |
+| 6 | building | Your own building | 50 | $18,000 | $60,000 | $60,000 |
+
+These are starting values. A seeded balance simulation (§8.7) runs the real tick with a scripted "sensible player" and must reach the Co-working space within two game years without going broke. Numbers may be tuned to pass it; the final table lives in `src/v2/locations.ts`.
+
+- `teamCapacity(state)` = the current location's capacity.
+- Peak MRR is tracked in `v2.peakMrr`; each tick unlocks every location whose threshold ≤ peak MRR (story line per unlock).
+- **Move:** blocked if `cash < moveIn` or `team size > capacity`, or the target is locked or current. On move: `cash −= moveIn`, `infraCostMonthly = rent` (legacy event bumps to infra are reset), `v2.location = id`, seats renumbered 0..n−1 in hire order. Tasks in progress continue.
+
+### 8.3 Full-time hires
+
+| | Intern | Full-time |
+|---|---|---|
+| Speed (main / other) | 0.7 / 0.35 | 1.0 / 0.5 |
+| Starting skills (main / other) | 3 / 1 | 5 / 2 |
+| Skill gain per task, cap | +0.25, 6 | +0.2, 9 |
+| Mistake chance | `max(0.05, 0.15 − 0.02·(main−3))` | `max(0.01, 0.05 − 0.01·(main−5))` |
+| Salary | `600 + floor(rng·5)·100` | `2000 + floor(rng·5)·250` ($2,000–$3,000) |
+
+- **Unlock:** current location index ≥ 2 (Villa). Leaving Home alone is not enough.
+- **Candidates:** the pool holds 3 interns, plus 2 full-time candidates while full-time is unlocked. Refresh rerolls the whole pool. Each candidate carries its `tier`.
+- **Promote:** an intern whose main skill ≥ 5 can be promoted while full-time is unlocked. They become `tier: 'fulltime'`, keep their skills, and their salary becomes `max(current, 2000)`. Story line.
+- Payroll mirror, morale reset and firing work exactly as for interns.
+
+### 8.4 Chapter 3
+
+| Beat | Trigger | Coach card |
+|---|---|---|
+| 0 | Chapter 2 complete | "Your bedroom is full. Open the Map and move somewhere bigger." (unlocks the **Map** tab) |
+| 1 | First move | "More room, more people. At the Villa you can hire full-time staff and promote your best interns." |
+| complete | MRR ≥ $5,000 | "Chapter 3 done. You're a real company now, and the ladder goes all the way to your own building." |
+
+After Chapter 3 the founder panel shows a free-play banner: "Climb the ladder: next stop <next location> at $X MRR."
+
+### 8.5 Events scaled to company size
+
+- **Stage** = current location index.
+- **Thinning:** when the legacy tick picks an event, v2 keeps it with probability `[0.35, 0.5, 0.65, 0.8, 1, 1, 1][stage]`; otherwise it is dropped (the legacy 5-day cooldown still applies).
+- **Stage gates:** some events only make sense for a bigger company: `enterprise-intro`, `custom-feature-request` (stage ≥ 3); `conference-sponsorship`, `talent-poaching`, `market-downturn` (stage ≥ 2). Gated events are dropped.
+- **Cost scaling:** factor `f = clamp(monthlyBurn / 10,000, 0.2, 1)`. Each choice's effect is wrapped: negative cash deltas and infra increases are multiplied by `f` (rounded to $50). Dollar amounts in the description and consequences are rewritten with the same factor. Events that can pay out (investor, acquisition, and others with positive cash) are exempt.
+- The scaled copy is marked so it's only scaled once; a save restores the raw event, which is rescaled on the next tick (scaling is deterministic).
+
+### 8.6 UI and room
+
+- **Map tab** (🗺️), unlocked at Chapter 3 beat 0: a vertical path of seven location nodes. Each shows icon, name, capacity, rent, and either **You are here**, **Move ($X)** with a disabled reason, or **Reach $X MRR**.
+- **Team tab:** capacity from the location; full-time candidates in their own section; a **Promote** button on eligible interns; tier badge on each row.
+- **Room:** `RoomView` picks the layout by location. Home = the existing room. Other locations = a generated layout: floor `w × d` sized to the seat grid, back and left walls with windows, a founder desk, a lounge spot (idle), a bookcase (research) and a pace lane, plus one desk + chair + laptop per seat. The camera fits the room's size. The whole scene remounts on move.
+
+### 8.7 Testing and acceptance
+
+- **Unit tests:** location unlocks from peak MRR; move rules (locked, current, cash, capacity) and effects (cash, rent, seat renumbering); capacity per location; full-time unlock at stage ≥ 2; full-time speed, skills, mistake rate and salary; promotion rules; candidate pool composition; Chapter 3 beats; event thinning, gating and cost scaling (cash, infra, text), exemptions, scale-once; save migration for Phase 1–3 saves; generated layouts keep seats inside the room and out of each other.
+- **Balance simulation** (`src/v2/__tests__/balance.test.ts`): seeded `Math.random`, scripted player, real `stepV2`. Must reach Co-working within 730 game days and never hit $0.
+- **Screenshot harness:** a game moved to the Villa with 4+ hires, and the Map tab.
+- **Gates:** `tsc`, `npm test`, `npm run build`, legacy guard.
+
+### 8.8 Out of scope for Phase 4
+
+Per-location art and palettes, move transition, clicking characters (Phase 5); managers; mobile layout and performance work (Phase 6).
