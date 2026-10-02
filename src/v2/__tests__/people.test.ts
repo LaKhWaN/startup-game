@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
+import { BUSY_STRESS_PER_HOUR, EMPTY_STRESS_PER_HOUR, MORALE_BASE,
   BURNOUT_DAYS, founderHour, founderSpeed, mistakeFactor, NOTICE_DAYS, peopleDay, peopleHour, workFactor,
 } from '../engine/people'
 import { convinceToStay } from '../team'
@@ -13,13 +13,13 @@ describe('peopleHour (work hours)', () => {
   it('busy hours drain energy, add stress and context; idle hours recover stress', () => {
     const s = peopleHour(team({ ...busy, energy: 100, stress: 10, context: 0 }, { ...idle, energy: 100, stress: 10 }), true)
     expect(s.v2.team.b).toMatchObject({ energy: 93, context: 0.25 })
-    expect(s.v2.team.b.stress).toBeCloseTo(10.45)
+    expect(s.v2.team.b.stress).toBeCloseTo(10 + BUSY_STRESS_PER_HOUR)
     expect(s.v2.team.i).toMatchObject({ energy: 99, stress: 9 })
   })
 
   it('running on empty adds stress', () => {
     const s = peopleHour(team({ ...busy, energy: 20, stress: 10 }), true)
-    expect(s.v2.team.b.stress).toBeCloseTo(11.45)
+    expect(s.v2.team.b.stress).toBeCloseTo(10 + BUSY_STRESS_PER_HOUR + EMPTY_STRESS_PER_HOUR)
   })
 
   it('off-hours change nothing for hires', () => {
@@ -29,11 +29,11 @@ describe('peopleHour (work hours)', () => {
 })
 
 describe('peopleDay', () => {
-  it('overnight: +45 energy, −1 stress; morale drifts toward 75 − stress/2', () => {
+  it('overnight: +45 energy, −1 stress; morale drifts toward the base − stress/2', () => {
     const s = peopleDay(team({ ...busy, energy: 40, stress: 40, morale: 70 }), 1, false)
     expect(s.v2.team.b.energy).toBe(85)
     expect(s.v2.team.b.stress).toBe(39)
-    expect(s.v2.team.b.morale).toBeCloseTo(70 + (75 - 19.5 - 70) * 0.1)
+    expect(s.v2.team.b.morale).toBeCloseTo(70 + (MORALE_BASE - 19.5 - 70) * 0.1)
   })
 
   it('weekend days fully rest people', () => {

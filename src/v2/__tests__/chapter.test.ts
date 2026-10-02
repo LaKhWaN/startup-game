@@ -140,10 +140,10 @@ describe('Chapter 2', () => {
     expect(onTeamProgress(done1(), { completedBy: ['h1'], mistakes: [] }).v2.chapter2.beat).toBe(0)
   })
 
-  it('completes at $1,000 MRR, only after Chapter 1', () => {
+  it('completes at $1,500 MRR, only after Chapter 1', () => {
     expect(checkChapter2Complete({ ...makeState(), mrr: 5000 }).v2.chapter2.complete).toBe(false)
-    expect(checkChapter2Complete({ ...done1(), mrr: 999 }).v2.chapter2.complete).toBe(false)
-    const s = checkChapter2Complete({ ...done1(), mrr: 1000 })
+    expect(checkChapter2Complete({ ...done1(), mrr: 1499 }).v2.chapter2.complete).toBe(false)
+    const s = checkChapter2Complete({ ...done1(), mrr: 1500 })
     expect(s.v2.chapter2.complete).toBe(true)
     expect(currentChapter2Card(s)?.id).toBe('c2-done')
   })

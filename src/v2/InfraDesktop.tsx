@@ -2,17 +2,19 @@ import { useEffect, useState } from 'react'
 import { chooseWifi, migrateHosting, toggleInfraTool, useV2 } from './actions'
 import { clockLabel, totalDays } from './engine/clock'
 import { HOSTING, TOOLS, WIFI, hostingLoad, type ToolId, type WifiPlan } from './engine/infra'
+import { EmployeesApp } from './EmployeesApp'
 import './v2.css'
 
-type App = 'hosting' | 'wifi' | 'tools'
+type App = 'hosting' | 'wifi' | 'tools' | 'employees'
 const APPS: { id: App; icon: string; name: string }[] = [
   { id: 'hosting', icon: '🖥️', name: 'Hosting' },
   { id: 'wifi', icon: '📶', name: 'Wi-Fi' },
   { id: 'tools', icon: '🧰', name: 'Tools' },
+  { id: 'employees', icon: '👥', name: 'Employees' },
 ]
 const fmt = (n: number) => `$${n.toLocaleString()}`
 
-/** A desktop-style screen for running the infrastructure (spec §7). */
+/** The founder's desktop: infrastructure (spec §7) and employee management. */
 export function InfraDesktop({ onClose }: { onClose: () => void }) {
   const infra = useV2(s => s.v2.infra)
   const customers = useV2(s => s.customers)
@@ -29,9 +31,9 @@ export function InfraDesktop({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="v2-sheet-backdrop" onClick={onClose}>
-      <div className="v2-desktop" role="dialog" aria-label="Infra" onClick={e => e.stopPropagation()}>
+      <div className="v2-desktop" role="dialog" aria-label="Desktop" onClick={e => e.stopPropagation()}>
         <div className="v2-desk-menubar">
-          <span>◆ <strong>Infra</strong></span>
+          <span>◆ <strong>Desktop</strong></span>
           <span>{APPS.find(a => a.id === app)!.name}</span>
           <span className="v2-desk-menubar-right">{clockLabel(hours)} <button className="v2-desk-close" onClick={onClose} aria-label="Close">✕</button></span>
         </div>
@@ -66,6 +68,7 @@ export function InfraDesktop({ onClose }: { onClose: () => void }) {
                   })}
                 </>
               )}
+              {app === 'employees' && <EmployeesApp />}
               {app === 'wifi' && (Object.keys(WIFI) as WifiPlan[]).map(id => (
                 <div key={id} className={`v2-desk-row${infra.wifi === id ? ' v2-desk-row--on' : ''}`}>
                   <div><strong>{WIFI[id].name}</strong><div className="v2-muted">work speed ×{WIFI[id].speed} · {WIFI[id].price ? `${fmt(WIFI[id].price)}/mo` : 'free'}</div></div>

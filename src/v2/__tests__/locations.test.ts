@@ -54,16 +54,16 @@ describe('a new game', () => {
 
 describe('updateUnlocks', () => {
   it('unlocks every location at or below peak MRR, with a story line', () => {
-    const s = updateUnlocks(makeState({ mrr: 2600 }))
-    expect(s.v2.peakMrr).toBe(2600)
+    const s = updateUnlocks(makeState({ mrr: 4100 }))
+    expect(s.v2.peakMrr).toBe(4100)
     expect(s.v2.unlockedLocations).toEqual(['home', 'biggerHome', 'villa'])
     expect(s.storyLog[0].lines.join(' ')).toMatch(/Villa/)
   })
 
   it('never re-locks when MRR falls', () => {
-    const s = updateUnlocks(makeState({ mrr: 1200 }))
+    const s = updateUnlocks(makeState({ mrr: 1600 }))
     const after = updateUnlocks({ ...s, mrr: 100 })
-    expect(after.v2.peakMrr).toBe(1200)
+    expect(after.v2.peakMrr).toBe(1600)
     expect(after.v2.unlockedLocations).toEqual(['home', 'biggerHome'])
   })
 

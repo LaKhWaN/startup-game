@@ -53,14 +53,14 @@ describe('generateCandidates', () => {
     expect(pool.map(c => c.tier)).toEqual(['intern', 'intern', 'intern', 'fulltime', 'fulltime'])
   })
 
-  it('gives full-time candidates main skill 5, others 2, salary $2,000–$3,000', () => {
+  it('gives full-time candidates main skill 5, others 2, salary $3,500–$5,100', () => {
     for (const r of [0, 0.5, 0.999]) {
       const ft = generateCandidates(seq(r), { fullTime: true }).filter(c => c.tier === 'fulltime')
       for (const c of ft) {
         expect(Object.values(c.skills).sort()).toEqual([2, 2, 2, 5])
-        expect(c.salary).toBeGreaterThanOrEqual(2000)
-        expect(c.salary).toBeLessThanOrEqual(3000)
-        expect(c.salary % 250).toBe(0)
+        expect(c.salary).toBeGreaterThanOrEqual(3500)
+        expect(c.salary).toBeLessThanOrEqual(5100)
+        expect((c.salary - 3500) % 400).toBe(0)
       }
     }
   })
@@ -97,19 +97,19 @@ describe('promotion', () => {
     expect(canPromote(promoteMember(skilled(), 'c1'), 'c1')).toBe('tier')
   })
 
-  it('makes them full-time, keeps skills and task, raises salary to at least $2,000', () => {
+  it('makes them full-time, keeps skills and task, raises salary to at least $3,500', () => {
     let s = skilled()
     s = withV2(s, { team: { c1: { ...s.v2.team.c1, task: { type: 'emails', progress: 0.5 } } } })
     const after = promoteMember(s, 'c1')
-    expect(after.v2.team.c1).toMatchObject({ tier: 'fulltime', salary: 2000, task: { type: 'emails', progress: 0.5 } })
+    expect(after.v2.team.c1).toMatchObject({ tier: 'fulltime', salary: 3500, task: { type: 'emails', progress: 0.5 } })
     expect(after.v2.team.c1.skills.build).toBe(5)
     expect(after.storyLog[0].lines[0]).toMatch(/promoted/i)
   })
 
-  it('never lowers a salary already above $2,000', () => {
+  it('never lowers a salary already above $3,500', () => {
     let s = skilled()
-    s = { ...s, v2: { ...s.v2, team: { c1: { ...s.v2.team.c1, salary: 2600 } } } }
-    expect(promoteMember(s, 'c1').v2.team.c1.salary).toBe(2600)
+    s = { ...s, v2: { ...s.v2, team: { c1: { ...s.v2.team.c1, salary: 4200 } } } }
+    expect(promoteMember(s, 'c1').v2.team.c1.salary).toBe(4200)
   })
 })
 

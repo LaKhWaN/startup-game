@@ -15,12 +15,12 @@ export interface LocationDef {
 /** The ladder (spec §8.2). Ordered; index = company stage. */
 export const LOCATIONS: LocationDef[] = [
   { id: 'home', name: 'Your bedroom', icon: '🛏️', capacity: 2, rent: 0, moveIn: 0, unlockMrr: 0 },
-  { id: 'biggerHome', name: 'Bigger home', icon: '🏠', capacity: 4, rent: 300, moveIn: 800, unlockMrr: 1_000 },
-  { id: 'villa', name: 'Villa', icon: '🏡', capacity: 6, rent: 900, moveIn: 2_500, unlockMrr: 2_500 },
-  { id: 'coworking', name: 'Co-working space', icon: '☕', capacity: 10, rent: 2_000, moveIn: 4_000, unlockMrr: 5_000 },
-  { id: 'smallOffice', name: 'Small office', icon: '🏢', capacity: 16, rent: 4_500, moveIn: 10_000, unlockMrr: 10_000 },
-  { id: 'bigOffice', name: 'Big office', icon: '🏬', capacity: 28, rent: 9_000, moveIn: 25_000, unlockMrr: 25_000 },
-  { id: 'building', name: 'Your own building', icon: '🏙️', capacity: 50, rent: 18_000, moveIn: 60_000, unlockMrr: 60_000 },
+  { id: 'biggerHome', name: 'Bigger home', icon: '🏠', capacity: 4, rent: 500, moveIn: 1_200, unlockMrr: 1_500 },
+  { id: 'villa', name: 'Villa', icon: '🏡', capacity: 6, rent: 1_500, moveIn: 4_000, unlockMrr: 4_000 },
+  { id: 'coworking', name: 'Co-working space', icon: '☕', capacity: 10, rent: 3_500, moveIn: 7_000, unlockMrr: 8_000 },
+  { id: 'smallOffice', name: 'Small office', icon: '🏢', capacity: 16, rent: 8_000, moveIn: 18_000, unlockMrr: 18_000 },
+  { id: 'bigOffice', name: 'Big office', icon: '🏬', capacity: 28, rent: 16_000, moveIn: 45_000, unlockMrr: 40_000 },
+  { id: 'building', name: 'Your own building', icon: '🏙️', capacity: 50, rent: 32_000, moveIn: 100_000, unlockMrr: 90_000 },
 ]
 
 export function locationIndex(id: LocationId): number {

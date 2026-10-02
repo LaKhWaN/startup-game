@@ -6,7 +6,7 @@ const TABS: { id: V2Panel; label: string; icon: string }[] = [
   { id: 'founder', label: 'Founder', icon: '🧑‍💻' },
   { id: 'team', label: 'Team', icon: '👥' },
   { id: 'shop', label: 'Shop', icon: '🛒' },
-  { id: 'infra', label: 'Infra', icon: '💻' },
+  { id: 'infra', label: 'Desktop', icon: '💻' },
   { id: 'map', label: 'Map', icon: '🗺️' },
   { id: 'metrics', label: 'Metrics', icon: '📊' },
 ]

@@ -29,6 +29,8 @@ export function seeded(seed: number): () => number {
 
 const PERK_ORDER: PerkId[] = ['coffee', 'plants', 'decor', 'sofa', 'tableTennis', 'games']
 export const resting = new Set<string>()
+/** Off = a player who hires and runs the business but never rests people, buys perks or talks leavers round. */
+export const care = { people: true }
 
 /** The extra care a sensible manager takes: people, shop, infra (spec §5–§7). */
 function manage(s: V2GameState): V2GameState {
@@ -38,7 +40,7 @@ function manage(s: V2GameState): V2GameState {
   const nextTier = s.v2.infra.hosting + 1
   if (hostingLoad(s) > 0.75 && nextTier <= 5 && canMigrate(s, nextTier) === 'ok') s = startMigration(s, nextTier, totalDays(s.gameTime))
   // Rest people before they burn out; talk leavers into staying.
-  for (const m of Object.values(s.v2.team)) {
+  for (const m of care.people ? Object.values(s.v2.team) : []) {
     if (m.leavingOn !== undefined && !m.convinced) s = convinceToStay(s, m.id)
     if ((m.stress ?? 0) > 70 && !resting.has(m.id)) { resting.add(m.id); s = setAssignment(s, m.id, 'idle') }
     else if (resting.has(m.id) && (m.stress ?? 0) < 35) { resting.delete(m.id); s = setAssignment(s, m.id, MAIN_TASK[m.role]) }
@@ -49,7 +51,7 @@ function manage(s: V2GameState): V2GameState {
   const want = Math.min(team.length - 1, Math.ceil(s.customers / 250))
   if (onSupport < want) { const m = team.find(x => x.assignment !== 'support' && x.role !== 'sales'); if (m) s = setAssignment(s, m.id, 'support') }
   // Shop: perks, then computers (founder first).
-  for (const id of PERK_ORDER) if (canBuyPerk(s, id) === 'ok' && spare(perkDef(id).price, 3)) s = buyPerk(s, id)
+  for (const id of care.people ? PERK_ORDER : []) if (canBuyPerk(s, id) === 'ok' && spare(perkDef(id).price, 3)) s = buyPerk(s, id)
   const desks: Desk[] = ['founder', ...Object.values(s.v2.team).map(m => m.seat)]
   for (const d of desks) { const n = nextSetup(s, d); if (n && n.tier <= 3 && canUpgradeSetup(s, d) === 'ok' && spare(n.price, 4)) s = upgradeSetup(s, d) }
   // Infra: fiber once there's a team, tools when they pay off.

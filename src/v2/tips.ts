@@ -22,12 +22,12 @@ export const TIPS: Tip[] = [
   },
   {
     id: 'tip-hosting', title: 'Your server is filling up',
-    body: 'The free hosting tier holds 20 customers. Past 90% the app feels slow; past 100% it goes down. Upgrade in 💻 Infra (migrations take a few days).',
+    body: 'The free hosting tier holds 20 customers. Past 90% the app feels slow; past 100% it goes down. Upgrade in 💻 Desktop → Hosting (migrations take a few days).',
     when: s => s.v2.chapter.complete && hostingLoad(s) >= 0.75,
   },
   {
     id: 'tip-stress', title: 'Your team is getting tired',
-    body: 'Non-stop work drains energy and builds stress. Give people idle time, let weekends happen, or buy perks in the 🛒 Shop. Burnt-out people quit.',
+    body: 'Non-stop work drains energy and builds stress. Give people idle time, let weekends happen, or buy perks in the 🛒 Shop. Burnt-out or unhappy people quit. 💻 Desktop → Employees shows everyone’s mood and sets yearly raises.',
     when: s => Object.values(s.v2.team).some(m => (m.stress ?? 0) >= 60),
   },
   {

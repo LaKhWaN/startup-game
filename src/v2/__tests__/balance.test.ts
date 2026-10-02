@@ -5,7 +5,7 @@ import { monthlyBurn as getMonthlyBurn } from '../engine/money'
 import { createV2State } from '../state'
 import { stepV2 } from '../v2Tick'
 import { makeConfig } from './fixtures'
-import { play, resting, seeded } from './simPlayer'
+import { care, play, resting, seeded } from './simPlayer'
 
 afterEach(() => vi.restoreAllMocks())
 
@@ -63,5 +63,31 @@ describe('balance simulation', () => {
     expect(careful.v2.tickets / careful.customers).toBeLessThan(neglect.v2.tickets / Math.max(1, neglect.customers))
     // Neglect never upgrades hosting, so it's stuck under the free tier's 20-customer cap with outages.
     expect(neglect.v2.infra.hosting).toBe(1)
+  }, 60_000)
+
+  it('ignoring stress and morale makes people quit; perks and rest keep them', () => {
+    const quitsFor = (people: boolean) => {
+      care.people = people
+      const rng = seeded(1)
+      vi.spyOn(Math, 'random').mockImplementation(rng)
+      resting.clear()
+      let s = createV2State(makeConfig())
+      let quits = 0
+      for (let h = 0; h < 450 * 24 && s.phase === 'playing'; h++) {
+        if (h % 6 === 0) s = play(s, rng, true)
+        else if (s.pendingEvent) s = applyEventChoice(s, 0)
+        const ids = Object.keys(s.v2.team)
+        s = stepV2(s, rng)
+        quits += ids.filter(id => !s.v2.team[id]).length
+      }
+      vi.restoreAllMocks()
+      care.people = true
+      return quits
+    }
+    const ignored = quitsFor(false)
+    const caredFor = quitsFor(true)
+    if (process.env.SIM_DEBUG) console.log('quits: ignored', ignored, '| cared for', caredFor)
+    expect(ignored).toBeGreaterThanOrEqual(5)
+    expect(caredFor).toBeLessThan(ignored / 2)
   }, 60_000)
 })

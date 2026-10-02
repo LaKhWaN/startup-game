@@ -52,10 +52,10 @@ describe('loading a save with a pending event', () => {
 })
 
 describe('migrating a Phase 3 save past Chapter 2', () => {
-  it('credits the $1,000 peak so the first move is open even if MRR dipped', () => {
+  it('credits the first rung peak so the first move is open even if MRR dipped', () => {
     const { location: _l, unlockedLocations: _u, peakMrr: _p, chapter3: _c, ...phase3 } = createV2Slice()
     const v = migrateV2Slice({ ...phase3, chapter2: { beat: 2, complete: true, firstMistake: false } })!
-    expect(v.peakMrr).toBe(1000)
+    expect(v.peakMrr).toBe(1500)
     expect(v.unlockedLocations).toEqual(['home', 'biggerHome'])
   })
 })

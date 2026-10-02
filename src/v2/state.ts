@@ -53,6 +53,10 @@ export interface TeamMember {
   burnoutDays?: number
   /** Game day they leave (handed in notice). */
   leavingOn?: number
+  /** Morale from the last yearly raise (see payroll.ts). */
+  payMood?: number
+  /** Work days in a row with morale under LOW_MORALE. */
+  lowMoraleDays?: number
   /** Already talked out of leaving once. */
   convinced?: boolean
   /** Game day they joined (missing on older saves). */
@@ -136,6 +140,8 @@ export interface V2Slice {
   setups: { founder: number; seats: number[] }
   /** Hosting, Wi-Fi and tools (spec §7). */
   infra: InfraState
+  /** Yearly raise policy in %, set in Employees (default 5). */
+  raisePct?: number
   /** Customers won in roughly the last month; they churn twice as fast. */
   freshCustomers?: number
   /** Skip closed office hours automatically. */
@@ -226,8 +232,8 @@ export function migrateV2Slice(v: unknown): V2Slice | null {
   const s = v as Partial<V2Slice> & V2Slice
   const isLocation = (x: unknown): x is LocationId => LOCATION_IDS.includes(x as LocationId)
   const chapter2 = s.chapter2 ?? { beat: 0, complete: false, firstMistake: false }
-  // A save from before the ladder that finished Chapter 2 had reached $1,000 MRR (the first rung).
-  const peakMrr = Math.max(typeof s.peakMrr === 'number' ? s.peakMrr : 0, chapter2.complete ? 1000 : 0)
+  // A save from before the ladder that finished Chapter 2 reached the first rung (Bigger home).
+  const peakMrr = Math.max(typeof s.peakMrr === 'number' ? s.peakMrr : 0, chapter2.complete ? LOCATIONS[1].unlockMrr : 0)
   const saved = Array.isArray(s.unlockedLocations) ? s.unlockedLocations.filter(isLocation) : []
   const unlocked = LOCATIONS.filter(l => l.unlockMrr <= peakMrr || saved.includes(l.id)).map(l => l.id)
   return {

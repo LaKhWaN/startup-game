@@ -1,5 +1,5 @@
 import { dismissCoachCard, useV2 } from './actions'
-import { currentCard } from './chapter'
+import { CHAPTER2_GOAL_MRR, currentCard } from './chapter'
 import { nextLocation } from './locations'
 import './v2.css'
 
@@ -12,7 +12,7 @@ export function CoachOverlay() {
 
   let banner: JSX.Element | null = null
   if (v2.chapter.complete && !v2.chapter2.complete) {
-    banner = <><strong>Chapter 2: build a team.</strong> Hire interns from Team and grow to $1,000 MRR.</>
+    banner = <><strong>Chapter 2: build a team.</strong> Hire interns from Team and grow to ${CHAPTER2_GOAL_MRR.toLocaleString()} MRR.</>
   } else if (v2.chapter2.complete && !v2.chapter3.complete) {
     banner = <><strong>Chapter 3: a bigger space.</strong> Move up from the Map and grow to $5,000 MRR.</>
   } else if (v2.chapter3.complete && next) {

@@ -328,3 +328,13 @@
 .v2-gauge-head { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text); }
 .v2-gauge-head strong { font-family: 'Roboto Mono', monospace; }
 .v2-rail-alert { margin-top: 8px; padding: 8px 10px; border-radius: 10px; font-size: 0.76rem; color: var(--text); background: rgba(158, 42, 43, 0.08); border: 1px solid var(--error); }
+
+/* Employees app */
+.v2-emp-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.v2-emp-chip { padding: 5px 12px; border-radius: 999px; border: 1px solid #d6d9e2; background: #fff; font: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+.v2-emp-chip--on { background: #4b7bec; border-color: #4b7bec; color: #fff; }
+.v2-emp-row { align-items: flex-start; }
+.v2-emp-who { min-width: 0; flex: 1; }
+.v2-emp-alert { margin-top: 4px; font-size: 0.75rem; font-weight: 600; color: var(--error); }
+.v2-emp-moods { display: grid; grid-template-columns: auto 110px; align-items: center; gap: 4px 8px; font-size: 0.72rem; }
+.v2-emp-bar { height: 6px; }

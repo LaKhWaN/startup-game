@@ -50,7 +50,7 @@ describe('Chapter 3', () => {
 
 describe('v2Tick (Phase 4)', () => {
   it('unlocks locations from MRR and completes Chapter 3 in the tick', () => {
-    const s = v2Tick({ ...afterChapter2(), mrr: 5200 }, 1, seq(0.5))
+    const s = v2Tick({ ...afterChapter2(), mrr: 8200 }, 1, seq(0.5))
     expect(s.v2.unlockedLocations).toEqual(['home', 'biggerHome', 'villa', 'coworking'])
     expect(s.v2.chapter3.complete).toBe(true)
   })

@@ -18,6 +18,7 @@ import {
 import { shouldAutoSkip, skipToMorning, stepV2 } from './v2Tick'
 import { resetUi, uiStore } from './ui'
 import { canMigrate, setWifi, startMigration, toggleTool, type MigrateCheck, type ToolId, type WifiPlan } from './engine/infra'
+import { setRaisePct } from './payroll'
 import { buyPerk, canBuyPerk, canUpgradeSetup, upgradeSetup, type Desk, type PerkCheck, type PerkId, type SetupCheck } from './shop'
 
 export type { V2Store } from './store'
@@ -133,6 +134,10 @@ export function chooseWifi(plan: WifiPlan): void {
 
 export function toggleInfraTool(id: ToolId): void {
   setV2State(toggleTool(getV2State(), id))
+}
+
+export function setRaise(pct: number): void {
+  setV2State(setRaisePct(getV2State(), pct))
 }
 
 // ── Shop ────────────────────────────────────────────────────────────────────

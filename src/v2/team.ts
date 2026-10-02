@@ -17,7 +17,7 @@ export const INTERN_SKILL_CAP = TIER_RULES.intern.cap
 /** Full-time hires unlock at this ladder index (the Villa). */
 export const FULLTIME_STAGE = 2
 export const PROMOTE_SKILL = 5
-export const FULLTIME_MIN_SALARY = 2000
+export const FULLTIME_MIN_SALARY = 3500
 
 const EPSILON = 1e-9
 
@@ -59,7 +59,7 @@ function makeCandidates(rng: Rng, count: number, tier: Tier): InternCandidate[] 
       [mainSkillOf(role)]: rule.skillMain,
     }
     const step = Math.min(4, Math.floor(rng() * 5))
-    const salary = tier === 'fulltime' ? FULLTIME_MIN_SALARY + step * 250 : 600 + step * 100
+    const salary = tier === 'fulltime' ? FULLTIME_MIN_SALARY + step * 400 : 600 + step * 100
     return {
       id: `${tier === 'fulltime' ? 'ft' : 'intern'}-${base.id}`,
       name: base.name,
@@ -185,7 +185,7 @@ export function canPromote(state: V2GameState, id: string): PromoteCheck {
   return 'ok'
 }
 
-/** Intern → full-time: same person, skills and task; better rules; salary at least $2,000. */
+/** Intern → full-time: same person, skills and task; better rules; salary at least $3,500. */
 export function promoteMember(state: V2GameState, id: string): V2GameState {
   if (canPromote(state, id) !== 'ok') return state
   const m = state.v2.team[id]
@@ -298,6 +298,6 @@ export function convinceToStay(state: V2GameState, id: string): V2GameState {
   const m = state.v2.team[id]
   if (!m || m.leavingOn === undefined || m.convinced) return state
   const salary = Math.round(m.salary * 1.2)
-  const next = withMember(state, { ...m, salary, stress: 40, leavingOn: undefined, burnoutDays: 0, convinced: true })
+  const next = withMember(state, { ...m, salary, stress: 40, morale: Math.max(m.morale ?? 0, 55), leavingOn: undefined, burnoutDays: 0, lowMoraleDays: 0, convinced: true })
   return addStory(next, [`🤝 You talked ${m.name} into staying: a raise to $${salary.toLocaleString()}/mo and a lighter load.`])
 }
