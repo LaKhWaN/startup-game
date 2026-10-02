@@ -18,7 +18,7 @@ npm run dev
 - Plans/specs/decisions: `docs/superpowers/` (`v2-rulings.md` lists every autonomous decision)
 
 ## Game Loop
-- 1 real second = 1 game hour at 1× (2×/3×/5×; 10× in dev). Games start Monday 09:00.
+- 1.5 real seconds = 1 game hour at 1× (`GAME_HOUR_MS`; 2×/3×/5×; 10× in dev). Night shift tool keeps the office open to 23:00. Games start Monday 09:00.
 - Hires work 09:00–17:00 Mon–Fri (task durations in 8-hour work days); the founder works any hour.
 - Daily: churn (probabilistic), cash += (MRR − burn)/30, event roll, metrics snapshot. Monthly: summary line.
 - Game-raised popups (events, family money, check-in) pause the game (`src/v2/pause.ts`).
