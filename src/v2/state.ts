@@ -136,6 +136,8 @@ export interface V2Slice {
   setups: { founder: number; seats: number[] }
   /** Hosting, Wi-Fi and tools (spec §7). */
   infra: InfraState
+  /** Customers won in roughly the last month; they churn twice as fast. */
+  freshCustomers?: number
   /** Skip closed office hours automatically. */
   autoSkipNights?: boolean
 }

@@ -42,8 +42,11 @@ export function MetricsPanel() {
     { icon: '🎧', label: `Support backlog (${state.v2.tickets})`, v: churn.support },
     { icon: '📦', label: 'Thin product', v: churn.thin },
     { icon: '🐢', label: 'Slow app', v: churn.slow },
+    { icon: '🥊', label: 'Competitors (big market share)', v: churn.competition },
+    { icon: '🕸️', label: 'Nothing shipped lately', v: churn.stale },
     { icon: '⚡', label: 'Recent events', v: churn.shock },
     { icon: '🔁', label: 'Retention features', v: -churn.relief },
+    { icon: '🆕', label: `New customers still deciding (${state.v2.freshCustomers ?? 0})`, v: churn.fresh },
   ]
 
   return (

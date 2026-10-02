@@ -23,12 +23,12 @@ describe('market ceiling', () => {
 })
 
 describe('lead saturation', () => {
-  it('shrinks email returns near the ceiling, never below 10%', () => {
+  it('shrinks email returns near the ceiling, never below 5%', () => {
     const s = makeState({ brand: 0 })
     const cap = marketCeiling(s)
     expect(leadSaturation(s)).toBe(1)
     expect(leadSaturation({ ...s, customers: cap * 0.5 })).toBeCloseTo(0.5)
-    expect(leadSaturation({ ...s, customers: cap })).toBe(0.1)
+    expect(leadSaturation({ ...s, customers: cap })).toBe(0.05)
   })
 
   it('emails find fewer leads in a crowded market', () => {

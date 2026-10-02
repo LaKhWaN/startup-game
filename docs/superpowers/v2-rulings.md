@@ -226,3 +226,18 @@ Decisions made autonomously during the build, with what each costs if wrong, and
 - Night shift is a tool in 💻 Infra → Tools: office open 09:00–23:00 on weekdays, costs +50% of payroll, evening hours count double for stress — cost if wrong: none.
 - Auto skip to morning is an "Auto" toggle next to ⏭ Skip in the office-closed pill (saved with the game); it never skips while a popup is open, an event is pending, or the founder is working late — cost if wrong: one more toggle.
 - Metrics sheet rebuilt as spaced KPI cards (with colour-coded borders), a market bar, a "why customers leave" list showing only the parts that apply, and health bars; the stats rail became a funnel card, icon tiles (working/waiting/idle/stressed/ideas/building), three pressure gauges (market, hosting, support) and all-time tiles, with details in hover tooltips — cost if wrong: some numbers moved into tooltips.
+
+## Churn vs growth balance (user: "churn not impacting much")
+
+Measured with the sim probe (`SIM_PROBE=1 npx vitest run src/v2/__tests__/simProbe.test.ts`). Before: churn sat on the 5% floor (retention relief cancelled every extra), customers grew to ~3,700, ARPU drifted to ~$155, cash $3M by day 720.
+
+### Rulings
+- Competition churn: +0% at 40% market share rising to +8% at full share — cost if wrong: late game plateaus sooner.
+- Retention relief cancels at most half of the extra churn (still capped at 6 points) — cost if wrong: retention features feel weaker.
+- Stale product: after Chapter 1, +0.5%/week once 30 days pass with no ship, max +3% (tried 21 days / +4%; mid-game stalled too hard) — cost if wrong: sales-only teams leak.
+- New customers (won in ~the last 30 days, `v2.freshCustomers`, ages 1/30 a day) churn twice as fast: breakdown adds `base × fresh/customers` — cost if wrong: fast growth spurts leak more.
+- Sales conversion × (1 − 0.5 × market share); email lead floor 10% → 5% — cost if wrong: late hires add less.
+- Tickets 0.03 → 0.05 per customer per day; per-customer tools cost $1 → $4/mo — cost if wrong: thinner margins.
+- Features cap ARPU at $100 (an already-higher ARPU is kept) — cost if wrong: less revenue upside.
+- After: churn 10–35% in the late game, customers plateau around 2,700–3,200 with monthly wins ≈ losses; one seed declined from 1,556 to 840. Manager sim: Bigger home on days 154–165, Co-working on days 290–330; neglect run ends with 21 customers vs 569. Cash at scale still reaches $0.6–3.8M because payroll (max 50 hires at $2–3k) stays far below MRR; left for a follow-up.
+- Metrics "Why customers leave" lists Competitors, Nothing shipped lately and New customers; market gauge warns from 40%; new "Customers want something new" tip.

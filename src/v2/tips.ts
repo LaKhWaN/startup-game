@@ -1,6 +1,7 @@
 import type { CoachCard } from './chapter'
 import { hostingLoad, officeOpen } from './engine/infra'
 import { marketCeiling } from './engine/market'
+import { staleChurn } from './engine/churn'
 import type { V2GameState } from './state'
 
 interface Tip extends CoachCard {
@@ -46,8 +47,13 @@ export const TIPS: Tip[] = [
   },
   {
     id: 'tip-market', title: 'The market is filling up',
-    body: 'Half the customers your idea can reach are already yours. Emails find fewer new leads now. Shipping features and building brand grow the market.',
-    when: s => s.customers >= marketCeiling(s) * 0.5,
+    body: 'You hold a big share of the market. Competitors now poach customers (more churn), emails find fewer leads and sales close less. Shipping features and building brand grow the market.',
+    when: s => s.customers >= marketCeiling(s) * 0.4,
+  },
+  {
+    id: 'tip-stale', title: 'Customers want something new',
+    body: 'Nothing has shipped for a month, so customers start drifting away. Keep someone on 🛠️ Develop.',
+    when: s => staleChurn(s) > 0,
   },
 ]
 

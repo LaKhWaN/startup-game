@@ -2,7 +2,7 @@ import type { GameV2 } from './types'
 import { infraServicesCost } from './infra'
 
 export const PAYMENT_FEE = 0.03
-export const TOOLS_PER_CUSTOMER = 1
+export const TOOLS_PER_CUSTOMER = 4
 
 type BurnInput = Pick<GameV2, 'infraCostMonthly' | 'v2'> & { mrr?: number; customers?: number }
 

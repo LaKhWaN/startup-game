@@ -16,10 +16,10 @@ export function marketCeiling(s: Pick<GameV2, 'difficultyModifier' | 'features' 
   return Math.round(TIER_MARKET[tierOf(s)] * (1 + 0.05 * shipped) * (1 + s.brand / 400))
 }
 
-/** Share of the market still out there to email: 1 when empty, never below 10%. */
+/** Share of the market still out there to email: 1 when empty, never below 5%. */
 export function leadSaturation(s: Pick<GameV2, 'difficultyModifier' | 'features' | 'brand' | 'customers' | 'v2'>): number {
   const taken = (s.customers + s.v2.leads) / marketCeiling(s)
-  return Math.max(0.1, Math.min(1, 1 - taken))
+  return Math.max(0.05, Math.min(1, 1 - taken))
 }
 
 /** Sales conversion before skill: better ideas are easier to sell. */
@@ -29,6 +29,11 @@ export function salesBase(tier: Tier): number {
 
 export function salesBaseOf(s: Pick<GameV2, 'difficultyModifier'>): number {
   return SALES_BASE[tierOf(s)]
+}
+
+/** Late adopters are harder to sell: conversion × (1 − 0.5 × market share). */
+export function shareFactor(s: Pick<GameV2, 'difficultyModifier' | 'features' | 'brand' | 'customers'>): number {
+  return 1 - 0.5 * Math.min(1, s.customers / Math.max(1, marketCeiling(s)))
 }
 
 /** Customers you can still win. */

@@ -67,7 +67,7 @@ export function StatsRail() {
 
       <section className="v2-gauges">
         <div className="v2-rail-title">Pressure</div>
-        <Gauge icon="🌍" label="Market" value={market} tone={tone(market, 0.5, 0.85)} hint="Share of the customers your idea can reach. Grows with features and brand" />
+        <Gauge icon="🌍" label="Market" value={market} tone={tone(market, 0.4, 0.7)} hint="Share of the customers your idea can reach. Past 40%, competitors start poaching customers and sales get harder. Grows with features and brand" />
         <Gauge icon="🖥️" label="Hosting" value={load} tone={tone(load, 0.9, 1)} hint="Above 90% the app feels slow; above 100% it goes down. Upgrade in 💻 Infra" />
         <Gauge icon="🎧" label="Support" value={backlog} tone={tone(backlog, 0.1, 0.3)} hint={`${v2.tickets} open tickets. A backlog raises churn and scares buyers`} />
       </section>

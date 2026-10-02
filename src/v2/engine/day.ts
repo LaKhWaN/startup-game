@@ -24,7 +24,14 @@ function dailyChurn(customers: number, monthlyRatePct: number, rng: Rng): number
 }
 
 export const LEAD_DECAY_PER_DAY = 0.08
-export const TICKETS_PER_CUSTOMER_DAY = 0.03
+export const TICKETS_PER_CUSTOMER_DAY = 0.05
+
+/** Customers stop counting as new after about a month. */
+export const FRESH_DAYS = 30
+
+function ageFresh(fresh: number, customers: number): number {
+  return Math.min(customers, Math.floor(fresh * (1 - 1 / FRESH_DAYS)))
+}
 
 /** Once per game day: churn, revenue − burn, investor interest, a possible event, a snapshot. */
 export function processDay<T extends GameV2>(raw: T, day: number, rng: Rng): T {
@@ -76,7 +83,7 @@ export function processDay<T extends GameV2>(raw: T, day: number, rng: Rng): T {
 
   const next: T = {
     ...state,
-    v2: { ...state.v2, leads: state.v2.leads - coldLeads, tickets: afterIncident.tickets },
+    v2: { ...state.v2, leads: state.v2.leads - coldLeads, tickets: afterIncident.tickets, freshCustomers: ageFresh(state.v2.freshCustomers ?? 0, afterIncident.customers) },
     churnShock,
     churnRate,
     customers: afterIncident.customers,

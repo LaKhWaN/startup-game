@@ -1,7 +1,7 @@
 import { FEATURE_TEMPLATES, type FeatureTemplate } from '../data/featureTemplates'
 import { totalDays } from './engine/clock'
 import { estimateFeatureEffects } from './engine/features'
-import { leadSaturation, marketRoom, reputationFactor, salesBaseOf } from './engine/market'
+import { leadSaturation, marketRoom, reputationFactor, salesBaseOf, shareFactor } from './engine/market'
 import { founderSpeed } from './engine/people'
 import { deskSpeed } from './shop'
 import { MAX_CHURN_RELIEF } from './engine/churn'
@@ -17,6 +17,8 @@ export const RESEARCH_DAYS = 1.5
 export const EMAILS_DAYS = 1
 export const SALES_DAYS = 1
 export const FOUNDER_BUILD_SPEED = 1.2
+/** Features can raise ARPU up to this; past it, customers won't pay more. */
+export const ARPU_CAP = 100
 export const FEATURES_PER_RESEARCH = 2
 export const SKILL_GAIN = 0.5
 export const SKILL_CAP = 8
@@ -205,7 +207,7 @@ function applyDevelop(state: V2GameState, worker: Worker, featureId: string | un
   const gain = Math.min(est.customers, marketRoom(state))
   const customers = preSale ? state.customers : Math.max(0, state.customers + gain)
   const leads = preSale ? Math.max(0, state.v2.leads + est.customers) : state.v2.leads
-  const arpu = Math.max(10, state.arpu + est.arpu)
+  const arpu = Math.max(10, Math.min(Math.max(ARPU_CAP, state.arpu), state.arpu + est.arpu))
 
   const result: FeatureResult = {
     featureTitle: feature.title,
@@ -236,7 +238,7 @@ function applyDevelop(state: V2GameState, worker: Worker, featureId: string | un
     techDebt: clamp100(state.techDebt + est.techDebt),
     productProgress: Math.min(100, state.productProgress + est.productGain),
     recentFeatureResults: [result, ...state.recentFeatureResults].slice(0, 3),
-    v2: { ...state.v2, leads },
+    v2: { ...state.v2, leads, freshCustomers: (state.v2.freshCustomers ?? 0) + Math.max(0, customers - state.customers) },
   }
 
   const who = isFounder(worker) ? 'You' : worker.name
@@ -270,7 +272,7 @@ function applyEmails(state: V2GameState, worker: Worker, rng: Rng, opts: Outcome
 
 function applySales(state: V2GameState, worker: Worker, rng: Rng, opts: OutcomeOptions): V2GameState {
   const contacted = state.v2.leads
-  const p = (salesBaseOf(state) + 0.03 * worker.skills.sales) * reputationFactor(state)
+  const p = (salesBaseOf(state) + 0.03 * worker.skills.sales) * reputationFactor(state) * shareFactor(state)
   let converted = 0
   for (let i = 0; i < contacted; i++) if (rng() < p) converted++
   if (opts.firstSaleGuarantee && !state.v2.firstSaleDone && contacted > 0) converted = Math.max(1, converted)
@@ -282,7 +284,7 @@ function applySales(state: V2GameState, worker: Worker, rng: Rng, opts: OutcomeO
     ...state,
     customers,
     mrr: customers * state.arpu,
-    v2: { ...state.v2, leads: 0, firstSaleDone: state.v2.firstSaleDone || customers > 0 },
+    v2: { ...state.v2, leads: 0, firstSaleDone: state.v2.firstSaleDone || customers > 0, freshCustomers: (state.v2.freshCustomers ?? 0) + converted },
   }
   const prefix = isFounder(worker) ? 'Sales calls done' : `${worker.name} finished sales calls`
   const lines = [converted > 0

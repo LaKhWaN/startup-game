@@ -43,8 +43,8 @@ describe('processDay (market reality)', () => {
   it('customers raise support tickets, more with tech debt', () => {
     const clean = processDay(makeState({ cash: 1e6, customers: 100, techDebt: 0 }), 1, () => 0.99)
     const debt = processDay(makeState({ cash: 1e6, customers: 100, techDebt: 100 }), 1, () => 0.99)
-    expect(clean.v2.tickets).toBe(3)
-    expect(debt.v2.tickets).toBe(6)
+    expect(clean.v2.tickets).toBe(5)
+    expect(debt.v2.tickets).toBe(10)
   })
 
   it('sets churn from the breakdown and fades shocks', () => {
