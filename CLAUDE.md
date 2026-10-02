@@ -26,7 +26,7 @@ npm run dev
 
 ## Key Financial Numbers
 - Start: $500 founder savings, $0 burn, ARPU $50. Family money ($800–1,500) at the end of Chapter 1.
-- Interns $600–1,000/mo, full-time $2,000–3,000/mo. Location ladder (rent/move-in/capacity) in `src/v2/locations.ts`.
+- Interns $600–1,000/mo, full-time $3,500–5,100/mo; yearly raises set in 💻 Desktop → Employees (`src/v2/payroll.ts`). Location ladder (rent/move-in/capacity/unlock) in `src/v2/locations.ts`.
 
 ## UI Layout (room-first)
 - TopBarV2 (metrics pill incl. Profit, clock, speed) → room canvas full width + StatsRail on the right

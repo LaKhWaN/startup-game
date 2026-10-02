@@ -76,3 +76,26 @@ describe('roomFor', () => {
     })
   }
 })
+
+describe('each space has its own look', () => {
+  const spaces = LOCATIONS.slice(1)
+  const deskXs = (id: typeof spaces[number]['id']) =>
+    roomFor(id).seats.map(s => s.furniture.find(p => p.model === 'desk')!.position[0])
+
+  it('groups desks differently in every space', () => {
+    const signature = (id: typeof spaces[number]['id']) => {
+      const xs = [...new Set(deskXs(id).map(x => x.toFixed(2)))].map(Number).sort((a, b) => a - b)
+      return xs.slice(1).map((x, i) => (x - xs[i]).toFixed(2)).join(',')
+    }
+    const sigs = spaces.map(l => signature(l.id))
+    expect(new Set(sigs).size).toBe(sigs.length)
+  })
+
+  it('leaves clear space between neighbouring desks and plants in the aisles', () => {
+    for (const l of spaces) {
+      const xs = [...new Set(deskXs(l.id))].sort((a, b) => a - b)
+      for (let i = 1; i < xs.length; i++) expect(xs[i] - xs[i - 1], l.id).toBeGreaterThanOrEqual(0.8)
+      if (l.capacity > 4) expect(roomFor(l.id).furniture.some(p => p.model === 'pottedPlant' && p.position[0] < roomFor(l.id).amenityStrip!.x0), l.id).toBe(true)
+    }
+  })
+})
