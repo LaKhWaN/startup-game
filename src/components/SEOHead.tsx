@@ -83,13 +83,18 @@ export function SEOHead({
       elements.push(setLink('canonical', canonical))
     }
 
-    let schemaEl: HTMLScriptElement | null = null
+    let schemaEl = document.getElementById('seo-schema') as HTMLScriptElement | null
     if (schema) {
-      schemaEl = document.createElement('script')
-      schemaEl.type = 'application/ld+json'
-      schemaEl.id = 'seo-schema'
+      if (!schemaEl) {
+        schemaEl = document.createElement('script')
+        schemaEl.type = 'application/ld+json'
+        schemaEl.id = 'seo-schema'
+        document.head.appendChild(schemaEl)
+      }
       schemaEl.text = JSON.stringify(schema)
-      document.head.appendChild(schemaEl)
+    } else if (schemaEl) {
+      schemaEl.remove()
+      schemaEl = null
     }
 
     return () => {

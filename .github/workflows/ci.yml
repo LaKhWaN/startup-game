@@ -34,3 +34,7 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Validate prerender
+        run: npm run test:prerender
+
+
