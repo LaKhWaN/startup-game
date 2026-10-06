@@ -15,6 +15,7 @@ import { FamilyMoneyModal } from './FamilyMoneyModal'
 import { FounderPanel } from './FounderPanel'
 import { CoachPopup, GoalBanner } from './CoachOverlay'
 import { NotificationToasts } from './NotificationToasts'
+import { PeopleAlertCard } from './PeopleAlertCard'
 import { FounderBar } from './FounderBar'
 import { PersonCard } from './PersonCard'
 import { StatsRail } from './StatsRail'
@@ -47,7 +48,7 @@ export function GameScreenV2() {
   }
   const active: V2Panel | null = view === 'city' ? 'map' : modal && modal.kind !== 'person' ? modal.kind : null
 
-  const founderAwakeNow = useV2(s => founderAwake(s.v2.founder, hourOfDay(s.gameTime.totalHours)))
+  const founderAwakeNow = useV2(s => founderAwake(hourOfDay(s.gameTime.totalHours)))
   useBackgroundMusic()
   useTypingLoop(founderPose(v2.founder.task).typing && founderAwakeNow && phase === 'playing' && gameSpeed > 0 && view === 'office')
 
@@ -96,6 +97,7 @@ export function GameScreenV2() {
       <ScreenModal modal={modal} />
       <FeatureResultToasts />
       <CoachPopup />
+      <PeopleAlertCard />
       {/* Always mounted: incidents/outages can happen before events unlock, and a hidden card would freeze time. */}
       <EventCard />
       {showFamilyMoney && <FamilyMoneyModal />}

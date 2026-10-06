@@ -19,6 +19,7 @@ import { stepV2 } from './v2Tick'
 import { resetUi, uiStore } from './ui'
 import { canMigrate, setWifi, startMigration, toggleTool, type MigrateCheck, type ToolId, type WifiPlan } from './engine/infra'
 import { setRaisePct } from './payroll'
+import { resolveAlert, type AlertChoice } from './peopleAlerts'
 import { buyPerk, canBuyPerk, canUpgradeSetup, upgradeSetup, type Desk, type PerkCheck, type PerkId, type SetupCheck } from './shop'
 
 export type { V2Store } from './store'
@@ -94,9 +95,9 @@ export function claimFamilyMoney(): void {
   setV2State(next)
 }
 
-export function toggleWorkLate(): void {
-  const s = getV2State()
-  setV2State({ v2: { ...s.v2, founder: { ...s.v2.founder, workLate: !s.v2.founder.workLate } } })
+
+export function answerPeopleAlert(choice: AlertChoice): void {
+  setV2State(resolveAlert(getV2State(), choice))
 }
 
 export function convinceTeamMemberToStay(id: string): void {

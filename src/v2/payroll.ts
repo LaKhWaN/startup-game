@@ -2,7 +2,7 @@ import type { TeamMember, V2GameState } from './state'
 
 /** Yearly raise steps the founder can pick in Employees. */
 export const RAISE_OPTIONS = [0, 3, 5, 8, 10, 15] as const
-export const DEFAULT_RAISE = 5
+export const DEFAULT_RAISE = 8
 /** What people expect each year; less hurts morale, more lifts it. */
 export const EXPECTED_RAISE = 8
 /** A work anniversary comes every 360 game days. */

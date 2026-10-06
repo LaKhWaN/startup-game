@@ -1,9 +1,10 @@
-import { addStory, type TeamMember } from '../state'
+import { addStory, type PeopleAlert, type TeamMember } from '../state'
+import { totalDays } from './clock'
 import { isNight } from './clock'
 import { departMember } from './events'
 import type { GameV2 } from './types'
 import { perkEffects } from '../shop'
-import { applyReview, isReviewDay, raisePct } from '../payroll'
+import { applyReview, EXPECTED_RAISE, isReviewDay, raisePct } from '../payroll'
 
 /** Spec §5. All values 0–100. */
 export const BURNOUT_STRESS = 90
@@ -27,6 +28,18 @@ export const LOW_MORALE = 35
 export const LOW_MORALE_DAYS = 5
 /** Everyone else's morale drop when a colleague leaves. */
 export const LEAVE_MORALE_HIT = 6
+/** Warn the founder (once) at this stress, or after this many low-morale days. */
+export const RISK_STRESS = 80
+export const RISK_MORALE_DAYS = 2
+const MAX_ALERTS = 10
+
+export const isOff = (m: Pick<TeamMember, 'offUntilDay'>, day: number) => (m.offUntilDay ?? -1) > day
+
+/** Queue an alert unless the same one is already waiting. */
+export function pushAlert(alerts: PeopleAlert[], a: PeopleAlert): PeopleAlert[] {
+  if (alerts.some(x => x.kind === a.kind && x.memberId === a.memberId)) return alerts
+  return [...alerts, a].slice(-MAX_ALERTS)
+}
 
 const clamp = (n: number) => Math.max(0, Math.min(100, n))
 
@@ -60,10 +73,11 @@ function withTeam(state: GameV2, team: Record<string, TeamMember>): GameV2 {
 export function peopleHour<T extends GameV2>(state: T, crunch = false): T {
   if (Object.keys(state.v2.team).length === 0) return state
   const perks = perkEffects(state)
+  const today = totalDays(state.gameTime)
   const team: Record<string, TeamMember> = {}
   for (const m of Object.values(state.v2.team)) {
     const mood = moodOf(m)
-    const busy = !!m.task
+    const busy = !!m.task && !isOff(m, today)
     const empty = busy && mood.energy < 30 ? EMPTY_STRESS_PER_HOUR : 0
     team[m.id] = {
       ...m,
@@ -75,19 +89,19 @@ export function peopleHour<T extends GameV2>(state: T, crunch = false): T {
   return withTeam(state, team) as T
 }
 
-/** The founder sleeps 23:00–07:00 unless they chose to work late. */
+/** The founder sleeps 23:00–07:00. */
 export const SLEEP_START = 23
 export const SLEEP_END = 7
 
-export function founderAwake(founder: { workLate?: boolean }, hourOfDay: number): boolean {
-  return !!founder.workLate || (hourOfDay >= SLEEP_END && hourOfDay < SLEEP_START)
+export function founderAwake(hourOfDay: number): boolean {
+  return hourOfDay >= SLEEP_END && hourOfDay < SLEEP_START
 }
 
 /** One hour for the founder: working drains, sleeping restores, idle waking hours recover a little. */
 export function founderHour<T extends GameV2>(state: T, hourOfDay: number): T {
   const f = state.v2.founder
   const energy = f.energy ?? 100
-  const awake = founderAwake(f, hourOfDay)
+  const awake = founderAwake(hourOfDay)
   const next = !awake ? energy + 15 : f.task ? energy - 3 : isNight(hourOfDay) ? energy + 15 : energy + 3
   return { ...state, v2: { ...state.v2, founder: { ...f, energy: clamp(next) } } }
 }
@@ -98,6 +112,7 @@ export function peopleDay<T extends GameV2>(state: T, day: number): T {
   const perks = perkEffects(state)
   const raise = raisePct(state)
   const lines: string[] = []
+  let alerts = state.v2.alerts ?? []
   const team: Record<string, TeamMember> = {}
   const leaving = Object.values(state.v2.team).filter(m => m.leavingOn !== undefined && day >= m.leavingOn)
   const leaveHit = leaving.length * LEAVE_MORALE_HIT
@@ -106,6 +121,7 @@ export function peopleDay<T extends GameV2>(state: T, day: number): T {
     let m = raw
     if (isReviewDay(m, day)) {
       m = applyReview(m, raise)
+      if (raise < EXPECTED_RAISE) alerts = pushAlert(alerts, { kind: 'lowRaise', memberId: m.id, raise })
       lines.push(`💸 ${m.name}'s yearly review: ${raise}% raise to $${m.salary.toLocaleString()}/mo${(m.payMood ?? 0) < 0 ? ', less than they hoped' : (m.payMood ?? 0) > 0 ? '. They feel valued' : ''}.`)
     }
     const mood = moodOf(m)
@@ -115,9 +131,20 @@ export function peopleDay<T extends GameV2>(state: T, day: number): T {
     if (leavingOn === undefined && burnoutDays >= BURNOUT_DAYS) {
       leavingOn = day + NOTICE_DAYS
       lines.push(`😫 ${m.name} is burnt out and handed in their notice. They leave on day ${leavingOn + 1} unless you convince them to stay.`)
+      alerts = pushAlert(alerts, { kind: 'notice', memberId: m.id, reason: 'stress' })
     } else if (leavingOn === undefined && lowMoraleDays >= LOW_MORALE_DAYS) {
       leavingOn = day + NOTICE_DAYS
       lines.push(`😞 ${m.name} is unhappy here and took another offer. They leave on day ${leavingOn + 1} unless you convince them to stay.`)
+      alerts = pushAlert(alerts, { kind: 'notice', memberId: m.id, reason: 'morale' })
+    }
+    // A heads-up before it gets that far: once per rough patch.
+    let riskWarned = m.riskWarned
+    const risk = mood.stress >= RISK_STRESS ? 'stress' : lowMoraleDays >= RISK_MORALE_DAYS ? 'morale' : null
+    if (leavingOn === undefined && !riskWarned && risk) {
+      alerts = pushAlert(alerts, { kind: 'atRisk', memberId: m.id, reason: risk })
+      riskWarned = true
+    } else if (riskWarned && mood.stress < 60 && mood.morale >= 45) {
+      riskWarned = false
     }
     const stress = clamp(mood.stress - DAILY_STRESS_RECOVERY)
     const target = MORALE_BASE + perks.moraleBonus + (m.payMood ?? 0) - stress / 2
@@ -130,9 +157,11 @@ export function peopleDay<T extends GameV2>(state: T, day: number): T {
       burnoutDays,
       lowMoraleDays,
       leavingOn,
+      riskWarned,
     }
   }
   s = withTeam(s, { ...team, ...Object.fromEntries(leaving.map(m => [m.id, m])) })
+  s = { ...s, v2: { ...s.v2, alerts: alerts.filter(a => !leaving.some(m => m.id === a.memberId)) } }
   for (const m of leaving) {
     s = departMember(s, m.id)
     lines.push(`👋 ${m.name} left the company. Their experience left with them.`)

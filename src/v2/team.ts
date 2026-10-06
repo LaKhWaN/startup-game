@@ -1,7 +1,7 @@
 import { generateCandidate, ROLE_LABELS } from '../data/candidates'
 import { totalDays } from './engine/clock'
 import { monthlyBurn, runwayMonths } from './engine/money'
-import { FRESH_MOOD, mistakeFactor, workFactor } from './engine/people'
+import { FRESH_MOOD, isOff, mistakeFactor, workFactor } from './engine/people'
 import { deskMistakes, deskSpeed } from './shop'
 import { toolEffects, wifiSpeed } from './engine/infra'
 import { applyOutcome, pickResearchTemplates } from './founder'
@@ -235,10 +235,11 @@ export function advanceTeam(state: V2GameState, hours: number, rng: Rng): TeamTi
   const completedBy: string[] = []
   const mistakes: string[] = []
   const ids = Object.values(s.v2.team).sort((a, b) => a.seat - b.seat).map(m => m.id)
+  const today = totalDays(s.gameTime)
 
   for (const id of ids) {
     let m = s.v2.team[id]
-    if (!m) continue
+    if (!m || isOff(m, today)) continue
     if (!m.task) {
       const next = chooseNextTask(m, s)
       if (!next) continue

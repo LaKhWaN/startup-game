@@ -77,21 +77,19 @@ describe('founder energy', () => {
 })
 
 describe('founder sleep', () => {
-  const withTask = (workLate: boolean, energy = 50) => withV2(withChapter(makeState(), { complete: true, beat: 5 }), {
-    founder: { ...makeState().v2.founder, energy, workLate, task: { type: 'research', progress: 0 } },
+  const withTask = (energy = 50) => withV2(withChapter(makeState(), { complete: true, beat: 5 }), {
+    founder: { ...makeState().v2.founder, energy, task: { type: 'research', progress: 0 } },
   })
-  it('sleeps 23:00–07:00 even mid-task unless working late', async () => {
+  it('sleeps 23:00–07:00, even mid-task', async () => {
     const { founderAwake } = await import('../engine/people')
-    expect(founderAwake(withTask(false).v2.founder, 23)).toBe(false)
-    expect(founderAwake(withTask(false).v2.founder, 6)).toBe(false)
-    expect(founderAwake(withTask(false).v2.founder, 7)).toBe(true)
-    expect(founderAwake(withTask(true).v2.founder, 2)).toBe(true)
-    expect(founderHour(withTask(false), 2).v2.founder.energy).toBe(65) // asleep: +15
-    expect(founderHour(withTask(true), 2).v2.founder.energy).toBe(47) // working late: −3
+    expect(founderAwake(23)).toBe(false)
+    expect(founderAwake(6)).toBe(false)
+    expect(founderAwake(7)).toBe(true)
+    expect(founderHour(withTask(), 2).v2.founder.energy).toBe(65) // asleep: +15
   })
   it('a sleeping founder makes no progress', async () => {
     const { v2Tick } = await import('../v2Tick')
-    const s = { ...withTask(false), gameTime: { totalHours: 24 + 2 } }
+    const s = { ...withTask(), gameTime: { totalHours: 24 + 2 } }
     expect(v2Tick(s, 1, () => 0.99).v2.founder.task!.progress).toBe(0)
   })
 })

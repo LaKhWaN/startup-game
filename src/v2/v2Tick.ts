@@ -27,7 +27,7 @@ export function v2Tick(state: V2GameState, hours: number, rng: Rng = Math.random
   if (s.pendingEvent) return s
 
   // The founder only works while awake (sleeps 23–07 unless working late).
-  const founderHours = founderAwake(s.v2.founder, hourOfDay(s.gameTime.totalHours - 1 + 24)) ? hours : 0
+  const founderHours = founderAwake(hourOfDay(s.gameTime.totalHours - 1 + 24)) ? hours : 0
   const { state: advanced, completed } = advanceFounder(s, founderHours, rng)
   s = completed ? onTaskCompleted(advanced, completed, rng) : advanced
 

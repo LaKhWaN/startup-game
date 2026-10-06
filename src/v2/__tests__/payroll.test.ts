@@ -6,7 +6,8 @@ import { LOCATIONS } from '../locations'
 import { makeState, member, withTeam, withV2 } from './fixtures'
 
 describe('annual raises', () => {
-  it('defaults to 5% and only takes the offered steps', () => {
+  it('defaults to the expected 8% and only takes the offered steps', () => {
+    expect(DEFAULT_RAISE).toBe(EXPECTED_RAISE)
     const s = makeState()
     expect(raisePct(s)).toBe(DEFAULT_RAISE)
     expect(raisePct(setRaisePct(s, 10))).toBe(10)

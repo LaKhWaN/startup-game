@@ -245,7 +245,7 @@ Measured with the sim probe (`SIM_PROBE=1 npx vitest run src/v2/__tests__/simPro
 ## Raises, pricier growth, people who quit, rooms with their own look (user request)
 
 ### Rulings
-- 💻 Infra became 💻 Desktop with a fourth app, 👥 Employees: yearly raise policy (0/3/5/8/10/15%, default 5%), payroll now and after a round of raises, and each person's salary, next review, morale and stress — cost if wrong: one more app.
+- 💻 Infra became 💻 Desktop with a fourth app, 👥 Employees: yearly raise policy (0/3/5/8/10/15%, default 5%, later 8%), payroll now and after a round of raises, and each person's salary, next review, morale and stress — cost if wrong: one more app.
 - Raises land on each work anniversary (every 360 days from hire). People expect 8%; the last raise sets a lasting morale modifier of ±2 per point away from 8 (clamped ±16) — cost if wrong: a 0% policy saves money but quietly costs morale.
 - Full-time hires $2,000–3,000 → $3,500–5,100 (steps of $400); promotion pays at least $3,500 — cost if wrong: slower full-time phase.
 - Rent / move-in / unlock MRR: Bigger home $500 / $1.2k / $1.5k, Villa $1.5k / $4k / $4k, Co-working $3.5k / $7k / $8k, Small office $8k / $18k / $18k, Big office $16k / $45k / $40k, Building $32k / $100k / $90k. Chapter 2's goal follows the Bigger home unlock ($1,500) so the Map opens with somewhere to go; old saves past Chapter 2 get that peak credited — cost if wrong: slower ladder.
@@ -260,3 +260,14 @@ Measured with the sim probe (`SIM_PROBE=1 npx vitest run src/v2/__tests__/simPro
 - Night and weekends removed: no darkness, hires never walk home, no ⏭ Skip / Auto chip. Hires work every hour; a hire "day" is now a whole game day (WORK_DAY_HOURS 24) and hourly mood changes are ×1/3, so a day adds up the same. Weekend rest is replaced by stronger daily recovery (stress −2.5, energy +50 a day). Hires now work 7 days a week instead of 5 (+40% weekly output); the sim still reaches Co-working on days 297–306 and an ignored team still loses 18–20 people — cost if wrong: a little more output.
 - The founder still sleeps 23–07 (energy mechanic) and "Work late" stays, without the night look.
 - Night shift (meaningless without evenings) became 🔥 Crunch mode: hires 1.5× faster, busy stress ×2, +50% payroll. Saves with Night shift get Crunch mode — cost if wrong: one renamed tool.
+
+## People pop-ups, no Work late (user request)
+
+### Rulings
+- Important people moments pause the game with a pop-up (avatar, stress/morale bars, choices), queued one at a time in `v2.alerts`:
+  - Handed in notice (burnout or unhappy): 🤝 Convince to stay (+20%, once per person) or Let them go.
+  - Close to quitting — a heads-up once per rough patch at stress ≥ 80 or 2 days of morale < 35 (re-arms when stress < 60 and morale ≥ 45): 🏖️ 2 days off (stress −30, energy full, no work meanwhile), 💸 10% raise (morale +10), or Not now.
+  - Yearly review below the 8% people expect: top it up to 8% or keep it.
+  Sim, 2 years: a caring player answers ~5 pop-ups; one who ignores people gets ~40 (about one every 15 days) — cost if wrong: interruptions at high speed, which is the point.
+- Default raise policy 5% → 8% (= what people expect), so review pop-ups only appear when the player picks a lower raise; otherwise a 50-person company would pop one per person per year — cost if wrong: slightly higher payroll growth by default.
+- 🌙 Work late removed. The founder always sleeps 23:00–07:00; the founder bar shows "😴 asleep till 07:00" then — cost if wrong: no way to grind at night.

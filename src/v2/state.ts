@@ -55,6 +55,10 @@ export interface TeamMember {
   leavingOn?: number
   /** Morale from the last yearly raise (see payroll.ts). */
   payMood?: number
+  /** Already warned the founder they're close to quitting (cleared once they recover). */
+  riskWarned?: boolean
+  /** On time off until this game day (no work, recovering). */
+  offUntilDay?: number
   /** Work days in a row with morale under LOW_MORALE. */
   lowMoraleDays?: number
   /** Already talked out of leaving once. */
@@ -65,6 +69,14 @@ export interface TeamMember {
   bio?: string
   /** Manager this member reports to (managers arrive in a later phase). */
   reportsTo?: string
+}
+
+export interface PeopleAlert {
+  kind: 'notice' | 'atRisk' | 'lowRaise'
+  memberId: string
+  reason?: 'stress' | 'morale'
+  /** lowRaise: the raise they got, in %. */
+  raise?: number
 }
 
 export interface InternCandidate {
@@ -112,8 +124,6 @@ export interface V2Slice {
     skills: Record<FounderSkill, number>
     /** 0–100; the founder tires too (spec §5). */
     energy?: number
-    /** Keep working through 23:00–07:00 (costs energy). */
-    workLate?: boolean
   }
   chapter: {
     beat: Beat
@@ -140,7 +150,9 @@ export interface V2Slice {
   setups: { founder: number; seats: number[] }
   /** Hosting, Wi-Fi and tools (spec §7). */
   infra: InfraState
-  /** Yearly raise policy in %, set in Employees (default 5). */
+  /** People moments that need the founder's decision; shown one at a time as a pausing pop-up. */
+  alerts?: PeopleAlert[]
+  /** Yearly raise policy in %, set in Employees (default 8, what people expect). */
   raisePct?: number
   /** Customers won in roughly the last month; they churn twice as fast. */
   freshCustomers?: number

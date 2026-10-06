@@ -351,3 +351,9 @@
 @keyframes v2-toast-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .v2-toast { animation: none; } }
 @media (max-width: 768px) { .v2-toasts { top: 52px; } }
+
+/* People alert pop-up */
+.v2-alert-head { display: flex; gap: 12px; align-items: center; margin-bottom: 0.6rem; }
+.v2-alert-mood { display: grid; grid-template-columns: 80px 1fr 28px; align-items: center; gap: 8px; font-size: 0.8rem; margin-bottom: 6px; }
+.v2-alert-choices { display: flex; flex-direction: column; gap: 8px; margin-top: 1rem; }
+.v2-alert-choices .v2-btn { width: 100%; text-align: left; }

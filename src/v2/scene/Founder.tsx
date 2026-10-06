@@ -14,8 +14,8 @@ export function Founder({ onSelect }: { onSelect?: () => void }) {
   const task = useV2(s => s.v2.founder.task)
   const features = useV2(s => s.features)
   const room = useRoom()
-  // Asleep (23–07 unless working late): in bed even mid-task.
-  const asleep = useV2(s => !founderAwake(s.v2.founder, hourOfDay(s.gameTime.totalHours)))
+  // Asleep (23–07): resting even mid-task.
+  const asleep = useV2(s => !founderAwake(hourOfDay(s.gameTime.totalHours)))
   const featureTitle = task?.type === 'develop' ? features.find(f => f.id === task.featureId)?.title : undefined
   return (
     <Character

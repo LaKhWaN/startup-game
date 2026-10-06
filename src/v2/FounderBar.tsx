@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { startFounderTask, toggleWorkLate, useV2 } from './actions'
+import { hourOfDay } from './engine/clock'
+import { founderAwake } from './engine/people'
+import { startFounderTask, useV2 } from './actions'
 import { FOUNDER_BUILD_SPEED, FOUNDER_ID, taskDurationDays } from './founder'
 import { TASK_INFO, taskReason } from './founderTasks'
 import type { FounderTaskType } from './state'
@@ -13,6 +15,7 @@ export function FounderBar() {
   const v2 = useV2(s => s.v2)
   const features = useV2(s => s.features)
   const techDebt = useV2(s => s.techDebt)
+  const asleep = useV2(s => !founderAwake(hourOfDay(s.gameTime.totalHours)))
   const [picking, setPicking] = useState(false)
 
   const task = v2.founder.task
@@ -41,9 +44,7 @@ export function FounderBar() {
       </button>
       <div className="v2-fb-energy" title="Your energy: working drains it, sleep restores it. Tired = slower.">
         <span>⚡ {energy}</span>
-        <button className={`v2-chip${v2.founder.workLate ? ' v2-chip--on' : ''}`} onClick={toggleWorkLate} title="Keep working 23:00–07:00 (costs energy)">
-          🌙 Work late
-        </button>
+        {asleep && <span className="v2-muted" title="You sleep 23:00–07:00 and pick your task back up in the morning">😴 asleep till 07:00</span>}
       </div>
       <div className="v2-fb-actions">
         {QUICK.map(type => {
