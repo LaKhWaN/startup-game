@@ -18,10 +18,10 @@ npm run dev
 - Plans/specs/decisions: `docs/superpowers/` (`v2-rulings.md` lists every autonomous decision)
 
 ## Game Loop
-- 1.5 real seconds = 1 game hour at 1× (`GAME_HOUR_MS`; 2×/3×/5×; 10× in dev). Night shift tool keeps the office open to 23:00. Games start Monday 09:00.
-- Hires work 09:00–17:00 Mon–Fri (task durations in 8-hour work days); the founder works any hour.
+- 1.5 real seconds = 1 game hour at 1× (`GAME_HOUR_MS`; 2×/3×/5×; 10× in dev). Games start Monday 09:00.
+- No night or weekends: the office never closes and hires work every hour (task durations in whole game days; hourly mood changes are ×1/3). The founder sleeps 23–07 unless working late. Crunch mode tool: +50% speed, +50% payroll, double stress.
 - Daily: churn (probabilistic), cash += (MRR − burn)/30, event roll, metrics snapshot. Monthly: summary line.
-- Game-raised popups (events, family money, check-in) pause the game (`src/v2/pause.ts`).
+- Game-raised popups (events, family money, check-in, coach/tip cards) pause the game (`src/v2/pause.ts`). Notable story lines (emoji-led) show as toasts for 5 s (`NotificationToasts.tsx`).
 - Lose: cash < $0. End by selling (Sell button / acquisition events).
 
 ## Key Financial Numbers
@@ -30,7 +30,7 @@ npm run dev
 
 ## UI Layout (room-first)
 - TopBarV2 (metrics pill incl. Profit, clock, speed) → room canvas full width + StatsRail on the right
-- FounderBar (bottom), CoachOverlay (top-left), NightBanner (skip to morning), BottomNav (Founder/Team/Map/Metrics)
+- FounderBar (bottom), GoalBanner (top-left, folds to 🎯 after 5 s), toasts (top-right), BottomNav (Founder/Team/Map/Metrics/Desktop)
 - Founder/Team/Metrics/person cards open as Modal sheets; Map swaps the canvas to the 2.5D city
 - Overlays: EventCard, FeatureResultToasts, RunwayBanner, FamilyMoneyModal, InvestorCheckin (all in `src/v2/ui/`)
 

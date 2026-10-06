@@ -9,12 +9,20 @@ import { applyReview, isReviewDay, raisePct } from '../payroll'
 export const BURNOUT_STRESS = 90
 export const BURNOUT_DAYS = 3
 export const NOTICE_DAYS = 5
-/** Stress per busy work hour (doubled on night-shift evenings), and per hour worked on an empty tank. */
-export const BUSY_STRESS_PER_HOUR = 0.8
-export const EMPTY_STRESS_PER_HOUR = 1.5
+/**
+ * The office never closes: hires are in every hour, so hourly changes are a third of
+ * what an 8-hour working day had (a day still adds up to the same).
+ */
+export const HOUR_SHARE = 8 / 24
+/** Stress per busy hour (doubled in crunch mode), and per hour worked on an empty tank. */
+export const BUSY_STRESS_PER_HOUR = 0.8 * HOUR_SHARE
+export const EMPTY_STRESS_PER_HOUR = 1.5 * HOUR_SHARE
+/** Daily recovery (there are no weekends off any more). */
+export const DAILY_STRESS_RECOVERY = 2.5
+export const DAILY_ENERGY_RECOVERY = 50
 /** Morale drifts toward MORALE_BASE + perks + pay mood − stress/2. */
 export const MORALE_BASE = 65
-/** Unhappy people quit: morale under LOW_MORALE for LOW_MORALE_DAYS work days in a row. */
+/** Unhappy people quit: morale under LOW_MORALE for LOW_MORALE_DAYS days in a row. */
 export const LOW_MORALE = 35
 export const LOW_MORALE_DAYS = 5
 /** Everyone else's morale drop when a colleague leaves. */
@@ -48,10 +56,9 @@ function withTeam(state: GameV2, team: Record<string, TeamMember>): GameV2 {
   return { ...state, v2: { ...state.v2, team } }
 }
 
-/** One hour for the hires. Only work hours matter (they're home otherwise). */
-/** `evening`: a night-shift hour (busy stress counts double). */
-export function peopleHour<T extends GameV2>(state: T, workHour: boolean, evening = false): T {
-  if (!workHour || Object.keys(state.v2.team).length === 0) return state
+/** One hour for the hires. `crunch`: crunch mode is on (busy stress counts double). */
+export function peopleHour<T extends GameV2>(state: T, crunch = false): T {
+  if (Object.keys(state.v2.team).length === 0) return state
   const perks = perkEffects(state)
   const team: Record<string, TeamMember> = {}
   for (const m of Object.values(state.v2.team)) {
@@ -60,9 +67,9 @@ export function peopleHour<T extends GameV2>(state: T, workHour: boolean, evenin
     const empty = busy && mood.energy < 30 ? EMPTY_STRESS_PER_HOUR : 0
     team[m.id] = {
       ...m,
-      energy: clamp(mood.energy - (busy ? 7 * perks.energyDrain : 1)),
-      stress: clamp(mood.stress + (busy ? BUSY_STRESS_PER_HOUR * (evening ? 2 : 1) : -1 * perks.idleStressRelief) + empty - perks.workStressRelief),
-      context: clamp(mood.context + (busy ? 0.25 : 0)),
+      energy: clamp(mood.energy - (busy ? 7 * perks.energyDrain : 1) * HOUR_SHARE),
+      stress: clamp(mood.stress + (busy ? BUSY_STRESS_PER_HOUR * (crunch ? 2 : 1) : -1 * perks.idleStressRelief * HOUR_SHARE) + empty - perks.workStressRelief * HOUR_SHARE),
+      context: clamp(mood.context + (busy ? 0.25 * HOUR_SHARE : 0)),
     }
   }
   return withTeam(state, team) as T
@@ -85,12 +92,8 @@ export function founderHour<T extends GameV2>(state: T, hourOfDay: number): T {
   return { ...state, v2: { ...state.v2, founder: { ...f, energy: clamp(next) } } }
 }
 
-/** Once per day: overnight/weekend recovery, morale drift, burnout → notice → leaving. */
-/**
- * `restDay`: the day starting now is a weekend (full rest). `endedOnWeekend`: the day that just ended
- * was a weekend (it doesn't count toward burnout).
- */
-export function peopleDay<T extends GameV2>(state: T, day: number, restDay: boolean, endedOnWeekend: boolean = restDay): T {
+/** Once per day: daily recovery, morale drift, yearly reviews, burnout / unhappiness → notice → leaving. */
+export function peopleDay<T extends GameV2>(state: T, day: number): T {
   let s: GameV2 = state
   const perks = perkEffects(state)
   const raise = raisePct(state)
@@ -106,9 +109,8 @@ export function peopleDay<T extends GameV2>(state: T, day: number, restDay: bool
       lines.push(`💸 ${m.name}'s yearly review: ${raise}% raise to $${m.salary.toLocaleString()}/mo${(m.payMood ?? 0) < 0 ? ', less than they hoped' : (m.payMood ?? 0) > 0 ? '. They feel valued' : ''}.`)
     }
     const mood = moodOf(m)
-    const workday = !endedOnWeekend
-    const burnoutDays = workday ? (mood.stress >= BURNOUT_STRESS ? (m.burnoutDays ?? 0) + 1 : 0) : (m.burnoutDays ?? 0)
-    const lowMoraleDays = workday ? (mood.morale < LOW_MORALE ? (m.lowMoraleDays ?? 0) + 1 : 0) : (m.lowMoraleDays ?? 0)
+    const burnoutDays = mood.stress >= BURNOUT_STRESS ? (m.burnoutDays ?? 0) + 1 : 0
+    const lowMoraleDays = mood.morale < LOW_MORALE ? (m.lowMoraleDays ?? 0) + 1 : 0
     let leavingOn = m.leavingOn
     if (leavingOn === undefined && burnoutDays >= BURNOUT_DAYS) {
       leavingOn = day + NOTICE_DAYS
@@ -117,11 +119,11 @@ export function peopleDay<T extends GameV2>(state: T, day: number, restDay: bool
       leavingOn = day + NOTICE_DAYS
       lines.push(`😞 ${m.name} is unhappy here and took another offer. They leave on day ${leavingOn + 1} unless you convince them to stay.`)
     }
-    const stress = clamp(mood.stress - 1 - (restDay ? 4 : 0))
+    const stress = clamp(mood.stress - DAILY_STRESS_RECOVERY)
     const target = MORALE_BASE + perks.moraleBonus + (m.payMood ?? 0) - stress / 2
     team[m.id] = {
       ...m,
-      energy: restDay ? 100 : clamp(mood.energy + 45 + perks.overnightEnergy),
+      energy: clamp(mood.energy + DAILY_ENERGY_RECOVERY + perks.overnightEnergy),
       stress,
       morale: clamp(mood.morale + (target - mood.morale) * 0.1 - leaveHit),
       context: mood.context,

@@ -4,7 +4,7 @@ import { scoreToDifficulty } from '../ai/gemini'
 import { totalDays } from './engine/clock'
 import { createCompany, type CompanyState } from './engine/company'
 import type { PerkId } from './shop'
-import { START_INFRA, type InfraState } from './engine/infra'
+import { START_INFRA, TOOLS, type InfraState, type ToolId } from './engine/infra'
 import { LOCATIONS } from './locations'
 
 export type FounderTaskType = 'research' | 'develop' | 'emails' | 'sales' | 'support' | 'refactor'
@@ -144,8 +144,6 @@ export interface V2Slice {
   raisePct?: number
   /** Customers won in roughly the last month; they churn twice as fast. */
   freshCustomers?: number
-  /** Skip closed office hours automatically. */
-  autoSkipNights?: boolean
 }
 
 /** The whole v2 game: company state + the v2 slice. */
@@ -249,7 +247,10 @@ export function migrateV2Slice(v: unknown): V2Slice | null {
     tickets: typeof s.tickets === 'number' ? s.tickets : 0,
     perks: Array.isArray(s.perks) ? s.perks : [],
     setups: s.setups && typeof s.setups.founder === 'number' && Array.isArray(s.setups.seats) ? s.setups : { founder: 1, seats: [] },
-    infra: s.infra && typeof s.infra.hosting === 'number' ? { ...START_INFRA, ...s.infra } : { ...START_INFRA },
+    infra: s.infra && typeof s.infra.hosting === 'number'
+      // The old Night shift tool became Crunch mode when the office stopped closing.
+      ? { ...START_INFRA, ...s.infra, tools: (s.infra.tools ?? []).map((t: string) => (t === 'nightShift' ? 'crunch' : t)).filter((t: string): t is ToolId => t in TOOLS) }
+      : { ...START_INFRA },
   }
 }
 

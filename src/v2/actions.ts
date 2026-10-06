@@ -15,7 +15,7 @@ import {
   canHire, canPromote, convinceToStay, fireMember, generateCandidates, hireIntern, isFullTimeUnlocked, promoteMember, setAssignment,
   type HireCheck, type PromoteCheck,
 } from './team'
-import { shouldAutoSkip, skipToMorning, stepV2 } from './v2Tick'
+import { stepV2 } from './v2Tick'
 import { resetUi, uiStore } from './ui'
 import { canMigrate, setWifi, startMigration, toggleTool, type MigrateCheck, type ToolId, type WifiPlan } from './engine/infra'
 import { setRaisePct } from './payroll'
@@ -51,12 +51,6 @@ export function stepGame(): void {
   const next = stepV2(before)
   gameStore.setState(next)
   if (totalDays(next.gameTime) > totalDays(before.gameTime)) syncAnalytics(next)
-  if (shouldAutoSkip(next, uiStore.getState().pauseHolds.length > 0)) skipNight()
-}
-
-export function toggleAutoSkip(): void {
-  const s = getV2State()
-  setV2State({ v2: { ...s.v2, autoSkipNights: !s.v2.autoSkipNights } })
 }
 
 export function newGameV2(config: OnboardingConfig): void {
@@ -97,13 +91,6 @@ export function reshowCoachCard(): void {
 export function claimFamilyMoney(): void {
   const next = claimFamilyMoneyPure(getV2State())
   playSfx('cashCredit', 0.7)
-  setV2State(next)
-}
-
-/** ⏭ Skip to morning: run the closed hours until the office opens (stops on an event). */
-export function skipNight(): void {
-  const familyMoneyUp = (s: V2GameState) => s.v2.chapter.beat === 5 && !!s.v2.chapter.familyMoney && !s.v2.chapter.familyMoney.claimed
-  const next = skipToMorning(getV2State(), Math.random, familyMoneyUp, syncAnalytics)
   setV2State(next)
 }
 

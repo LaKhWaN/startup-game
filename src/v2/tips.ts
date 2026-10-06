@@ -1,5 +1,5 @@
 import type { CoachCard } from './chapter'
-import { hostingLoad, officeOpen } from './engine/infra'
+import { hostingLoad } from './engine/infra'
 import { marketCeiling } from './engine/market'
 import { staleChurn } from './engine/churn'
 import type { V2GameState } from './state'
@@ -27,7 +27,7 @@ export const TIPS: Tip[] = [
   },
   {
     id: 'tip-stress', title: 'Your team is getting tired',
-    body: 'Non-stop work drains energy and builds stress. Give people idle time, let weekends happen, or buy perks in the 🛒 Shop. Burnt-out or unhappy people quit. 💻 Desktop → Employees shows everyone’s mood and sets yearly raises.',
+    body: 'Non-stop work drains energy and builds stress. Give people idle time (set them to Idle for a while), or buy perks in the 🛒 Shop. Burnt-out or unhappy people quit. 💻 Desktop → Employees shows everyone’s mood and sets yearly raises.',
     when: s => Object.values(s.v2.team).some(m => (m.stress ?? 0) >= 60),
   },
   {
@@ -39,11 +39,6 @@ export const TIPS: Tip[] = [
     id: 'tip-shop', title: 'Make the office nicer',
     body: 'The 🛒 Shop has perks (coffee, plants, a game corner…) that keep people fresh, and better computers than that old XP laptop.',
     when: s => s.v2.chapter.complete && (s.v2.perks ?? []).length === 0 && s.cash >= 400,
-  },
-  {
-    id: 'tip-night', title: 'Office hours',
-    body: 'Your team works 9 to 5 on weekdays. You can keep going at night (🌙 Work late costs energy) or ⏭ skip to the morning.',
-    when: s => Object.keys(s.v2.team).length > 0 && !officeOpen(s, s.gameTime.totalHours),
   },
   {
     id: 'tip-market', title: 'The market is filling up',

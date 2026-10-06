@@ -33,8 +33,8 @@ export const TIER_RULES: Record<Tier, TierRule> = {
   fulltime: { mainSpeed: 1, offSpeed: 0.5, skillMain: 5, skillOther: 2, gain: 0.2, cap: 9 },
 }
 
-/** A hire's working day (09:00–17:00). Their task durations are counted in these. */
-export const WORK_DAY_HOURS = 8
+/** A hire's working day: the office never closes, so a whole game day. Task durations count in these. */
+export const WORK_DAY_HOURS = 24
 
 export const INTERN_MAIN_SPEED = TIER_RULES.intern.mainSpeed
 export const INTERN_OFF_SPEED = TIER_RULES.intern.offSpeed

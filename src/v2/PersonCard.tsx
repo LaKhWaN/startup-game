@@ -22,8 +22,8 @@ const ASSIGNMENTS: { id: Assignment; label: string }[] = [
 ]
 
 const MOOD = [
-  { id: 'energy', label: '⚡ Energy', fallback: 100, badHigh: false, hint: 'Drains while working; a night or a weekend restores it. Tired people are slower.' },
-  { id: 'stress', label: '😰 Stress', fallback: 10, badHigh: true, hint: 'Grinding raises it, idle time and weekends lower it. Too high for 3 days → they hand in notice.' },
+  { id: 'energy', label: '⚡ Energy', fallback: 100, badHigh: false, hint: 'Drains while working; a little comes back every day (more with a sofa). Tired people are slower.' },
+  { id: 'stress', label: '😰 Stress', fallback: 10, badHigh: true, hint: 'Grinding raises it, idle time and perks lower it. Too high for 3 days → they hand in notice.' },
   { id: 'morale', label: '😊 Morale', fallback: 70, badHigh: false, hint: 'Follows stress. Happier people work faster.' },
   { id: 'context', label: '🧠 Context', fallback: 0, badHigh: false, hint: 'Experience at this company. Makes them faster; leaves with them.' },
 ] as const

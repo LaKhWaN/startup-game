@@ -39,13 +39,15 @@ describe('good events help (review #2)', () => {
 })
 
 describe('burnout is reachable (review #3)', () => {
-  it('a hire busy every hour of every workday burns out within ~10 weeks, without perks', () => {
+  const work = (s: ReturnType<typeof makeState>, busyHours: number) => {
+    for (let h = 0; h < 24; h++) s = peopleHour({ ...s, v2: { ...s.v2, team: { b: { ...s.v2.team.b, task: h < busyHours ? { type: 'emails', progress: 0 } : null } } } })
+    return s
+  }
+  it('a hire busy every hour burns out within ~10 weeks, without perks', () => {
     let s = withTeam(makeState(), member({ id: 'b', task: { type: 'emails', progress: 0 } }))
     let noticeDay: number | undefined
     for (let day = 1; day <= 75 && noticeDay === undefined; day++) {
-      const weekend = (day - 1) % 7 >= 5
-      if (!weekend) for (let h = 0; h < 8; h++) s = peopleHour({ ...s, v2: { ...s.v2, team: { b: { ...s.v2.team.b, task: { type: 'emails', progress: 0 } } } } }, true)
-      s = peopleDay(s, day, (day % 7) >= 5, weekend)
+      s = peopleDay(work(s, 24), day)
       noticeDay = s.v2.team.b?.leavingOn
     }
     expect(noticeDay).toBeDefined()
@@ -53,11 +55,7 @@ describe('burnout is reachable (review #3)', () => {
   })
   it('a hire with regular idle time stays fine', () => {
     let s = withTeam(makeState(), member({ id: 'b' }))
-    for (let day = 1; day <= 60; day++) {
-      const weekend = (day - 1) % 7 >= 5
-      if (!weekend) for (let h = 0; h < 8; h++) s = peopleHour({ ...s, v2: { ...s.v2, team: { b: { ...s.v2.team.b, task: h < 5 ? { type: 'emails', progress: 0 } : null } } } }, true)
-      s = peopleDay(s, day, (day % 7) >= 5, weekend)
-    }
+    for (let day = 1; day <= 60; day++) s = peopleDay(work(s, 15), day)
     expect(s.v2.team.b.leavingOn).toBeUndefined()
   })
 })

@@ -21,11 +21,11 @@ describe('annual raises', () => {
 
   it('a work anniversary raises salary by the policy and sets pay mood', () => {
     const s = withV2(withTeam(makeState(), member({ salary: 1000, hiredAtDay: 0 })), { raisePct: 10 })
-    const after = peopleDay(s, REVIEW_DAYS, false)
+    const after = peopleDay(s, REVIEW_DAYS)
     expect(after.v2.team.m1.salary).toBe(1100)
     expect(after.v2.team.m1.payMood).toBe(payMoodFor(10))
     // Not on other days.
-    expect(peopleDay(s, REVIEW_DAYS - 1, false).v2.team.m1.salary).toBe(1000)
+    expect(peopleDay(s, REVIEW_DAYS - 1).v2.team.m1.salary).toBe(1000)
   })
 
   it('next review is the coming anniversary', () => {
@@ -37,28 +37,28 @@ describe('annual raises', () => {
 describe('stress and morale bite', () => {
   it('busy hours build stress faster', () => {
     const s = withTeam(makeState(), member({ stress: 10, task: { type: 'emails', progress: 0 } }))
-    expect(peopleHour(s, true).v2.team.m1.stress).toBeCloseTo(10 + BUSY_STRESS_PER_HOUR)
-    expect(BUSY_STRESS_PER_HOUR).toBeGreaterThanOrEqual(0.8)
+    expect(peopleHour(s).v2.team.m1.stress).toBeCloseTo(10 + BUSY_STRESS_PER_HOUR)
+    expect(BUSY_STRESS_PER_HOUR * 24).toBeGreaterThanOrEqual(6.4) // a day of work
   })
 
   it('morale drifts to base + perks + pay − stress/2', () => {
     const s = withTeam(makeState(), member({ morale: MORALE_BASE, stress: 60 }))
-    const after = peopleDay(s, 1, false)
+    const after = peopleDay(s, 1)
     expect(after.v2.team.m1.morale).toBeLessThan(MORALE_BASE)
   })
 
   it(`morale under ${LOW_MORALE} for ${LOW_MORALE_DAYS} work days means notice`, () => {
     let s = withTeam(makeState(), member({ morale: 10, stress: 80 }))
-    for (let d = 1; d <= LOW_MORALE_DAYS; d++) s = peopleDay(s, d, false)
+    for (let d = 1; d <= LOW_MORALE_DAYS; d++) s = peopleDay(s, d)
     expect(s.v2.team.m1.leavingOn).toBeDefined()
     expect(s.storyLog[0].lines.join(' ')).toMatch(/unhappy/i)
   })
 
   it('when someone leaves, the rest lose morale', () => {
     const s = withTeam(makeState(), member({ leavingOn: 3 }), member({ id: 'm2', seat: 1, morale: 70, stress: 10 }))
-    const after = peopleDay(s, 3, false)
+    const after = peopleDay(s, 3)
     expect(after.v2.team.m1).toBeUndefined()
-    const alone = peopleDay(withTeam(makeState(), member({ id: 'm2', seat: 1, morale: 70, stress: 10 })), 3, false)
+    const alone = peopleDay(withTeam(makeState(), member({ id: 'm2', seat: 1, morale: 70, stress: 10 })), 3)
     expect(after.v2.team.m2.morale!).toBeLessThan(alone.v2.team.m2.morale! - 4)
   })
 })

@@ -10,11 +10,11 @@ import { MoveTransition } from './MoveTransition'
 import { GAME_HOUR_MS } from './founder'
 import { founderAwake } from './engine/people'
 import { hourOfDay } from './engine/clock'
-import { NightBanner } from './NightBanner'
 import { TeamPanel } from './TeamPanel'
 import { FamilyMoneyModal } from './FamilyMoneyModal'
 import { FounderPanel } from './FounderPanel'
-import { CoachOverlay } from './CoachOverlay'
+import { CoachPopup, GoalBanner } from './CoachOverlay'
+import { NotificationToasts } from './NotificationToasts'
 import { FounderBar } from './FounderBar'
 import { PersonCard } from './PersonCard'
 import { StatsRail } from './StatsRail'
@@ -84,9 +84,9 @@ export function GameScreenV2() {
             <Hires onSelect={id => openModal({ kind: 'person', id })} />
             <LaptopGlow />
           </RoomView>
-          {view === 'office' && <CoachOverlay />}
+          {view === 'office' && <GoalBanner />}
+          <NotificationToasts />
           {view === 'office' && <FounderBar />}
-          <NightBanner />
           <CityOverlay />
           <MoveTransition />
           <BottomNavV2 active={active} metricsUnlocked={metricsUnlocked} teamUnlocked={teamUnlocked} mapUnlocked={mapUnlocked} onTabClick={onTab} />
@@ -95,6 +95,7 @@ export function GameScreenV2() {
       </div>
       <ScreenModal modal={modal} />
       <FeatureResultToasts />
+      <CoachPopup />
       {/* Always mounted: incidents/outages can happen before events unlock, and a hidden card would freeze time. */}
       <EventCard />
       {showFamilyMoney && <FamilyMoneyModal />}

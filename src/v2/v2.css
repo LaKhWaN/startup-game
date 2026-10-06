@@ -338,3 +338,16 @@
 .v2-emp-alert { margin-top: 4px; font-size: 0.75rem; font-weight: 600; color: var(--error); }
 .v2-emp-moods { display: grid; grid-template-columns: auto 110px; align-items: center; gap: 4px 8px; font-size: 0.72rem; }
 .v2-emp-bar { height: 6px; }
+
+/* Coach pop-up, goal chip, notification toasts */
+.v2-coach-backdrop { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(15, 20, 30, 0.35); }
+.v2-coach--popup { width: min(420px, 100%); padding: 1.2rem 1.3rem; background: var(--surface); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25); }
+.v2-coach--popup .v2-coach-title { font-size: 1.05rem; }
+.v2-coach--popup .v2-coach-body { font-size: 0.92rem; margin-bottom: 1rem; }
+.v2-banner { cursor: pointer; }
+.v2-goal-chip { align-self: flex-start; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+.v2-toasts { position: absolute; top: 12px; right: 12px; z-index: 13; width: min(340px, calc(100% - 24px)); display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
+.v2-toast { pointer-events: auto; cursor: pointer; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16); font-size: 0.82rem; line-height: 1.4; animation: v2-toast-in 0.2s ease-out; }
+@keyframes v2-toast-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .v2-toast { animation: none; } }
+@media (max-width: 768px) { .v2-toasts { top: 52px; } }

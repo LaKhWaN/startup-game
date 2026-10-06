@@ -1,5 +1,4 @@
 import { addStory } from '../state'
-import { hourOfDay, isWeekend, isWorkHour, WORK_END } from './clock'
 import type { EventDef } from './eventData'
 import type { GameV2 } from './types'
 
@@ -21,29 +20,21 @@ export const WIFI: Record<WifiPlan, { name: string; price: number; speed: number
   business: { name: 'Business fiber', price: 250, speed: 1.1 },
 }
 
-export type ToolId = 'helpdesk' | 'monitoring' | 'ci' | 'nightShift'
+export type ToolId = 'helpdesk' | 'monitoring' | 'ci' | 'crunch'
 export const TOOLS: Record<ToolId, { name: string; icon: string; price: number; blurb: string }> = {
   helpdesk: { name: 'Helpdesk', icon: '🎫', price: 100, blurb: 'Support clears 50% more tickets' },
   monitoring: { name: 'Monitoring', icon: '📈', price: 150, blurb: 'Incidents and outages 40% less likely' },
   ci: { name: 'CI/CD', icon: '🚦', price: 200, blurb: 'Builds 10% faster, build mistakes ×0.7' },
-  nightShift: { name: 'Night shift', icon: '🌃', price: 0, blurb: 'Team works 09:00–23:00 on weekdays. Costs +50% of payroll; evening hours are twice as stressful' },
+  crunch: { name: 'Crunch mode', icon: '🔥', price: 0, blurb: 'Everyone works 50% faster. Costs +50% of payroll; stress builds twice as fast' },
 }
 
-/** Night shift costs this share of total salaries per month. */
-export const NIGHT_SHIFT_PREMIUM = 0.5
-export const NIGHT_SHIFT_END = 23
+/** Crunch mode: costs this share of total salaries per month, speeds hires up, doubles busy stress. */
+export const CRUNCH_PREMIUM = 0.5
+export const CRUNCH_SPEED = 1.5
 
 const payroll = (s: S) => Object.values(s.v2.team).reduce((sum, m) => sum + m.salary, 0)
 
-/** Is the office open (hires at work) during the hour starting at `totalHours`? */
-export function officeOpen(s: S, totalHours: number): boolean {
-  if (isWorkHour(totalHours)) return true
-  const h = hourOfDay(totalHours)
-  return infraOf(s).tools.includes('nightShift') && !isWeekend(totalHours) && h >= WORK_END && h < NIGHT_SHIFT_END
-}
-
-/** An evening (night-shift) work hour. */
-export const isEveningHour = (totalHours: number) => hourOfDay(totalHours) >= WORK_END
+export const isCrunching = (s: S) => infraOf(s).tools.includes('crunch')
 
 export interface InfraState {
   hosting: number
@@ -66,7 +57,7 @@ export const hostingLoad = (s: S & Pick<GameV2, 'customers'>) => s.customers / h
 /** Monthly cost of hosting (the plan you're paying for, even mid-migration), Wi-Fi and tools. */
 export function infraServicesCost(s: S): number {
   const i = infraOf(s)
-  const shift = i.tools.includes('nightShift') ? Math.round(payroll(s) * NIGHT_SHIFT_PREMIUM) : 0
+  const shift = i.tools.includes('crunch') ? Math.round(payroll(s) * CRUNCH_PREMIUM) : 0
   return plan(i.migratingTo ?? i.hosting).price + WIFI[i.wifi].price + i.tools.reduce((sum, t) => sum + TOOLS[t].price, 0) + shift
 }
 

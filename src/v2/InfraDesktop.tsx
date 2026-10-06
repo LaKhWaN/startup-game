@@ -79,7 +79,7 @@ export function InfraDesktop({ onClose }: { onClose: () => void }) {
                 const on = infra.tools.includes(id)
                 return (
                   <div key={id} className={`v2-desk-row${on ? ' v2-desk-row--on' : ''}`}>
-                    <div><strong>{TOOLS[id].icon} {TOOLS[id].name}</strong><div className="v2-muted">{TOOLS[id].blurb}{id === 'nightShift' ? '' : ` · ${fmt(TOOLS[id].price)}/mo`}</div></div>
+                    <div><strong>{TOOLS[id].icon} {TOOLS[id].name}</strong><div className="v2-muted">{TOOLS[id].blurb}{id === 'crunch' ? '' : ` · ${fmt(TOOLS[id].price)}/mo`}</div></div>
                     <button className={on ? 'v2-btn v2-btn-ghost' : 'v2-btn'} onClick={() => toggleInfraTool(id)}>{on ? 'Cancel' : 'Subscribe'}</button>
                   </div>
                 )

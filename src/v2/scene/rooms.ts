@@ -23,7 +23,7 @@ export interface RoomLayout {
   /** The founder's spots. 'bed' is wherever the founder rests when idle. */
   spots: Record<SpotId, Spot>
   seats: Seat[]
-  /** Where hires walk out at 17:00 and back in at 09:00. */
+  /** The room's entrance. */
   door: Spot
   /** One spot per perk slot (front-left corner of a 1.0 × 0.45 cell, see scene/perks). */
   perkSpots: [number, number][]

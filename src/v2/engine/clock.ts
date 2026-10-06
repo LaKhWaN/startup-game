@@ -2,9 +2,9 @@ import type { GameTime } from '../../types'
 
 export const HOURS_PER_DAY = 24
 export const DAYS_PER_MONTH = 30
+/** Games start at 09:00 on a Monday. */
 export const WORK_START = 9
-export const WORK_END = 17
-/** Night look from this hour until NIGHT_END. */
+/** Night hours (the founder recovers faster resting then). */
 export const NIGHT_START = 18
 export const NIGHT_END = 7
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
@@ -17,22 +17,9 @@ export const weekday = (totalHours: number) => Math.floor(totalHours / HOURS_PER
 export const weekdayName = (totalHours: number) => WEEKDAYS[weekday(totalHours)]
 export const isWeekend = (totalHours: number) => weekday(totalHours) >= 5
 
-/** True during the working hour that starts at `totalHours` (09:00–16:59, Mon–Fri). */
-export function isWorkHour(totalHours: number): boolean {
-  const h = hourOfDay(totalHours)
-  return !isWeekend(totalHours) && h >= WORK_START && h < WORK_END
-}
-
 export function isNight(totalHours: number): boolean {
   const h = hourOfDay(totalHours)
   return h >= NIGHT_START || h < NIGHT_END
-}
-
-/** The next hour at which the office opens (this hour if it's already a work hour). */
-export function nextWorkStart(totalHours: number): number {
-  let t = totalHours
-  while (!isWorkHour(t)) t++
-  return t
 }
 
 export function clockLabel(totalHours: number): string {

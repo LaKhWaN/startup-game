@@ -189,27 +189,6 @@ describe('ui reset on new game', () => {
   })
 })
 
-describe('skipNight', () => {
-  it('fast-forwards a closed office to the next morning', async () => {
-    const { skipNight } = await import('../actions')
-    newGameV2(makeConfig())
-    gameStore.setState({ gameTime: { totalHours: 20 } })
-    skipNight()
-    expect(getV2State().gameTime.totalHours).toBe(24 + 9)
-  })
-})
-
-describe('skipNight stops for family money', () => {
-  it('does not run past the family-money popup', async () => {
-    const { skipNight } = await import('../actions')
-    newGameV2(makeConfig())
-    const s = getV2State()
-    gameStore.setState({ gameTime: { totalHours: 20 }, v2: { ...s.v2, chapter: { ...s.v2.chapter, beat: 5, familyMoney: { giver: 'Mum', amount: 900, claimed: false } } } } as never)
-    skipNight()
-    expect(getV2State().gameTime.totalHours).toBe(20)
-  })
-})
-
 describe('people actions', () => {
   it('toggles working late and convinces a leaver to stay', async () => {
     const { toggleWorkLate, convinceTeamMemberToStay } = await import('../actions')

@@ -1,6 +1,6 @@
-import { DAYS_PER_MONTH, HOURS_PER_DAY, hourOfDay, isWeekend } from './engine/clock'
+import { DAYS_PER_MONTH, HOURS_PER_DAY, hourOfDay } from './engine/clock'
 import { founderAwake, founderHour, peopleDay, peopleHour } from './engine/people'
-import { infraServicesCost, isEveningHour, officeOpen } from './engine/infra'
+import { CRUNCH_SPEED, infraServicesCost, isCrunching } from './engine/infra'
 import { processDay, processMonth } from './engine/day'
 import { checkChapter2Complete, checkChapter3Complete, onTaskCompleted, onTeamProgress } from './chapter'
 import { filterPendingEvent } from './eventsV2'
@@ -31,7 +31,7 @@ export function v2Tick(state: V2GameState, hours: number, rng: Rng = Math.random
   const { state: advanced, completed } = advanceFounder(s, founderHours, rng)
   s = completed ? onTaskCompleted(advanced, completed, rng) : advanced
 
-  // Hires only work office hours (teamHours = 0 outside them); the founder works any time.
+  // Hires work every hour (faster in crunch mode); the founder works while awake.
   const team = advanceTeam(s, teamHours, rng)
   s = onTeamProgress(team.state, team)
   s = checkChapter2Complete(s)
@@ -49,40 +49,12 @@ export function stepV2<T extends V2GameState>(state: T, rng: Rng = Math.random):
   // Services (hosting, Wi-Fi, tools) bill by the hour, so a short subscription still costs.
   let s: T = { ...state, gameTime: { totalHours: now }, cash: state.cash - infraServicesCost(state) / (24 * DAYS_PER_MONTH) }
   const day = Math.floor(now / HOURS_PER_DAY)
-  // People: hires tire/learn during work hours; the founder tires working and recovers sleeping.
-  const open = officeOpen(s, prev)
-  s = founderHour(peopleHour(s, open, open && isEveningHour(prev)), hourOfDay(prev))
-  if (day > Math.floor(prev / HOURS_PER_DAY)) s = peopleDay(processDay(s, day, rng), day, isWeekend(now), isWeekend(prev))
+  // People: hires tire/learn every hour (the office never closes); the founder tires working and recovers sleeping.
+  const crunch = isCrunching(s)
+  s = founderHour(peopleHour(s, crunch), hourOfDay(prev))
+  if (day > Math.floor(prev / HOURS_PER_DAY)) s = peopleDay(processDay(s, day, rng), day)
   const month = Math.floor(day / DAYS_PER_MONTH)
   if (month > Math.floor(Math.floor(prev / HOURS_PER_DAY) / DAYS_PER_MONTH)) s = processMonth(s, month)
   if (s.phase !== 'playing') return s
-  return v2Tick(s, 1, rng, open ? 1 : 0) as T
-}
-
-/**
- * Fast-forward to 09:00 on the next work day, stopping early for an event, game
- * over, or `stopWhen` (another popup). `onDay` runs after every day boundary
- * crossed (analytics sends one snapshot per day).
- */
-export function skipToMorning<T extends V2GameState>(
-  state: T,
-  rng: Rng = Math.random,
-  stopWhen?: (s: T) => boolean,
-  onDay?: (s: T) => void,
-): T {
-  if (state.pendingEvent || stopWhen?.(state)) return state
-  let s = state
-  for (let i = 0; i < 24 * 4 && s.phase === 'playing' && !officeOpen(s, s.gameTime.totalHours); i++) {
-    const day = Math.floor(s.gameTime.totalHours / HOURS_PER_DAY)
-    s = stepV2(s, rng)
-    if (Math.floor(s.gameTime.totalHours / HOURS_PER_DAY) > day) onDay?.(s)
-    if (s.pendingEvent || stopWhen?.(s)) break
-  }
-  return s
-}
-
-/** Auto skip to morning: on, office closed, nothing waiting, no popup holding the game, founder not working late. */
-export function shouldAutoSkip(s: V2GameState, popupHeld: boolean): boolean {
-  return s.phase === 'playing' && !!s.v2.autoSkipNights && !popupHeld && !s.pendingEvent
-    && !s.v2.founder.workLate && !officeOpen(s, s.gameTime.totalHours)
+  return v2Tick(s, 1, rng, crunch ? CRUNCH_SPEED : 1) as T
 }

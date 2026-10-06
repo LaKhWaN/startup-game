@@ -103,9 +103,9 @@ describe('standing assignment', () => {
 
   it('repeats emails without the founder, at 0.7× speed', () => {
     let s = hired(ready(), candidate())
-    // 1 work day / (0.8 speed × 0.756 fresh-hire mood) ≈ 13.2 work hours per emails run
+    // 1 day / (0.8 speed × 0.756 fresh-hire mood) ≈ 39.7 hours per emails run
     let completions = 0
-    for (let h = 0; h < 14 * 3; h++) {
+    for (let h = 0; h < 40 * 3; h++) {
       const r = advanceTeam(s, 1, seq(0.99)) // 0.99 → no mistakes
       s = r.state
       completions += r.completedBy.length
@@ -117,7 +117,7 @@ describe('standing assignment', () => {
 
   it('caps intern skills at 6 and counts mistakes', () => {
     let s = hired(ready(), candidate({ skills: { research: 1, build: 1, outreach: 5.9, sales: 1 } }))
-    for (let h = 0; h < 14; h++) s = advanceTeam(s, 1, seq(0.0)).state // 0.0 → mistake every time
+    for (let h = 0; h < 40; h++) s = advanceTeam(s, 1, seq(0.0)).state // 0.0 → mistake every time
     const m = s.v2.team['cand-1']
     expect(m.skills.outreach).toBe(6)
     expect(m.mistakes).toBe(1)

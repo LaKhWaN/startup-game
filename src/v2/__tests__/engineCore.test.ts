@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { clockLabel, isNight, isWorkHour, nextWorkStart, weekday } from '../engine/clock'
+import { clockLabel, isNight, weekday } from '../engine/clock'
 import { processDay } from '../engine/day'
 import { applyEventChoice, eventView, pickEvent } from '../engine/events'
 import { EVENTS } from '../engine/eventData'
@@ -13,18 +13,8 @@ function seeded(seed: number) {
 }
 
 describe('clock', () => {
-  it('opens 09–17 on weekdays only', () => {
-    expect(isWorkHour(H(0, 9))).toBe(true)
-    expect(isWorkHour(H(0, 16))).toBe(true)
-    expect(isWorkHour(H(0, 17))).toBe(false)
-    expect(isWorkHour(H(0, 8))).toBe(false)
+  it('counts weekdays', () => {
     expect(weekday(H(5, 10))).toBe(5)
-    expect(isWorkHour(H(5, 10))).toBe(false) // Saturday
-  })
-  it('finds the next opening across nights and weekends', () => {
-    expect(nextWorkStart(H(0, 18))).toBe(H(1, 9))
-    expect(nextWorkStart(H(4, 18))).toBe(H(7, 9)) // Friday evening → Monday
-    expect(nextWorkStart(H(2, 11))).toBe(H(2, 11))
   })
   it('knows night and labels the clock', () => {
     expect(isNight(H(0, 22))).toBe(true)
