@@ -4,6 +4,7 @@ import { totalDays } from './clock'
 import { EVENTS, type EventDef, type EventEmployee, type EventPatch, type EventView } from './eventData'
 import type { GameV2 } from './types'
 import { churnBreakdown } from './churn'
+import { releaseBuilder } from './builders'
 
 const ACQUISITION_IDS = new Set(['acquisition-lowball', 'acquisition-premium'])
 const ACQUISITION_MIN_MRR = 5000
@@ -38,12 +39,7 @@ export function pickEvent(state: GameV2, rng: Rng): EventDef | null {
 }
 
 function freeFeatureOf(state: GameV2, id: string): GameV2 {
-  return {
-    ...state,
-    features: state.features.map(f =>
-      f.status === 'in_development' && f.assignedToDevId === id ? { ...f, status: 'proposed' as const, assignedToDevId: undefined, buildProgress: 0 } : f,
-    ),
-  }
+  return { ...state, features: releaseBuilder(state.features, id) }
 }
 
 /** Removes a hire (their build goes back to the queue). */

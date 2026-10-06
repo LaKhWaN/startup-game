@@ -117,6 +117,20 @@ export interface Feature {
   buildProgress: number           // 0–1
   discoveredAtDay: number
   completedAtDay?: number
+  /** A big project from a paid "next roadmap" (v2): several developers can build it together. */
+  epic?: EpicInfo
+}
+
+export type EpicKind = 'segment' | 'enterprise' | 'platform' | 'integration' | 'international' | 'ai'
+
+export interface EpicInfo {
+  kind: EpicKind
+  /** Which planned roadmap it came from (1 = first). */
+  round: number
+  /** Share added to the market ceiling when shipped (0.1 = +10%). */
+  marketBoost: number
+  /** Developers helping the lead builder (team member ids). */
+  helpers?: string[]
 }
 
 // Game time is tracked in total hours (ever-increasing)

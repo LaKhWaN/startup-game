@@ -15,10 +15,10 @@ describe('market ceiling', () => {
     expect(marketCeiling(withTier(2))).toBeLessThan(marketCeiling(withTier(6)))
   })
 
-  it('grows with shipped features and brand', () => {
+  it('grows with shipped features, each a little less than the last', () => {
     const base = makeState({ brand: 0 })
     const grown = { ...base, features: [makeFeature({ status: 'completed' }), makeFeature({ id: 'b', status: 'completed' })] }
-    expect(marketCeiling(grown)).toBeCloseTo(marketCeiling(base) * 1.1, 0)
+    expect(marketCeiling(grown)).toBeCloseTo(marketCeiling(base) * (1 + 0.05 + 0.05 * 0.93), 0)
   })
 })
 

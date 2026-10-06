@@ -1,4 +1,4 @@
-import type { DifficultyModifier } from '../../types'
+import type { DifficultyModifier, Feature } from '../../types'
 import type { GameV2 } from './types'
 
 type Tier = DifficultyModifier['tier']
@@ -10,10 +10,31 @@ const SALES_BASE: Record<Tier, number> = { promising: 0.3, competitive: 0.25, ri
 
 const tierOf = (s: Pick<GameV2, 'difficultyModifier'>): Tier => s.difficultyModifier?.tier ?? 'competitive'
 
-/** Market ceiling: tier base × (1 + 5% per shipped feature) × (1 + brand/400). */
+/** Each regular feature's market (and ARPU) gain is this share of the one before: diminishing returns. */
+export const FEATURE_DECAY = 0.93
+export const FEATURE_MARKET_GAIN = 0.05
+
+/** Market share added by `n` shipped regular features: 5%, then 4.65%, … (never above ~71%). */
+export function featureMarketGain(n: number): number {
+  return FEATURE_MARKET_GAIN * (1 - FEATURE_DECAY ** n) / (1 - FEATURE_DECAY)
+}
+
+/** Regular (non-epic) features shipped so far. */
+export const shippedRegular = (features: Pick<Feature, 'status' | 'epic'>[]) => features.filter(f => f.status === 'completed' && !f.epic).length
+
+/** Shipped epics' extra market share (undiminished: the way to push past the idea's market). */
+export function epicMarketBoost(features: Pick<Feature, 'status' | 'epic'>[]): number {
+  return features.reduce((sum, f) => sum + (f.status === 'completed' && f.epic ? f.epic.marketBoost : 0), 0)
+}
+
+export function enterpriseEpicsShipped(features: Pick<Feature, 'status' | 'epic'>[]): number {
+  return features.filter(f => f.status === 'completed' && f.epic?.kind === 'enterprise').length
+}
+
+/** Market ceiling: tier base × (1 + diminishing feature gain + epic boosts) × (1 + brand/400). */
 export function marketCeiling(s: Pick<GameV2, 'difficultyModifier' | 'features' | 'brand'>): number {
-  const shipped = s.features.filter(f => f.status === 'completed').length
-  return Math.round(TIER_MARKET[tierOf(s)] * (1 + 0.05 * shipped) * (1 + s.brand / 400))
+  const gain = featureMarketGain(shippedRegular(s.features)) + epicMarketBoost(s.features)
+  return Math.round(TIER_MARKET[tierOf(s)] * (1 + gain) * (1 + s.brand / 400))
 }
 
 /** Share of the market still out there to email: 1 when empty, never below 5%. */

@@ -408,3 +408,4 @@
   .v2-team-col--hire { border-left: none; border-top: 1px solid var(--border); }
 }
 @media (max-width: 768px) { .v2-sheet--xl { height: 100%; } }
+.v2-city-warn { margin-bottom: 8px; padding: 8px 10px; border-radius: 8px; background: rgba(var(--error-rgb, 220, 38, 38), 0.1); color: var(--error); font-size: 0.8rem; line-height: 1.4; }

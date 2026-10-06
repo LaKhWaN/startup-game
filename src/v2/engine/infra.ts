@@ -7,24 +7,24 @@ export interface HostingPlan { tier: number; name: string; price: number; cap: n
 
 export const HOSTING: HostingPlan[] = [
   { tier: 1, name: 'Free tier', price: 0, cap: 20, migrationDays: 0 },
-  { tier: 2, name: 'Shared VPS', price: 50, cap: 150, migrationDays: 1 },
-  { tier: 3, name: 'Dedicated server', price: 300, cap: 600, migrationDays: 2 },
-  { tier: 4, name: 'Cloud cluster', price: 1200, cap: 2500, migrationDays: 3 },
-  { tier: 5, name: 'Global CDN + autoscaling', price: 4000, cap: 10000, migrationDays: 4 },
+  { tier: 2, name: 'Shared VPS', price: 150, cap: 150, migrationDays: 1 },
+  { tier: 3, name: 'Dedicated server', price: 900, cap: 600, migrationDays: 2 },
+  { tier: 4, name: 'Cloud cluster', price: 3500, cap: 2500, migrationDays: 3 },
+  { tier: 5, name: 'Global CDN + autoscaling', price: 12000, cap: 10000, migrationDays: 4 },
 ]
 
 export type WifiPlan = 'home' | 'fiber' | 'business'
 export const WIFI: Record<WifiPlan, { name: string; price: number; speed: number }> = {
   home: { name: 'Home Wi-Fi', price: 0, speed: 1 },
-  fiber: { name: 'Fiber', price: 80, speed: 1.05 },
-  business: { name: 'Business fiber', price: 250, speed: 1.1 },
+  fiber: { name: 'Fiber', price: 250, speed: 1.05 },
+  business: { name: 'Business fiber', price: 800, speed: 1.1 },
 }
 
 export type ToolId = 'helpdesk' | 'monitoring' | 'ci' | 'crunch'
 export const TOOLS: Record<ToolId, { name: string; icon: string; price: number; blurb: string }> = {
-  helpdesk: { name: 'Helpdesk', icon: '🎫', price: 100, blurb: 'Support clears 50% more tickets' },
-  monitoring: { name: 'Monitoring', icon: '📈', price: 150, blurb: 'Incidents and outages 40% less likely' },
-  ci: { name: 'CI/CD', icon: '🚦', price: 200, blurb: 'Builds 10% faster, build mistakes ×0.7' },
+  helpdesk: { name: 'Helpdesk', icon: '🎫', price: 400, blurb: 'Support clears 50% more tickets' },
+  monitoring: { name: 'Monitoring', icon: '📈', price: 600, blurb: 'Incidents and outages 40% less likely' },
+  ci: { name: 'CI/CD', icon: '🚦', price: 800, blurb: 'Builds 10% faster, build mistakes ×0.7' },
   crunch: { name: 'Crunch mode', icon: '🔥', price: 0, blurb: 'Everyone works 50% faster. Costs +50% of payroll; stress builds twice as fast' },
 }
 
@@ -54,11 +54,11 @@ export const hostingPlan = (s: S) => plan(infraOf(s).hosting)
 export const hostingCap = (s: S) => hostingPlan(s).cap
 export const hostingLoad = (s: S & Pick<GameV2, 'customers'>) => s.customers / hostingCap(s)
 
-/** Monthly cost of hosting (the plan you're paying for, even mid-migration), Wi-Fi and tools. */
+/** Monthly cost of hosting (the plan you're paying for, even mid-migration), Wi-Fi, tools and the ad budget. */
 export function infraServicesCost(s: S): number {
   const i = infraOf(s)
   const shift = i.tools.includes('crunch') ? Math.round(payroll(s) * CRUNCH_PREMIUM) : 0
-  return plan(i.migratingTo ?? i.hosting).price + WIFI[i.wifi].price + i.tools.reduce((sum, t) => sum + TOOLS[t].price, 0) + shift
+  return plan(i.migratingTo ?? i.hosting).price + WIFI[i.wifi].price + i.tools.reduce((sum, t) => sum + TOOLS[t].price, 0) + shift + (s.v2.adsBudget ?? 0)
 }
 
 export const slowAppChurn = (s: S & Pick<GameV2, 'customers'>) => (hostingLoad(s) > 0.9 ? 1 : 0)

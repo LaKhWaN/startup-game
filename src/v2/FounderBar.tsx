@@ -20,7 +20,8 @@ export function FounderBar() {
 
   const task = v2.founder.task
   const energy = Math.round(v2.founder.energy ?? 100)
-  const proposed = features.filter(f => f.status === 'proposed')
+  // Epics are built by the team, not the founder.
+  const proposed = features.filter(f => f.status === 'proposed' && !f.epic)
   const teamBuilds = features.filter(f => f.status === 'in_development' && f.assignedToDevId !== FOUNDER_ID)
   const buildReason = taskReason(v2, 'develop') ?? (proposed.length === 0 ? 'Nothing to build. Research first' : null)
 

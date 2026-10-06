@@ -7,6 +7,7 @@ import { churnBreakdown, fadeShock } from './churn'
 import { INCIDENT, INCIDENT_CUSTOMER_LOSS, INCIDENT_TICKETS_PER_CUSTOMER, incidentChance } from './incidents'
 import { infraServicesCost, finishMigrations, OUTAGE, OUTAGE_CUSTOMER_LOSS, OUTAGE_TICKETS_PER_CUSTOMER, outageChance, toolEffects } from './infra'
 import { monthlyBurn, valuation } from './money'
+import { adLeadsPerDay } from './ads'
 import type { GameV2 } from './types'
 
 const EVENT_COOLDOWN_DAYS = 5
@@ -24,6 +25,10 @@ function dailyChurn(customers: number, monthlyRatePct: number, rng: Rng): number
 }
 
 export const LEAD_DECAY_PER_DAY = 0.08
+/** Tech debt creeps up every day, faster with more customers (more code paths, more edge cases). */
+export const DEBT_CREEP_BASE = 0.2
+export const DEBT_CREEP_PER_CUSTOMER = 1 / 2000
+export const debtCreep = (customers: number) => DEBT_CREEP_BASE + customers * DEBT_CREEP_PER_CUSTOMER
 export const TICKETS_PER_CUSTOMER_DAY = 0.05
 
 /** Customers stop counting as new after about a month. */
@@ -42,6 +47,7 @@ export function processDay<T extends GameV2>(raw: T, day: number, rng: Rng): T {
   const lost = dailyChurn(state.customers, churnRate, rng)
   // Leads go cold; customers raise support tickets (more with tech debt).
   const coldLeads = Math.min(state.v2.leads, roundChance(state.v2.leads * LEAD_DECAY_PER_DAY, rng))
+  const adLeads = roundChance(adLeadsPerDay(state), rng)
   const newTickets = roundChance(state.customers * TICKETS_PER_CUSTOMER_DAY * (1 + state.techDebt / 100), rng)
   const tickets = Math.min(Math.max(10, state.customers * 2), (state.v2.tickets ?? 0) + newTickets)
   const customers = state.customers - lost
@@ -83,7 +89,7 @@ export function processDay<T extends GameV2>(raw: T, day: number, rng: Rng): T {
 
   const next: T = {
     ...state,
-    v2: { ...state.v2, leads: state.v2.leads - coldLeads, tickets: afterIncident.tickets, freshCustomers: ageFresh(state.v2.freshCustomers ?? 0, afterIncident.customers) },
+    v2: { ...state.v2, leads: state.v2.leads - coldLeads + adLeads, tickets: afterIncident.tickets, freshCustomers: ageFresh(state.v2.freshCustomers ?? 0, afterIncident.customers) },
     churnShock,
     churnRate,
     customers: afterIncident.customers,
@@ -91,6 +97,8 @@ export function processDay<T extends GameV2>(raw: T, day: number, rng: Rng): T {
     customersLostThisMonth: (state.customersLostThisMonth ?? 0) + lost + (customers - afterIncident.customers),
     cash,
     brand: Math.max(0, Math.min(100, state.brand - 0.01)),
+    // Only once there's a product people use.
+    techDebt: state.v2.firstSaleDone ? Math.min(100, state.techDebt + debtCreep(state.customers)) : state.techDebt,
     investorInterest,
     pendingEvent,
     lastEventDay: pendingEvent && !state.pendingEvent ? day : state.lastEventDay,

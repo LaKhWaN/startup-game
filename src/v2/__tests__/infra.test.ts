@@ -31,7 +31,7 @@ describe('hosting', () => {
     expect(s.v2.infra.migratingTo).toBe(2)
     expect(s.v2.infra.migrationDoneDay).toBe(11)
     expect(hostingCap(s)).toBe(20)
-    expect(infraServicesCost(s)).toBe(50)
+    expect(infraServicesCost(s)).toBe(150)
     expect(canMigrate(s, 3)).toBe('busy')
     s = finishMigrations(s, 11)
     expect(hostingCap(s)).toBe(150)
@@ -50,19 +50,19 @@ describe('wifi and tools', () => {
     expect(wifiSpeed(makeState())).toBe(1)
     const fiber = setWifi(makeState(), 'business')
     expect(wifiSpeed(fiber)).toBe(1.1)
-    expect(infraServicesCost(fiber)).toBe(250)
+    expect(infraServicesCost(fiber)).toBe(800)
   })
 
   it('tools cost money and change support, incidents and builds', () => {
     let s = toggleTool(makeState(), 'helpdesk')
     s = toggleTool(s, 'monitoring')
-    expect(infraServicesCost(s)).toBe(250)
+    expect(infraServicesCost(s)).toBe(400 + 600)
     expect(toolEffects(s)).toMatchObject({ supportBoost: 1.5, incidentFactor: 0.6, buildSpeed: 1, buildMistakes: 1 })
     expect(toolEffects(toggleTool(s, 'helpdesk')).supportBoost).toBe(1)
   })
 
   it('services are part of the monthly burn', () => {
     const s = setWifi(makeState({ infraCostMonthly: 300 }), 'fiber')
-    expect(monthlyBurn(s)).toBe(300 + 80)
+    expect(monthlyBurn(s)).toBe(300 + 250)
   })
 })

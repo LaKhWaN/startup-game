@@ -7,6 +7,14 @@ const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
 // than the Gemini call this replaced.
 const TIMEOUT_MS_VALIDATE = 12_000
 const TIMEOUT_MS_ROADMAP  = 28_000
+const MAX_EXCLUDE = 40
+
+// Existing epic titles the model must not repeat: short, plain, comma-joined. Keep in step with server/rateIdea.ts.
+function excludeList(raw) {
+  if (!Array.isArray(raw)) return ''
+  return raw.filter(t => typeof t === 'string').slice(0, MAX_EXCLUDE)
+    .map(t => t.replace(/["\n\r`$\\]/g, '').trim().slice(0, 60)).filter(Boolean).map(t => `"${t}"`).join(', ')
+}
 const MAX_IDEA_LENGTH = 500
 
 // Best-effort per-IP limiting. Serverless instances aren't shared, so this
@@ -29,7 +37,30 @@ function rateLimited(ip) {
 
 // Prompts live server-side so the client can't turn this into an open proxy to
 // the model on our billing account. Keep in step with server/rateIdea.ts.
-function buildPrompt(op, idea, score) {
+function buildPrompt(op, idea, score, round = 1, exclude = '') {
+  if (op === 'epics') {
+    return `You are planning the next big product roadmap for a startup in a business simulation game. The startup's idea is: "${idea}" (viability score: ${score}/10). This is roadmap number ${round}: the company already shipped its core product and is growing up.
+
+Generate 8 BIG projects ("epics") this company would take on next. Each one takes a team of developers weeks or months. Later roadmaps are bigger and more ambitious than earlier ones.${exclude ? `\n\nDo NOT repeat or rename these existing projects: ${exclude}.` : ''}
+
+Use a mix of these kinds:
+- "segment": a version for a new customer segment
+- "enterprise": enterprise plan / features big companies pay more for
+- "platform": rebuilding foundations (scale, reliability, security)
+- "integration": integrations, APIs, marketplace
+- "international": launching in a new region
+- "ai": an AI-powered capability
+
+Return ONLY valid JSON (no markdown, no code fences) as an array:
+[
+  {
+    "title": "<project name, 2-5 words>",
+    "description": "<1 sentence, specific to ${idea}>",
+    "baseDays": <number 15-40, bigger for harder projects>,
+    "kind": "<segment|enterprise|platform|integration|international|ai>"
+  }
+]`
+  }
   if (op === 'validate') {
     return `You are evaluating a startup idea for a business simulation game. Analyze the following startup idea and return ONLY valid JSON (no markdown, no code fences).
 
@@ -238,8 +269,8 @@ export default async function handler(req, res) {
   }
 
   const op = parsed.op
-  if (op !== 'validate' && op !== 'roadmap') {
-    return json(res, 400, { error: 'op must be "validate" or "roadmap"' })
+  if (op !== 'validate' && op !== 'roadmap' && op !== 'epics') {
+    return json(res, 400, { error: 'op must be "validate", "roadmap" or "epics"' })
   }
 
   const idea = typeof parsed.idea === 'string' ? parsed.idea.trim() : ''
@@ -252,8 +283,9 @@ export default async function handler(req, res) {
   const score = Number.isFinite(rawScore) ? Math.max(1, Math.min(10, Math.round(rawScore))) : 5
 
   try {
-    const timeoutMs = op === 'roadmap' ? TIMEOUT_MS_ROADMAP : TIMEOUT_MS_VALIDATE
-    const text = await callGroq(buildPrompt(op, idea, score), keys, timeoutMs)
+    const timeoutMs = op === 'validate' ? TIMEOUT_MS_VALIDATE : TIMEOUT_MS_ROADMAP
+    const round = Math.max(1, Math.min(20, Math.round(Number(parsed.round)) || 1))
+    const text = await callGroq(buildPrompt(op, idea, score, round, excludeList(parsed.exclude)), keys, timeoutMs)
     return json(res, 200, { text })
   } catch (e) {
     console.error('[rate-idea]', e)

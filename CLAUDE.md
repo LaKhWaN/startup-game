@@ -26,7 +26,11 @@ npm run dev
 
 ## Key Financial Numbers
 - Start: $500 founder savings, $0 burn, ARPU $50. Family money ($800–1,500) at the end of Chapter 1.
-- Interns $600–1,000/mo, full-time $3,500–5,100/mo; yearly raises set in 💻 Desktop → Employees (`src/v2/payroll.ts`). Location ladder (rent/move-in/capacity/unlock) in `src/v2/locations.ts`.
+- Interns $600–1,000/mo, full-time $3,500–5,100/mo (full-time from the Villa); yearly raises set in 💻 Desktop → Employees (`src/v2/payroll.ts`). Location ladder (rent/move-in/capacity/unlock) in `src/v2/locations.ts`.
+
+## Late game
+- Regular features have diminishing returns (`FEATURE_DECAY` in `engine/market.ts`). Paid AI roadmaps of epics (`src/v2/epics.ts`, Desktop → Roadmap, `epics` op on `/api/rate-idea`) push further; up to 3 devs co-build an epic.
+- Ads (`engine/ads.ts`, Desktop → Ads) buy leads; cold emails fade with size; a sales call handles 12 + 4×skill leads. Tech debt creeps daily (`debtCreep` in `engine/day.ts`).
 
 ## UI Layout (room-first)
 - TopBarV2 (metrics pill incl. Profit, clock, speed) → room canvas full width + StatsRail on the right

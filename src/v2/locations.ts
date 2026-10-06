@@ -1,3 +1,4 @@
+import { monthlyBurn } from './engine/money'
 import { addStory, type LocationId, type V2GameState } from './state'
 
 export interface LocationDef {
@@ -74,6 +75,15 @@ export function moveTo(state: V2GameState, id: LocationId): V2GameState {
   }
   const cost = def.moveIn > 0 ? ` Move-in cost $${def.moveIn.toLocaleString()}, rent $${def.rent.toLocaleString()}/mo.` : ''
   return addStory(next, [`${def.icon} ${state.startupName} moved to: ${def.name}.${cost}`])
+}
+
+/** Cash left after moving in, and a month of costs at the new place (rent swapped in). */
+export function moveCushion(state: V2GameState, id: LocationId): { cashAfter: number; monthCost: number; risky: boolean } {
+  const def = locationDef(id)
+  const cashAfter = state.cash - def.moveIn
+  const monthCost = monthlyBurn(state) - state.infraCostMonthly + def.rent
+  // Less than one month of costs in the bank: one bad month and you're out.
+  return { cashAfter, monthCost, risky: cashAfter < monthCost }
 }
 
 /** The next rung up from where you are, or null at the top. */

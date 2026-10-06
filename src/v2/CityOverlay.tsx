@@ -1,5 +1,6 @@
+import { useEffect, useState } from 'react'
 import { moveToLocation, useV2 } from './actions'
-import { canMove, LOCATIONS, type MoveCheck } from './locations'
+import { canMove, LOCATIONS, moveCushion, type MoveCheck } from './locations'
 import type { V2GameState } from './state'
 import { selectLot, showOffice, useUi } from './ui'
 import './v2.css'
@@ -12,6 +13,10 @@ export function CityOverlay() {
   const selected = useUi(s => s.citySelection)
   const v2 = useV2(s => s.v2)
   const cash = useV2(s => s.cash)
+  const state = useV2(s => s)
+  // A risky move needs a second click ("Move anyway").
+  const [confirming, setConfirming] = useState(false)
+  useEffect(() => setConfirming(false), [selected])
   if (view !== 'city') return null
 
   const def = selected ? LOCATIONS.find(l => l.id === selected) : undefined
@@ -46,9 +51,22 @@ export function CityOverlay() {
             </div>
             <button className="v2-sheet-close" onClick={() => selectLot(null)} aria-label="Close">✕</button>
           </div>
-          {check === 'ok'
-            ? <button className="v2-btn v2-btn-primary" onClick={() => { if (moveToLocation(def.id) === 'ok') showOffice() }}>Move here{def.moveIn > 0 ? ` (${fmt(def.moveIn)})` : ''}</button>
-            : <div className="v2-city-reason">{reason[check]}</div>}
+          {check === 'ok' ? (() => {
+            const cushion = moveCushion(state, def.id)
+            const move = () => { if (moveToLocation(def.id) === 'ok') showOffice() }
+            return (
+              <>
+                {cushion.risky && (
+                  <div className="v2-city-warn">
+                    ⚠️ Moving leaves {fmt(Math.round(cushion.cashAfter))}, less than one month of costs here ({fmt(Math.round(cushion.monthCost))}/mo). One bad month and you're broke.
+                  </div>
+                )}
+                {cushion.risky && !confirming
+                  ? <button className="v2-btn" onClick={() => setConfirming(true)}>Move here ({fmt(def.moveIn)})…</button>
+                  : <button className="v2-btn v2-btn-primary" onClick={move}>{cushion.risky ? 'Move anyway' : 'Move here'}{def.moveIn > 0 ? ` (${fmt(def.moveIn)})` : ''}</button>}
+              </>
+            )
+          })() : <div className="v2-city-reason">{reason[check]}</div>}
         </div>
       )}
     </>

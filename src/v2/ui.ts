@@ -16,6 +16,8 @@ interface UiState {
   citySelection: LocationId | null
   /** Game-raised popups currently pausing the game (see pause.ts). */
   pauseHolds: string[]
+  /** Waiting on the AI for the next roadmap. */
+  planningRoadmap?: boolean
 }
 
 export const uiStore = create<UiState>(() => ({ view: 'office', modal: null, citySelection: null, pauseHolds: [] }))

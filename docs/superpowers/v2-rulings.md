@@ -271,3 +271,16 @@ Measured with the sim probe (`SIM_PROBE=1 npx vitest run src/v2/__tests__/simPro
   Sim, 2 years: a caring player answers ~5 pop-ups; one who ignores people gets ~40 (about one every 15 days) — cost if wrong: interruptions at high speed, which is the point.
 - Default raise policy 5% → 8% (= what people expect), so review pop-ups only appear when the player picks a lower raise; otherwise a 50-person company would pop one per person per year — cost if wrong: slightly higher payroll growth by default.
 - 🌙 Work late removed. The founder always sleeps 23:00–07:00; the founder bar shows "😴 asleep till 07:00" then — cost if wrong: no way to grind at night.
+
+## Late game after the AIBot analysis (user picked 1, 2, 3, 4, 7 + pricier infra)
+
+Analysis of AIBot (Competitive, sold day 532 at ~$17–19M, $361k MRR): features grew the market ×3.5 (+5% each, ~50 shipped) and ARPU ×2; one seller converted any number of leads; debt sat at 0; ideas ran out ~day 420, so PMs/devs went idle (the player fired them).
+
+### Rulings
+- **Diminishing features:** each regular feature's market gain is 0.93× the previous (5%, 4.65%, … max ~+71%); its ARPU gain is × 0.93^(regular features shipped). Epics don't diminish — cost if wrong: mid-game feels a little slower.
+- **Paid roadmaps (epics):** 🗺️ Desktop → Roadmap, from Co-working, only when the previous roadmap's epics are all shipped. Cost max($10k, 75% MRR) × (1 + 0.5 × rounds planned). The AI (new `epics` op in `server/rateIdea.ts` + `api/rate-idea.js`) only names 8 projects and picks a kind; the game sets effects by kind (segment +12% market, enterprise +ARPU and +$10 ARPU cap, platform −25 debt / −1.5 churn, integration +6% market, international +20% market, AI +ARPU/brand), 15–40 dev-days. A built-in list is used if the AI is unavailable (still charged). Up to 3 developers build one epic together on a shared progress bar; the founder can't build epics; a lead who leaves hands the epic to a helper with progress kept — cost if wrong: epics are slow with few developers.
+- **Paid growth:** cold email reach × 1/(1 + customers/1500); 📣 Desktop → Ads buys leads ($0–100k/mo, billed hourly) at $40 per lead × (1 + 4 × share²); a sales call works through at most 12 + 4 × skill leads (it used to be unlimited) — cost if wrong: late game needs more salespeople.
+- **Tech debt creep:** +0.2 + customers/2000 per day once you've made a sale, so refactoring stays a job — cost if wrong: more incidents if ignored.
+- **Move warning:** the Map asks for a second click ("Move anyway") when moving leaves less than one month of costs at the new place.
+- **Prices:** hosting VPS $150 / Dedicated $900 / Cluster $3.5k / CDN $12k; Wi-Fi Fiber $250 / Business $800; Helpdesk $400, Monitoring $600, CI/CD $800. Perks and computers unchanged (early game is already tight) — cost if wrong: infra still cheap at the top.
+- Sim, 2 years: a manager who hires up to 50 without ads/roadmaps stalls at ~1,200–1,700 customers with burn > MRR; with ads + roadmaps ~$100–130k MRR at day 720 with burn ≈ MRR (was $300k+ MRR and +$180k/mo profit). Co-working still reached on days 270–339.

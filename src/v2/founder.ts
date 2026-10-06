@@ -1,7 +1,8 @@
 import { FEATURE_TEMPLATES, type FeatureTemplate } from '../data/featureTemplates'
 import { totalDays } from './engine/clock'
 import { estimateFeatureEffects } from './engine/features'
-import { leadSaturation, marketRoom, reputationFactor, salesBaseOf, shareFactor } from './engine/market'
+import { enterpriseEpicsShipped, FEATURE_DECAY, leadSaturation, marketRoom, reputationFactor, salesBaseOf, shareFactor, shippedRegular } from './engine/market'
+import { EPIC_ARPU_CAP_STEP } from './epics'
 import { founderSpeed } from './engine/people'
 import { deskSpeed } from './shop'
 import { MAX_CHURN_RELIEF } from './engine/churn'
@@ -19,6 +20,21 @@ export const SALES_DAYS = 1
 export const FOUNDER_BUILD_SPEED = 1.2
 /** Features can raise ARPU up to this; past it, customers won't pay more. */
 export const ARPU_CAP = 100
+
+/** The ARPU cap, raised by every shipped enterprise epic. */
+export function arpuCap(features: V2GameState['features']): number {
+  return ARPU_CAP + EPIC_ARPU_CAP_STEP * enterpriseEpicsShipped(features)
+}
+
+/** Cold email reach shrinks as the company gets known: big companies need ads. */
+export function emailReach(customers: number): number {
+  return 1 / (1 + customers / 1500)
+}
+
+/** Leads one sales call can work through. */
+export function salesCallCap(salesSkill: number): number {
+  return Math.round(12 + 4 * salesSkill)
+}
 export const FEATURES_PER_RESEARCH = 2
 export const SKILL_GAIN = 0.5
 export const SKILL_CAP = 8
@@ -92,7 +108,7 @@ export function startTask(state: V2GameState, type: FounderTaskType, featureId?:
   let features = state.features
   if (type === 'develop') {
     const feature = state.features.find(f => f.id === featureId)
-    if (!feature || feature.status !== 'proposed') return { ok: false, reason: 'no-feature' }
+    if (!feature || feature.status !== 'proposed' || feature.epic) return { ok: false, reason: 'no-feature' }
     features = state.features.map(f =>
       f.id === featureId ? { ...f, status: 'in_development' as const, assignedToDevId: FOUNDER_ID, buildProgress: 0 } : f,
     )
@@ -191,10 +207,12 @@ function applyDevelop(state: V2GameState, worker: Worker, featureId: string | un
   const raw = estimateFeatureEffects(feature.effects, feature.value, FOUNDER_ACCURACY, state.arpu, state.customers, diffMult)
   // A rushed intern build ships at half strength and leaves a mess behind.
   const half = (n: number) => (opts.mistake ? Math.round(n * 0.5) : n)
+  // Regular features give less and less ARPU; epics don't diminish.
+  const decay = feature.epic ? 1 : FEATURE_DECAY ** shippedRegular(state.features)
   const est = {
     ...raw,
     customers: half(raw.customers),
-    arpu: half(raw.arpu),
+    arpu: half(Math.round(raw.arpu * decay)),
     cashBonus: half(raw.cashBonus),
     brand: half(raw.brand),
     productGain: half(raw.productGain),
@@ -207,7 +225,8 @@ function applyDevelop(state: V2GameState, worker: Worker, featureId: string | un
   const gain = Math.min(est.customers, marketRoom(state))
   const customers = preSale ? state.customers : Math.max(0, state.customers + gain)
   const leads = preSale ? Math.max(0, state.v2.leads + est.customers) : state.v2.leads
-  const arpu = Math.max(10, Math.min(Math.max(ARPU_CAP, state.arpu), state.arpu + est.arpu))
+  const cap = arpuCap(state.features)
+  const arpu = Math.max(10, Math.min(Math.max(cap, state.arpu), state.arpu + est.arpu))
 
   const result: FeatureResult = {
     featureTitle: feature.title,
@@ -260,7 +279,7 @@ function applyDevelop(state: V2GameState, worker: Worker, featureId: string | un
 function applyEmails(state: V2GameState, worker: Worker, rng: Rng, opts: OutcomeOptions): V2GameState {
   const outreach = worker.skills.outreach
   // Fewer fresh prospects as the market fills up (spec §4).
-  const full = Math.round((4 + outreach + rng() * 4) * (1 + state.brand / 100) * leadSaturation(state))
+  const full = Math.round((4 + outreach + rng() * 4) * (1 + state.brand / 100) * leadSaturation(state) * emailReach(state.customers))
   const gained = opts.mistake ? Math.floor(full * 0.5) : full
   const next: V2GameState = { ...state, v2: { ...state.v2, leads: state.v2.leads + gained } }
   const lines = [`${isFounder(worker) ? 'You' : worker.name} sent a round of cold emails. ${gained} new leads.`]
@@ -271,7 +290,7 @@ function applyEmails(state: V2GameState, worker: Worker, rng: Rng, opts: Outcome
 // ── Sales ───────────────────────────────────────────────────────────────────
 
 function applySales(state: V2GameState, worker: Worker, rng: Rng, opts: OutcomeOptions): V2GameState {
-  const contacted = state.v2.leads
+  const contacted = Math.min(state.v2.leads, salesCallCap(worker.skills.sales))
   const p = (salesBaseOf(state) + 0.03 * worker.skills.sales) * reputationFactor(state) * shareFactor(state)
   let converted = 0
   for (let i = 0; i < contacted; i++) if (rng() < p) converted++
@@ -284,7 +303,7 @@ function applySales(state: V2GameState, worker: Worker, rng: Rng, opts: OutcomeO
     ...state,
     customers,
     mrr: customers * state.arpu,
-    v2: { ...state.v2, leads: 0, firstSaleDone: state.v2.firstSaleDone || customers > 0, freshCustomers: (state.v2.freshCustomers ?? 0) + converted },
+    v2: { ...state.v2, leads: state.v2.leads - contacted, firstSaleDone: state.v2.firstSaleDone || customers > 0, freshCustomers: (state.v2.freshCustomers ?? 0) + converted },
   }
   const prefix = isFounder(worker) ? 'Sales calls done' : `${worker.name} finished sales calls`
   const lines = [converted > 0

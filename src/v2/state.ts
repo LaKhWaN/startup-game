@@ -152,6 +152,10 @@ export interface V2Slice {
   infra: InfraState
   /** People moments that need the founder's decision; shown one at a time as a pausing pop-up. */
   alerts?: PeopleAlert[]
+  /** Paid roadmaps planned so far (big projects / epics). */
+  roadmapRound?: number
+  /** Monthly ad budget in $ (Desktop → Ads). */
+  adsBudget?: number
   /** Yearly raise policy in %, set in Employees (default 8, what people expect). */
   raisePct?: number
   /** Customers won in roughly the last month; they churn twice as fast. */

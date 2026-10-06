@@ -97,13 +97,13 @@ function writeCache<T>(key: string, data: T): void {
  * Returns the model's raw text, or null if the route is unconfigured or failed,
  * in which case the caller uses its local fallback.
  */
-async function askModel(op: 'validate' | 'roadmap', idea: string, score = 5): Promise<string | null> {
+async function askModel(op: 'validate' | 'roadmap' | 'epics', idea: string, score = 5, extra: Record<string, unknown> = {}, timeoutMs = 15_000): Promise<string | null> {
   try {
     const res = await withTimeout(fetch('/api/rate-idea', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ op, idea, score }),
-    }), 15_000)
+      body: JSON.stringify({ op, idea, score, ...extra }),
+    }), timeoutMs)
 
     if (res.status === 503) {
       console.warn('[gemini] /api/rate-idea has no GROQ_API_KEYS configured — using fallback')
@@ -207,4 +207,25 @@ function fallbackRoadmap(): FeatureTemplate[] {
     ...t,
     phase: (i < 6 ? 'foundation' : i < 12 ? 'launch' : i < 18 ? 'growth' : 'scale') as 'foundation' | 'launch' | 'growth' | 'scale',
   }))
+}
+
+export interface EpicIdea { title: string; description: string; baseDays: number; kind: string }
+
+/** The next paid roadmap: big projects from the model, or null when it isn't available (caller falls back). */
+export async function generateEpics(idea: string, score: number, round: number, exclude: string[]): Promise<EpicIdea[] | null> {
+  try {
+    const text = await askModel('epics', idea, score, { round, exclude: exclude.slice(0, 40) }, 30_000)
+    if (!text) return null
+    const json = JSON.parse(text.replace(/^```json?\s*/i, '').replace(/```\s*$/, ''))
+    if (!Array.isArray(json) || json.length < 3) return null
+    return json.slice(0, 10).map((item: Record<string, unknown>) => ({
+      title: String(item.title ?? 'Big project').slice(0, 60),
+      description: String(item.description ?? '').slice(0, 200),
+      baseDays: Number(item.baseDays) || 25,
+      kind: String(item.kind ?? 'segment'),
+    }))
+  } catch (err) {
+    console.error('[gemini] generateEpics failed:', err)
+    return null
+  }
 }

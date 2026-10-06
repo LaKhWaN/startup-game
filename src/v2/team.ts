@@ -4,7 +4,10 @@ import { monthlyBurn, runwayMonths } from './engine/money'
 import { FRESH_MOOD, isOff, mistakeFactor, workFactor } from './engine/people'
 import { deskMistakes, deskSpeed } from './shop'
 import { toolEffects, wifiSpeed } from './engine/infra'
-import { applyOutcome, pickResearchTemplates } from './founder'
+import { applyOutcome, FOUNDER_ID, pickResearchTemplates } from './founder'
+import { EPIC_MAX_BUILDERS } from './epics'
+import { releaseBuilder } from './engine/builders'
+import type { Feature } from '../types'
 import { currentLocation, locationIndex } from './locations'
 import { addStory, type Assignment, type FounderSkill, type FounderTask, type FounderTaskType, type InternCandidate, type Rng, type TeamMember, type TeamRole, type Tier, type V2GameState } from './state'
 import { hireSpeed, MAIN_TASK, mainSkillOf, mistakeChance, TIER_RULES, WORK_DAY_HOURS, workerDurationDays } from './work'
@@ -146,15 +149,15 @@ export function hireIntern(state: V2GameState, candidateId: string): V2GameState
 }
 
 function freeFeatureOf(state: V2GameState, memberId: string): V2GameState {
-  if (!state.features.some(f => f.status === 'in_development' && f.assignedToDevId === memberId)) return state
-  return {
-    ...state,
-    features: state.features.map(f =>
-      f.status === 'in_development' && f.assignedToDevId === memberId
-        ? { ...f, status: 'proposed' as const, assignedToDevId: undefined, buildProgress: 0 }
-        : f,
-    ),
-  }
+  const features = releaseBuilder(state.features, memberId)
+  return features === state.features ? state : { ...state, features }
+}
+
+/** An epic in progress that still has room for another builder. */
+function openEpic(state: V2GameState, memberId: string): Feature | undefined {
+  return state.features.find(f => f.epic && f.status === 'in_development' && f.assignedToDevId !== FOUNDER_ID
+    && f.assignedToDevId !== memberId && !(f.epic.helpers ?? []).includes(memberId)
+    && 1 + (f.epic.helpers ?? []).length < EPIC_MAX_BUILDERS)
 }
 
 function removeMember(state: V2GameState, id: string): V2GameState {
@@ -213,8 +216,11 @@ export function chooseNextTask(member: TeamMember, state: V2GameState): FounderT
     case 'research':
       return pickResearchTemplates(state, () => 0, 1).templates.length > 0 ? { type: 'research', progress: 0 } : null
     case 'develop': {
+      // Start the next idea; otherwise help build an epic someone else started.
       const free = state.features.find(f => f.status === 'proposed')
-      return free ? { type: 'develop', featureId: free.id, progress: 0 } : null
+      if (free) return { type: 'develop', featureId: free.id, progress: free.buildProgress }
+      const epic = openEpic(state, member.id)
+      return epic ? { type: 'develop', featureId: epic.id, progress: epic.buildProgress } : null
     }
     case 'emails': return { type: 'emails', progress: 0 }
     case 'sales': return state.v2.leads >= 1 ? { type: 'sales', progress: 0 } : null
@@ -226,9 +232,13 @@ export function chooseNextTask(member: TeamMember, state: V2GameState): FounderT
 function claimFeature(state: V2GameState, featureId: string, by: string): V2GameState {
   return {
     ...state,
-    features: state.features.map(f =>
-      f.id === featureId ? { ...f, status: 'in_development' as const, assignedToDevId: by, buildProgress: 0 } : f,
-    ),
+    features: state.features.map(f => {
+      if (f.id !== featureId) return f
+      // Joining an epic someone is already building.
+      if (f.epic && f.status === 'in_development') return { ...f, epic: { ...f.epic, helpers: [...(f.epic.helpers ?? []), by] } }
+      // An epic keeps the progress earlier builders made.
+      return { ...f, status: 'in_development' as const, assignedToDevId: by, buildProgress: f.epic ? f.buildProgress : 0 }
+    }),
   }
 }
 
@@ -259,9 +269,13 @@ export function advanceTeam(state: V2GameState, hours: number, rng: Rng): TeamTi
     if (hours <= 0 || !m.task) continue
 
     const task = m.task
+    // An epic finished by someone else this hour (or gone): this builder is free again.
+    const building = task.type === 'develop' ? s.features.find(f => f.id === task.featureId) : undefined
+    if (task.type === 'develop' && (!building || building.status === 'completed')) { s = withMember(s, { ...m, task: null }); continue }
     const days = workerDurationDays(s, task.type, task.featureId, hireSpeed(m.role, task.type, m.tier) * workFactor(m) * deskSpeed(s, m.seat) * wifiSpeed(s))
-    // Hires count work hours: one work day = WORK_DAY_HOURS.
-    const progress = Math.min(1, task.progress + hours / (WORK_DAY_HOURS * days))
+    // Hires count work hours: one work day = WORK_DAY_HOURS. Epic builders share one progress bar.
+    const start = building?.epic ? building.buildProgress : task.progress
+    const progress = Math.min(1, start + hours / (WORK_DAY_HOURS * days))
     if (progress < 1 - EPSILON) {
       if (task.type === 'develop') {
         s = { ...s, features: s.features.map(f => (f.id === task.featureId ? { ...f, buildProgress: progress } : f)) }

@@ -25,7 +25,8 @@ export function FounderPanel() {
 
   const task = v2.founder.task
   const busy = task !== null
-  const proposed = features.filter(f => f.status === 'proposed')
+  // Epics are built by the team, not the founder.
+  const proposed = features.filter(f => f.status === 'proposed' && !f.epic)
   // Features your hires are building (yours shows under "Right now").
   const teamBuilds = features.filter(f => f.status === 'in_development' && f.assignedToDevId !== FOUNDER_ID)
   const shipped = features.filter(f => f.status === 'completed').length

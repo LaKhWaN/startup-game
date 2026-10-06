@@ -7,10 +7,10 @@ import { makeState, member, withChapter, withTeam, withV2 } from './fixtures'
 describe('services are billed by the hour (review I1)', () => {
   it('a tool used for part of a day is still paid for those hours', () => {
     let s = withV2(makeState({ cash: 10_000, gameTime: { totalHours: 10 } }), {})
-    s = toggleTool(s, 'ci') // $200/mo
+    s = toggleTool(s, 'ci') // $800/mo
     for (let h = 0; h < 6; h++) s = stepV2(s, () => 0.99)
     s = toggleTool(s, 'ci')
-    expect(s.cash).toBeCloseTo(10_000 - (200 / 720) * 6, 1)
+    expect(s.cash).toBeCloseTo(10_000 - (800 / 720) * 6, 1)
   })
 })
 

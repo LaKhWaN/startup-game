@@ -10,6 +10,9 @@ import type { FounderTaskType, V2GameState } from '../state'
 import { canHire, canPromote, convinceToStay, generateCandidates, hireIntern, isFullTimeUnlocked, promoteMember, setAssignment, teamCapacity } from '../team'
 import { buyPerk, canBuyPerk, canUpgradeSetup, nextSetup, perkDef, upgradeSetup, type Desk, type PerkId } from '../shop'
 import { setWifi, toggleTool } from '../engine/infra'
+import { AD_BUDGETS, costPerLead, setAdsBudget } from '../engine/ads'
+import { applyRoadmap, canPlanRoadmap, fallbackEpics, roadmapCost } from '../epics'
+import { pickResearchTemplates } from '../founder'
 import { MAIN_TASK } from '../work'
 import { createV2State } from '../state'
 import { stepV2 } from '../v2Tick'
@@ -30,7 +33,7 @@ export function seeded(seed: number): () => number {
 const PERK_ORDER: PerkId[] = ['coffee', 'plants', 'decor', 'sofa', 'tableTennis', 'games']
 export const resting = new Set<string>()
 /** Off = a player who hires and runs the business but never rests people, buys perks or talks leavers round. */
-export const care = { people: true }
+export const care = { people: true, ads: true }
 
 /** The extra care a sensible manager takes: people, shop, infra (spec §5–§7). */
 function manage(s: V2GameState): V2GameState {
@@ -55,9 +58,17 @@ function manage(s: V2GameState): V2GameState {
   const desks: Desk[] = ['founder', ...Object.values(s.v2.team).map(m => m.seat)]
   for (const d of desks) { const n = nextSetup(s, d); if (n && n.tier <= 3 && canUpgradeSetup(s, d) === 'ok' && spare(n.price, 4)) s = upgradeSetup(s, d) }
   // Infra: fiber once there's a team, tools when they pay off.
-  if (s.v2.infra.wifi === 'home' && Object.keys(s.v2.team).length >= 3 && spare(80, 6)) s = setWifi(s, 'fiber')
-  if (!s.v2.infra.tools.includes('helpdesk') && s.customers > 150 && spare(100, 6)) s = toggleTool(s, 'helpdesk')
-  if (!s.v2.infra.tools.includes('monitoring') && s.techDebt > 40 && spare(150, 6)) s = toggleTool(s, 'monitoring')
+  if (s.v2.infra.wifi === 'home' && Object.keys(s.v2.team).length >= 3 && spare(250, 6)) s = setWifi(s, 'fiber')
+  if (!s.v2.infra.tools.includes('helpdesk') && s.customers > 150 && spare(400, 6)) s = toggleTool(s, 'helpdesk')
+  if (!s.v2.infra.tools.includes('monitoring') && s.techDebt > 40 && spare(600, 6)) s = toggleTool(s, 'monitoring')
+  // Out of ideas: plan the next roadmap when it's affordable with 3 months of cushion.
+  if (canPlanRoadmap(s) === 'ok' && pickResearchTemplates(s, () => 0, 1).templates.length === 0 && spare(roadmapCost(s), 3)) s = applyRoadmap(s, fallbackEpics((s.v2.roadmapRound ?? 0) + 1))
+  // Ads once emails dry up: the biggest budget under 10% of MRR whose leads still pay back within ~4 months.
+  if (care.ads && s.customers > 500) {
+    const perCustomer = costPerLead(s) / 0.35
+    const fit = [...AD_BUDGETS].reverse().find(b => b <= s.mrr * 0.1 && perCustomer <= s.arpu * 4) ?? 0
+    if (fit !== (s.v2.adsBudget ?? 0)) s = setAdsBudget(s, fit)
+  }
   return s
 }
 

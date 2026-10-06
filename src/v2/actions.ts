@@ -19,6 +19,8 @@ import { stepV2 } from './v2Tick'
 import { resetUi, uiStore } from './ui'
 import { canMigrate, setWifi, startMigration, toggleTool, type MigrateCheck, type ToolId, type WifiPlan } from './engine/infra'
 import { setRaisePct } from './payroll'
+import { applyRoadmap, canPlanRoadmap, EPIC_KIND_IDS, fallbackEpics, roadmapRound, type EpicSpec, type PlanCheck } from './epics'
+import { setAdsBudget } from './engine/ads'
 import { resolveAlert, type AlertChoice } from './peopleAlerts'
 import { buyPerk, canBuyPerk, canUpgradeSetup, upgradeSetup, type Desk, type PerkCheck, type PerkId, type SetupCheck } from './shop'
 
@@ -122,6 +124,36 @@ export function chooseWifi(plan: WifiPlan): void {
 
 export function toggleInfraTool(id: ToolId): void {
   setV2State(toggleTool(getV2State(), id))
+}
+
+/** Paid: ask the AI for the next roadmap of big projects (built-in list if it's unavailable). */
+export async function planNextRoadmap(): Promise<PlanCheck | 'failed'> {
+  const s = getV2State()
+  const check = canPlanRoadmap(s)
+  if (check !== 'ok') return check
+  uiStore.setState({ planningRoadmap: true })
+  try {
+    const { generateEpics } = await import('../ai/gemini')
+    const exclude = s.features.filter(f => f.epic).map(f => f.title)
+    const ideas = await generateEpics(s.idea, s.ideaScore, roadmapRound(s) + 1, exclude)
+    const kinds = new Set<string>(EPIC_KIND_IDS)
+    const specs: EpicSpec[] = (ideas ?? []).filter(i => kinds.has(i.kind)).map(i => ({ ...i, kind: i.kind as EpicSpec['kind'] }))
+    const now = getV2State()
+    const next = applyRoadmap(now, specs.length >= 3 ? specs : fallbackEpics(roadmapRound(now) + 1))
+    if (next === now) return canPlanRoadmap(now)
+    setV2State(next)
+    playSfx('success1', 0.6)
+    return 'ok'
+  } catch (err) {
+    console.error('[roadmap] planning failed', err)
+    return 'failed'
+  } finally {
+    uiStore.setState({ planningRoadmap: false })
+  }
+}
+
+export function setAdBudget(budget: number): void {
+  setV2State(setAdsBudget(getV2State(), budget))
 }
 
 export function setRaise(pct: number): void {

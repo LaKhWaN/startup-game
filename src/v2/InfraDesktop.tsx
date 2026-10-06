@@ -3,14 +3,18 @@ import { chooseWifi, migrateHosting, toggleInfraTool, useV2 } from './actions'
 import { clockLabel, totalDays } from './engine/clock'
 import { HOSTING, TOOLS, WIFI, hostingLoad, type ToolId, type WifiPlan } from './engine/infra'
 import { EmployeesApp } from './EmployeesApp'
+import { RoadmapApp } from './RoadmapApp'
+import { AdsApp } from './AdsApp'
 import './v2.css'
 
-type App = 'hosting' | 'wifi' | 'tools' | 'employees'
+type App = 'hosting' | 'wifi' | 'tools' | 'employees' | 'roadmap' | 'ads'
 const APPS: { id: App; icon: string; name: string }[] = [
   { id: 'hosting', icon: '🖥️', name: 'Hosting' },
   { id: 'wifi', icon: '📶', name: 'Wi-Fi' },
   { id: 'tools', icon: '🧰', name: 'Tools' },
   { id: 'employees', icon: '👥', name: 'Employees' },
+  { id: 'roadmap', icon: '🗺️', name: 'Roadmap' },
+  { id: 'ads', icon: '📣', name: 'Ads' },
 ]
 const fmt = (n: number) => `$${n.toLocaleString()}`
 
@@ -69,6 +73,8 @@ export function InfraDesktop({ onClose }: { onClose: () => void }) {
                 </>
               )}
               {app === 'employees' && <EmployeesApp />}
+              {app === 'roadmap' && <RoadmapApp />}
+              {app === 'ads' && <AdsApp />}
               {app === 'wifi' && (Object.keys(WIFI) as WifiPlan[]).map(id => (
                 <div key={id} className={`v2-desk-row${infra.wifi === id ? ' v2-desk-row--on' : ''}`}>
                   <div><strong>{WIFI[id].name}</strong><div className="v2-muted">work speed ×{WIFI[id].speed} · {WIFI[id].price ? `${fmt(WIFI[id].price)}/mo` : 'free'}</div></div>
