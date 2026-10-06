@@ -111,7 +111,7 @@ function ScreenModal({ modal }: { modal: ModalState | null }) {
   if (!modal) return null
   switch (modal.kind) {
     case 'founder': return <Modal title="Founder" onClose={closeModal}><FounderPanel /></Modal>
-    case 'team': return <Modal title="Team" onClose={closeModal}><TeamPanel /></Modal>
+    case 'team': return <Modal title="Team" onClose={closeModal} xl><TeamPanel /></Modal>
     case 'infra': return <InfraDesktop onClose={closeModal} />
     case 'shop': return <Modal title="Shop" onClose={closeModal} wide><ShopPanel /></Modal>
     case 'metrics': return <Modal title="Metrics" onClose={closeModal} wide><MetricsPanel /></Modal>
