@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { ensureCandidates, hireCandidate, refreshCandidates, useV2 } from './actions'
+import { ensureCandidates, hireCandidate, refreshCandidateTier, useV2 } from './actions'
 import { isMapUnlocked } from './chapter'
 import { formatProfit } from './finance'
 import { fmtMoney, MemberCard, ROLE_INFO, TierBadge } from './MemberCard'
@@ -78,14 +78,17 @@ export function TeamPanel() {
             <section className="rp-section">
               <div className="v2-section-head">
                 <div className="rp-section-label">Interns available</div>
-                <button className="v2-btn v2-btn-ghost" onClick={() => refreshCandidates()}>Refresh</button>
+                <button className="v2-btn v2-btn-ghost" onClick={() => refreshCandidateTier('intern')} title="New intern candidates">↻ Refresh interns</button>
               </div>
               {v2.candidates.filter(c => c.tier === 'intern').map(candidateCard)}
             </section>
 
             {fullTime && (
               <section className="rp-section">
-                <div className="rp-section-label">Full-time candidates</div>
+                <div className="v2-section-head">
+                  <div className="rp-section-label">Full-time candidates</div>
+                  <button className="v2-btn v2-btn-ghost" onClick={() => refreshCandidateTier('fulltime')} title="New full-time candidates">↻ Refresh full-time</button>
+                </div>
                 {v2.candidates.filter(c => c.tier === 'fulltime').map(candidateCard)}
               </section>
             )}

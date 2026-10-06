@@ -119,3 +119,27 @@ describe('person card data', () => {
     expect(s.v2.team.c1.bio).toBe('Ships on Fridays, apologises on Mondays.')
   })
 })
+
+describe('refresh per tier', () => {
+  it('rerolls only the chosen list', async () => {
+    const { refreshTier } = await import('../team')
+    const { makeState, withV2 } = await import('./fixtures')
+    let s = withV2(makeState(), { location: 'coworking' })
+    s = withV2(s, { candidates: generateCandidates(seq(0.1), { fullTime: true }) })
+    const ft = s.v2.candidates.filter(c => c.tier === 'fulltime')
+    const interns = refreshTier(s, 'intern', seq(0.7))
+    expect(interns.v2.candidates.filter(c => c.tier === 'fulltime')).toEqual(ft)
+    expect(interns.v2.candidates.filter(c => c.tier === 'intern')).toHaveLength(3)
+    const full = refreshTier(s, 'fulltime', seq(0.7))
+    expect(full.v2.candidates.filter(c => c.tier === 'intern')).toEqual(s.v2.candidates.filter(c => c.tier === 'intern'))
+    expect(full.v2.candidates.filter(c => c.tier === 'fulltime')).toHaveLength(2)
+    expect(full.v2.candidates.filter(c => c.tier === 'fulltime')).not.toEqual(ft)
+  })
+
+  it('full-time refresh does nothing before full-time is unlocked', async () => {
+    const { refreshTier } = await import('../team')
+    const { makeState } = await import('./fixtures')
+    const s = makeState()
+    expect(refreshTier(s, 'fulltime', seq(0.5))).toBe(s)
+  })
+})

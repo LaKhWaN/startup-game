@@ -9,10 +9,10 @@ import { valuation } from './engine/money'
 import { startTask, type StartTaskError } from './founder'
 import { loadGameV2, type SlotId } from './saveV2'
 import { canMove, moveTo, type MoveCheck } from './locations'
-import { createSetupState, createV2State, type Assignment, type FounderTaskType, type LocationId, type V2GameState } from './state'
+import { createSetupState, createV2State, type Assignment, type FounderTaskType, type LocationId, type Tier, type V2GameState } from './state'
 import { gameStore, type GameSpeed, type V2Store } from './store'
 import {
-  canHire, canPromote, convinceToStay, fireMember, generateCandidates, hireIntern, isFullTimeUnlocked, promoteMember, setAssignment,
+  canHire, canPromote, convinceToStay, fireMember, generateCandidates, hireIntern, isFullTimeUnlocked, promoteMember, refreshTier, setAssignment,
   type HireCheck, type PromoteCheck,
 } from './team'
 import { stepV2 } from './v2Tick'
@@ -182,6 +182,11 @@ export function quickRestart(): void {
 export function refreshCandidates(rng: () => number = Math.random): void {
   const s = getV2State()
   setV2State({ v2: { ...s.v2, candidates: generateCandidates(rng, { fullTime: isFullTimeUnlocked(s) }) } })
+}
+
+/** Refresh just the intern list or just the full-time list. */
+export function refreshCandidateTier(tier: Tier, rng: () => number = Math.random): void {
+  setV2State(refreshTier(getV2State(), tier, rng))
 }
 
 export function ensureCandidates(): void {

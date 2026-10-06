@@ -83,6 +83,15 @@ export function generateCandidates(rng: Rng, opts: { fullTime: boolean }): Inter
   return [...makeCandidates(rng, 3, 'intern'), ...(opts.fullTime ? makeCandidates(rng, 2, 'fulltime') : [])]
 }
 
+/** Reroll one tier's candidates (3 interns or 2 full-time), leaving the other list as it is. */
+export function refreshTier(state: V2GameState, tier: Tier, rng: Rng): V2GameState {
+  if (tier === 'fulltime' && !isFullTimeUnlocked(state)) return state
+  const fresh = makeCandidates(rng, tier === 'intern' ? 3 : 2, tier)
+  const others = state.v2.candidates.filter(c => c.tier !== tier)
+  const candidates = tier === 'intern' ? [...fresh, ...others] : [...others, ...fresh]
+  return { ...state, v2: { ...state.v2, candidates } }
+}
+
 export type HireCheck = 'ok' | 'full' | 'cash' | 'missing' | 'locked'
 
 export function canHire(state: V2GameState, candidateId: string): HireCheck {
