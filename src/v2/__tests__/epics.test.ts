@@ -49,7 +49,7 @@ describe('epics', () => {
     expect(arpuCap([ent])).toBe(ARPU_CAP + 10)
   })
 
-  it('planning costs 75% of MRR (min $10k), more each round, and only from Co-working with no epics left', () => {
+  it('planning costs 75% of MRR (min $10k), ×(1 + rounds planned), and only from Co-working with no epics left', () => {
     expect(roadmapCost(coworking())).toBe(75_000)
     expect(roadmapCost(makeState({ mrr: 1000 }))).toBe(10_000)
     expect(canPlanRoadmap(makeState({ cash: 1e6 }))).toBe('locked')
@@ -59,7 +59,7 @@ describe('epics', () => {
     expect(planned.features.filter(f => f.epic)).toHaveLength(8)
     expect(planned.v2.roadmapRound).toBe(1)
     expect(canPlanRoadmap(planned)).toBe('busy')
-    expect(roadmapCost(planned)).toBe(112_500)
+    expect(roadmapCost(planned)).toBe(150_000) // round 2 costs double
   })
 
   it('the founder cannot build an epic; developers build it together', () => {
@@ -125,5 +125,19 @@ describe('growth costs money at scale', () => {
     const s = withV2(makeState({ cash: 20_000, infraCostMonthly: 3500, mrr: 0 }), { location: 'coworking', unlockedLocations: ['home', 'biggerHome', 'villa', 'coworking', 'smallOffice'] })
     expect(moveCushion(s, 'smallOffice')).toMatchObject({ cashAfter: 2000, risky: true })
     expect(moveCushion({ ...s, cash: 40_000 }, 'smallOffice').risky).toBe(false)
+  })
+})
+
+describe('events never bankrupt you on a click', () => {
+  it('a choice that would take cash below zero is off, unless both would', async () => {
+    const { affordableChoices, applyEventChoice } = await import('../engine/events')
+    const ev = { id: 't', category: 'crisis' as const, title: 'T', description: '', choices: [
+      { label: 'Pay', consequence: 'paid', effect: (s: { cash: number }) => ({ cash: s.cash - 5000 }) },
+      { label: 'Lose customers', consequence: 'lost', effect: (s: { customers: number }) => ({ customers: s.customers - 10 }) },
+    ] }
+    const poor = makeState({ cash: 1000, customers: 100, pendingEvent: ev as never })
+    expect(affordableChoices(poor)).toEqual([false, true])
+    expect(applyEventChoice(poor, 0).cash).toBe(1000)
+    expect(affordableChoices(makeState({ cash: 9000, pendingEvent: ev as never }))).toEqual([true, true])
   })
 })

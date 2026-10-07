@@ -9,8 +9,11 @@ export const EPIC_MIN_DAYS = 15
 export const EPIC_MAX_DAYS = 40
 /** Planning a roadmap opens at Co-working (ladder index 3). */
 export const ROADMAP_STAGE = 3
-/** Enterprise epics lift the ARPU cap by this much each. */
+/** Enterprise epics lift the ARPU cap by this much each (first roadmap; later rounds less). */
 export const EPIC_ARPU_CAP_STEP = 10
+/** Each roadmap round's projects are worth this share of the round before: big bets run out too. */
+export const EPIC_ROUND_DECAY = 0.7
+export const roundScale = (round: number) => EPIC_ROUND_DECAY ** Math.max(0, round - 1)
 
 export interface EpicSpec {
   title: string
@@ -43,13 +46,18 @@ export function epicFeature(spec: EpicSpec, round: number, day: number, key: str
     baseDays: Math.round(Math.max(EPIC_MIN_DAYS, Math.min(EPIC_MAX_DAYS, Number(spec.baseDays) || 25))),
     value: 'high',
     impacts: [],
-    effects: EPIC_KINDS[kind].effects(round),
+    effects: scaleEffects(EPIC_KINDS[kind].effects(round), roundScale(round)),
     discoveredByPMId: 'founder',
     status: 'proposed',
     buildProgress: 0,
     discoveredAtDay: day,
-    epic: { kind, round, marketBoost: EPIC_KINDS[kind].marketBoost, helpers: [] },
+    epic: { kind, round, marketBoost: EPIC_KINDS[kind].marketBoost * roundScale(round), helpers: [] },
   }
+}
+
+/** Market/ARPU/customer gains shrink with later rounds; debt and churn relief don't. */
+function scaleEffects(e: FeatureEffects, k: number): FeatureEffects {
+  return { ...e, ...(e.arpu ? { arpu: Math.round(e.arpu * k) } : {}), ...(e.customers ? { customers: Math.round(e.customers * k) } : {}) }
 }
 
 /** Used when the AI isn't available: a solid generic roadmap. */
@@ -69,9 +77,9 @@ export function fallbackEpics(round: number): EpicSpec[] {
 
 export const roadmapRound = (s: Pick<V2GameState, 'v2'>) => s.v2.roadmapRound ?? 0
 
-/** Planning costs most of a month's revenue, more every round. */
+/** Planning costs most of a month's revenue, and each round costs as much again as the first. */
 export function roadmapCost(s: Pick<V2GameState, 'v2' | 'mrr'>): number {
-  return Math.round(Math.max(10_000, 0.75 * s.mrr) * (1 + 0.5 * roadmapRound(s)) / 100) * 100
+  return Math.round(Math.max(10_000, 0.75 * s.mrr) * (1 + roadmapRound(s)) / 100) * 100
 }
 
 export type PlanCheck = 'ok' | 'locked' | 'busy' | 'cash'

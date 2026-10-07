@@ -65,7 +65,7 @@ describe('shop effects on people and work', () => {
     const coffee = withV2(base, { perks: ['coffee'] })
     expect(peopleHour(coffee).v2.team.b.energy).toBeCloseTo(100 - 7 * 0.8 / 3)
     const sofa = withV2({ ...base, v2: { ...base.v2, team: { b: { ...base.v2.team.b, energy: 20 } } } }, { perks: ['sofa'] })
-    expect(peopleDay(sofa, 1).v2.team.b.energy).toBe(20 + 50 + 12)
+    expect(peopleDay(sofa, 1).v2.team.b.energy).toBe(20 + 60 + 12)
     const plain = peopleDay(base, 1).v2.team.b.morale!
     const happy = peopleDay(withV2(base, { perks: ['plants'] }), 1).v2.team.b.morale!
     expect(happy).toBeGreaterThan(plain)

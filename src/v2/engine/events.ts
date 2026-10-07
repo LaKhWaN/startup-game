@@ -20,6 +20,18 @@ export function eventView(state: GameV2): EventView {
   return { ...state, employees: Object.values(state.v2.team).map(asEmployee) }
 }
 
+/**
+ * Which choices the company can pay for: a choice that would take cash below zero is off
+ * (unless both would, so the player is never stuck).
+ */
+export function affordableChoices(state: GameV2): [boolean, boolean] {
+  const event = state.pendingEvent
+  if (!event) return [true, true]
+  const view = eventView(state)
+  const ok = event.choices.map(c => { const cash = c.effect(view).cash; return cash === undefined || cash >= 0 }) as [boolean, boolean]
+  return ok[0] || ok[1] ? ok : [true, true]
+}
+
 /** Ported legacy event picker: unused first, acquisitions only with real traction, crisis/opportunity weighting. */
 export function pickEvent(state: GameV2, rng: Rng): EventDef | null {
   const eligible = state.mrr >= ACQUISITION_MIN_MRR && state.customers >= ACQUISITION_MIN_CUSTOMERS && rng() < ACQUISITION_SHOW_CHANCE
@@ -66,6 +78,8 @@ function applyEmployees(state: GameV2, employees: EventEmployee[] | undefined, l
 export function applyEventChoice(state: GameV2, choiceIndex: 0 | 1, precomputed?: EventPatch): GameV2 {
   const event = state.pendingEvent
   if (!event) return state
+  // A choice you can't pay for isn't on offer (the card disables it too).
+  if (!precomputed && !affordableChoices(state)[choiceIndex]) choiceIndex = choiceIndex === 0 ? 1 : 0
   const choice = event.choices[choiceIndex]
   const { employees, ...patch } = precomputed ?? choice.effect(eventView(state))
   const day = totalDays(state.gameTime)

@@ -19,15 +19,16 @@ export const HOUR_SHARE = 8 / 24
 export const BUSY_STRESS_PER_HOUR = 0.8 * HOUR_SHARE
 export const EMPTY_STRESS_PER_HOUR = 1.5 * HOUR_SHARE
 /** Daily recovery (there are no weekends off any more). */
-export const DAILY_STRESS_RECOVERY = 2.5
-export const DAILY_ENERGY_RECOVERY = 50
+export const DAILY_STRESS_RECOVERY = 5.5
+export const DAILY_ENERGY_RECOVERY = 60
 /** Morale drifts toward MORALE_BASE + perks + pay mood − stress/2. */
 export const MORALE_BASE = 65
 /** Unhappy people quit: morale under LOW_MORALE for LOW_MORALE_DAYS days in a row. */
 export const LOW_MORALE = 35
 export const LOW_MORALE_DAYS = 5
 /** Everyone else's morale drop when a colleague leaves. */
-export const LEAVE_MORALE_HIT = 6
+export const LEAVE_MORALE_HIT = 3
+export const MAX_LEAVE_HIT_PER_DAY = 6
 /** Warn the founder (once) at this stress, or after this many low-morale days. */
 export const RISK_STRESS = 80
 export const RISK_MORALE_DAYS = 2
@@ -115,7 +116,8 @@ export function peopleDay<T extends GameV2>(state: T, day: number): T {
   let alerts = state.v2.alerts ?? []
   const team: Record<string, TeamMember> = {}
   const leaving = Object.values(state.v2.team).filter(m => m.leavingOn !== undefined && day >= m.leavingOn)
-  const leaveHit = leaving.length * LEAVE_MORALE_HIT
+  // Capped so a bad week can't snowball into everyone leaving.
+  const leaveHit = Math.min(MAX_LEAVE_HIT_PER_DAY, leaving.length * LEAVE_MORALE_HIT)
   for (const raw of Object.values(state.v2.team)) {
     if (raw.leavingOn !== undefined && day >= raw.leavingOn) continue // handled below
     let m = raw

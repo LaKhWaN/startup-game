@@ -284,3 +284,13 @@ Analysis of AIBot (Competitive, sold day 532 at ~$17–19M, $361k MRR): features
 - **Move warning:** the Map asks for a second click ("Move anyway") when moving leaves less than one month of costs at the new place.
 - **Prices:** hosting VPS $150 / Dedicated $900 / Cluster $3.5k / CDN $12k; Wi-Fi Fiber $250 / Business $800; Helpdesk $400, Monitoring $600, CI/CD $800. Perks and computers unchanged (early game is already tight) — cost if wrong: infra still cheap at the top.
 - Sim, 2 years: a manager who hires up to 50 without ads/roadmaps stalls at ~1,200–1,700 customers with burn > MRR; with ads + roadmaps ~$100–130k MRR at day 720 with burn ≈ MRR (was $300k+ MRR and +$180k/mo profit). Co-working still reached on days 270–339.
+
+## Persona simulations (easy / medium / hard × idea 3, 5, 8)
+
+Harness: `src/v2/__tests__/simPersonas.ts` + `personas.test.ts` (SIM_PERSONAS=1). All players decline acquisition offers so each run lasts 730 days.
+
+### Rulings (balance fixes the runs exposed)
+- Always-busy hires ran out of energy (56 drained vs 50 restored a day) and then took ~12 stress a day, so a team without coffee quit in the hundreds (86–850 quits). Daily recovery: energy 50 → 60, stress 2.5 → 5.5. A colleague leaving costs 3 morale (was 6), at most 6 a day however many leave, so departures can't snowball. Result: an ignored team loses ~60–70 people in two years, a cared-for team 0 — cost if wrong: people care matters for quits more than for growth.
+- Epics shrink per roadmap round (market/ARPU/customers and the enterprise ARPU-cap step × 0.7 per later round) and a round costs 75% MRR × (1 + rounds planned) (was × 1 + 0.5r): the optimal player had shipped 40 epics to $1.2M MRR — cost if wrong: late roadmaps feel weaker.
+- Event choices that would take cash below zero are disabled ("can't afford"), in the card and in the engine (unless both are unaffordable): "Biggest customer wants out → 2 free months" bankrupted a player on one click.
+- CLAUDE.md's tier table was stale: 3/10 is Risky, 5/10 Competitive, 8/10 Promising (code: ≥8, ≥5, ≥3).

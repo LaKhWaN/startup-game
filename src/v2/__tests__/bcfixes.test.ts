@@ -43,15 +43,15 @@ describe('burnout is reachable (review #3)', () => {
     for (let h = 0; h < 24; h++) s = peopleHour({ ...s, v2: { ...s.v2, team: { b: { ...s.v2.team.b, task: h < busyHours ? { type: 'emails', progress: 0 } : null } } } })
     return s
   }
-  it('a hire busy every hour burns out within ~10 weeks, without perks', () => {
+  it('a hire busy every hour quits within ~15 weeks, without perks', () => {
     let s = withTeam(makeState(), member({ id: 'b', task: { type: 'emails', progress: 0 } }))
     let noticeDay: number | undefined
-    for (let day = 1; day <= 75 && noticeDay === undefined; day++) {
+    for (let day = 1; day <= 120 && noticeDay === undefined; day++) {
       s = peopleDay(work(s, 24), day)
       noticeDay = s.v2.team.b?.leavingOn
     }
     expect(noticeDay).toBeDefined()
-    expect(noticeDay!).toBeLessThanOrEqual(70)
+    expect(noticeDay!).toBeLessThanOrEqual(105)
   })
   it('a hire with regular idle time stays fine', () => {
     let s = withTeam(makeState(), member({ id: 'b' }))

@@ -23,7 +23,7 @@ export const ARPU_CAP = 100
 
 /** The ARPU cap, raised by every shipped enterprise epic. */
 export function arpuCap(features: V2GameState['features']): number {
-  return ARPU_CAP + EPIC_ARPU_CAP_STEP * enterpriseEpicsShipped(features)
+  return Math.round(ARPU_CAP + EPIC_ARPU_CAP_STEP * enterpriseEpicsShipped(features))
 }
 
 /** Cold email reach shrinks as the company gets known: big companies need ads. */

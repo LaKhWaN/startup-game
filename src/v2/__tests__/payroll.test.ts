@@ -60,7 +60,7 @@ describe('stress and morale bite', () => {
     const after = peopleDay(s, 3)
     expect(after.v2.team.m1).toBeUndefined()
     const alone = peopleDay(withTeam(makeState(), member({ id: 'm2', seat: 1, morale: 70, stress: 10 })), 3)
-    expect(after.v2.team.m2.morale!).toBeLessThan(alone.v2.team.m2.morale! - 4)
+    expect(after.v2.team.m2.morale!).toBeLessThan(alone.v2.team.m2.morale! - 2)
   })
 })
 

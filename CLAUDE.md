@@ -51,11 +51,15 @@ Collections: `game_sessions`, `game_day_snapshots`, `game_feedback`
 
 Env vars: `MONGODB_URI`, `MONGODB_DB_NAME` (default: `startup-game`), `ANALYTICS_INGEST_SECRET`, `VITE_ANALYTICS_API_URL`, `VITE_DISABLE_REMOTE_ANALYTICS`
 
-## Difficulty Tiers (from idea score via Groq AI — `GROQ_API_KEYS`, `server/rateIdea.ts`/`api/rate-idea.js`)
+## Difficulty Tiers (from idea score via Groq AI — `GROQ_API_KEYS`, `server/rateIdea.ts`/`api/rate-idea.js`; `scoreToDifficulty` in `src/ai/gemini.ts`)
 - Promising (8-10): ×1.2 customers, 3% churn floor
-- Competitive (6-7): ×1.0, 5% floor
-- Risky (4-5): ×0.7, 8% floor
-- Brutal (0-3): ×0.4, 12% floor
+- Competitive (5-7): ×1.0, 5% floor
+- Risky (3-4): ×0.7, 8% floor
+- Brutal (0-2): ×0.4, 12% floor
+
+## Balance runs
+- `SIM_PERSONAS=1 npx vitest run src/v2/__tests__/personas.test.ts` — easy/medium/hard players × ideas 3/5/8 × 3 seeds, 2 years (`simPersonas.ts`).
+- `SIM_PROBE=1 npx vitest run src/v2/__tests__/simProbe.test.ts` — monthly trace of the scripted manager (`simPlayer.ts`).
 
 ## Design System
 Light theme — `--bg:#f7f8fa`, `--surface:#fff`, `--surface2:#f0f2f5`, `--border:#e2e5ec`, `--accent:#0ea5e9`

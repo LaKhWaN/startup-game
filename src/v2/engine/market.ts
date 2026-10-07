@@ -27,8 +27,9 @@ export function epicMarketBoost(features: Pick<Feature, 'status' | 'epic'>[]): n
   return features.reduce((sum, f) => sum + (f.status === 'completed' && f.epic ? f.epic.marketBoost : 0), 0)
 }
 
+/** Shipped enterprise epics, weighted by round (0.7 per later round): what the ARPU cap grows with. */
 export function enterpriseEpicsShipped(features: Pick<Feature, 'status' | 'epic'>[]): number {
-  return features.filter(f => f.status === 'completed' && f.epic?.kind === 'enterprise').length
+  return features.filter(f => f.status === 'completed' && f.epic?.kind === 'enterprise').reduce((sum, f) => sum + 0.7 ** Math.max(0, f.epic!.round - 1), 0)
 }
 
 /** Market ceiling: tier base × (1 + diminishing feature gain + epic boosts) × (1 + brand/400). */

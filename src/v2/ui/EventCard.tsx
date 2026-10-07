@@ -1,8 +1,8 @@
 /** v2 copy of the legacy event card, on the v2 store. */
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { chooseEvent, useV2 } from '../actions'
 import { usePauseWhile } from '../pause'
-import { eventView } from '../engine/events'
+import { affordableChoices, eventView } from '../engine/events'
 import type { EventPatch, EventView } from '../engine/eventData'
 import './EventCard.css'
 
@@ -87,6 +87,8 @@ export function EventCard() {
   const state        = useV2(s => s)
 
   const [outcome, setOutcome] = useState<Outcome | null>(null)
+  // Checked once per event (some effects roll dice).
+  const affordable = useMemo(() => affordableChoices(state), [pendingEvent]) // eslint-disable-line react-hooks/exhaustive-deps
   // Reading and deciding takes time: pause while the event or its outcome is up.
   usePauseWhile(!!pendingEvent || !!outcome, 'event')
 
@@ -151,9 +153,11 @@ export function EventCard() {
             <button
               key={i}
               className="em-choice-btn"
+              disabled={!affordable[i]}
+              title={affordable[i] ? undefined : 'Not enough cash for this'}
               onClick={() => handleChoice(i as 0 | 1)}
             >
-              {choice.label}
+              {choice.label}{!affordable[i] && ' · can’t afford'}
             </button>
           ))}
         </div>
