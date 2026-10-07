@@ -4,9 +4,9 @@ import type { GameV2 } from './types'
 type Tier = DifficultyModifier['tier']
 
 /** Customers an idea can ever win, before features and brand grow it (spec §4). */
-export const TIER_MARKET: Record<Tier, number> = { promising: 2000, competitive: 1200, risky: 700, brutal: 350 }
+export const TIER_MARKET: Record<Tier, number> = { promising: 2000, competitive: 1200, risky: 400, brutal: 200 }
 
-const SALES_BASE: Record<Tier, number> = { promising: 0.3, competitive: 0.25, risky: 0.2, brutal: 0.15 }
+const SALES_BASE: Record<Tier, number> = { promising: 0.3, competitive: 0.25, risky: 0.15, brutal: 0.1 }
 
 const tierOf = (s: Pick<GameV2, 'difficultyModifier'>): Tier => s.difficultyModifier?.tier ?? 'competitive'
 

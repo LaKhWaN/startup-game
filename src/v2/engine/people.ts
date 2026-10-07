@@ -54,7 +54,8 @@ export const moodOf = (m: Partial<Mood>): Mood => ({ ...FRESH_MOOD, ...Object.fr
 /** Work speed multiplier: rested, happy, experienced people are faster. */
 export function workFactor(m: Partial<Mood>): number {
   const { energy, morale, context } = moodOf(m)
-  return (0.55 + 0.45 * energy / 100) * (0.8 + 0.4 * morale / 100) * (0.7 + 0.5 * context / 100)
+  // Morale matters: a team at 80 morale works ~25% faster than one at 50.
+  return (0.55 + 0.45 * energy / 100) * (0.6 + 0.8 * morale / 100) * (0.7 + 0.5 * context / 100)
 }
 
 /** Mistake-chance multiplier: stressed people slip more. */

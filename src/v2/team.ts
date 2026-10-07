@@ -102,7 +102,7 @@ export function canHire(state: V2GameState, candidateId: string): HireCheck {
   if (!c) return 'missing'
   if (c.tier === 'fulltime' && !isFullTimeUnlocked(state)) return 'locked'
   if (Object.keys(state.v2.team).length >= teamCapacity(state)) return 'full'
-  if (state.cash < c.salary) return 'cash'
+  if (state.cash < c.salary + recruitingFee(c)) return 'cash'
   return 'ok'
 }
 
@@ -113,9 +113,15 @@ function freeSeat(state: V2GameState): number {
   return seat
 }
 
+/** Recruiting fee paid on hiring: half a month's salary for an intern, a full month for full-time. */
+export function recruitingFee(c: Pick<InternCandidate, 'salary' | 'tier'>): number {
+  return Math.round(c.salary * (c.tier === 'fulltime' ? 1 : 0.5))
+}
+
 export function hireIntern(state: V2GameState, candidateId: string): V2GameState {
   if (canHire(state, candidateId) !== 'ok') return state
   const c = state.v2.candidates.find(x => x.id === candidateId)!
+  state = { ...state, cash: state.cash - recruitingFee(c) }
   const member: TeamMember = {
     id: c.id,
     name: c.name,
@@ -145,7 +151,7 @@ export function hireIntern(state: V2GameState, candidateId: string): V2GameState
     },
   }
   const title = c.tier === 'fulltime' ? `full-time ${ROLE_LABELS[c.role].toLowerCase()}` : `${ROLE_LABELS[c.role].toLowerCase()} intern`
-  return addStory(next, [`${c.name} joined as a ${title} ($${c.salary.toLocaleString()}/mo).`])
+  return addStory(next, [`${c.name} joined as a ${title} ($${c.salary.toLocaleString()}/mo, $${recruitingFee(c).toLocaleString()} recruiting fee).`])
 }
 
 function freeFeatureOf(state: V2GameState, memberId: string): V2GameState {

@@ -59,7 +59,8 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 // ─── Response Cache ──────────────────────────────────────────────────────────
 
 const CACHE_PREFIX = 'startup-ai-cache-'
-const CACHE_VERSION = 'v1'
+// v2: idea scores come from a six-part breakdown (old cached scores bunched around 5).
+const CACHE_VERSION = 'v2'
 
 function cacheKey(namespace: string, input: string): string {
   const normalized = input.trim().toLowerCase().replace(/\s+/g, ' ')
@@ -156,11 +157,27 @@ export async function validateIdea(idea: string): Promise<IdeaValidation> {
   }
 }
 
+/**
+ * Offline estimate when the model isn't reachable: specific B2B ideas score higher, vague or
+ * giant-vs-giant ideas lower. Never a flat 5.
+ */
+export function localIdeaScore(idea: string): number {
+  const words = idea.trim().split(/\s+/).filter(Boolean).length
+  if (words <= 2) return 1
+  let score = words <= 4 ? 3 : 4
+  if (words >= 10) score++
+  if (words >= 18) score++
+  if (/\b(saas|api|b2b|compliance|billing|payroll|invoic\w*|accounting|clinic\w*|doctors?|hospitals?|enterprise|compan(y|ies)|business(es)?|teams?|logistics|fleet|restaurants?|retail\w*|e-?commerce|shopify|lenders?|insurance)\b/i.test(idea)) score++
+  if (/\b(google|facebook|instagram|amazon|uber|tiktok|netflix|twitter)\b|for everyone/i.test(idea)) score -= 2
+  if (/social network|dating|fitness app|meal plan|to-?do|crypto|nft|blockchain/i.test(idea)) score--
+  return Math.max(1, Math.min(8, score))
+}
+
 function fallbackValidation(idea: string): IdeaValidation {
   return {
     idea,
-    score: 5,
-    feedback: 'Solid concept with room to grow. The market has potential but execution will be key.',
+    score: localIdeaScore(idea),
+    feedback: 'Quick offline estimate (the AI rater was unavailable): based on how specific the customer and product are. Concrete B2B ideas score higher; vague or head-on-with-giants ideas lower.',
     strengths: ['Clear problem statement', 'Addressable market exists'],
     risks: ['Competitive landscape', 'Customer acquisition cost'],
     suggestion: 'Consider focusing on a specific niche to start.',

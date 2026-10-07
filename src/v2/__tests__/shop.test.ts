@@ -39,7 +39,7 @@ describe('setups', () => {
     const { createV2State } = await import('../state')
     const { makeConfig } = await import('./fixtures')
     const real = createV2State(makeConfig())
-    expect(SETUPS[0]).toMatchObject({ tier: 1, speed: 0.9, mistakes: 1.2 })
+    expect(SETUPS[0]).toMatchObject({ tier: 1, speed: 0.8, mistakes: 1.4 })
     expect(setupOf(real, 'founder').tier).toBe(1)
     expect(setupOf(real, 0).tier).toBe(1)
   })
@@ -73,8 +73,8 @@ describe('shop effects on people and work', () => {
 
   it('better setups make desks faster', async () => {
     const { deskSpeed } = await import('../shop')
-    expect(deskSpeed(withV2(makeState(), { setups: { founder: 1, seats: [] } }), 0)).toBe(0.9)
-    expect(deskSpeed(withV2(makeState(), { setups: { founder: 4, seats: [3] } }), 'founder')).toBe(1.3)
-    expect(deskSpeed(withV2(makeState(), { setups: { founder: 4, seats: [3] } }), 0)).toBe(1.15)
+    expect(deskSpeed(withV2(makeState(), { setups: { founder: 1, seats: [] } }), 0)).toBe(0.8)
+    expect(deskSpeed(withV2(makeState(), { setups: { founder: 4, seats: [3] } }), 'founder')).toBe(1.4)
+    expect(deskSpeed(withV2(makeState(), { setups: { founder: 4, seats: [3] } }), 0)).toBe(1.2)
   })
 })

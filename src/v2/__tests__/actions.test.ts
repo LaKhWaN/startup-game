@@ -57,7 +57,7 @@ describe('stepGame', () => {
     stepGame()
     const s = getV2State()
     expect(s.gameTime.totalHours).toBe(10) // games start Monday 09:00
-    expect(s.v2.founder.task?.progress).toBeCloseTo(1 / 36)
+    expect(s.v2.founder.task?.progress).toBeCloseTo((1 / 36) * 0.8, 3) // a real game starts on the old laptop (×0.8)
   })
 })
 

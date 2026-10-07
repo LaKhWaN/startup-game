@@ -294,3 +294,18 @@ Harness: `src/v2/__tests__/simPersonas.ts` + `personas.test.ts` (SIM_PERSONAS=1)
 - Epics shrink per roadmap round (market/ARPU/customers and the enterprise ARPU-cap step × 0.7 per later round) and a round costs 75% MRR × (1 + rounds planned) (was × 1 + 0.5r): the optimal player had shipped 40 epics to $1.2M MRR — cost if wrong: late roadmaps feel weaker.
 - Event choices that would take cash below zero are disabled ("can't afford"), in the card and in the engine (unless both are unaffordable): "Biggest customer wants out → 2 free months" bankrupted a player on one click.
 - CLAUDE.md's tier table was stale: 3/10 is Risky, 5/10 Competitive, 8/10 Promising (code: ≥8, ≥5, ≥3).
+
+## Idea scores that use the whole range; medium vs hard gap
+
+### Idea scoring
+- Measured: 10 ideas with the old prompt scored 4–6 (five excellent, specific B2B ideas all got 6). The client also scored every failed AI call (rate limit, timeout, no key) a flat 5.
+- The AI now scores six dimensions with anchors and calibration examples (market, pain, competition, feasibility, specificity, model) at temperature 0.3; the server (`scoreFromBreakdown` in `server/rateIdea.ts` and `api/rate-idea.js`) computes the score: weights .22/.20/.18/.10/.18/.12, then 1 + (weighted − 3.2) × 1.8, clamped 1–10.
+- 24-idea run: global payroll 10; usage billing, BNPL fraud, SOC 2 evidence 8; Shopify forecasting, dog-groomer app, surplus-food marketplace 7; Spanish AI tutor, gamer dating 6; PM tool 5; fitness, meal plans, book social, AI trading tool, NFT pets 4; candles, Antarctic ice 3; Uber for laundry 2; Google rival, "Instagram for everyone", talk-to-the-dead, "An app", "asdf" 1.
+- Offline fallback is a local specificity heuristic (`localIdeaScore`), 1–8, never a flat 5. Client cache bumped to v2 so old scores are dropped — cost if wrong: ideas people liked may score lower now.
+
+### Balance (sim: personas × ideas 3/5/8 × 3 seeds)
+- Weak ideas weaker: Risky market 700 → 400, Brutal 350 → 200; sales base Risky 0.2 → 0.15, Brutal 0.15 → 0.1.
+- Care pays in output: morale weighs more in work speed (×0.6–1.4, was ×0.8–1.2); old laptop ×0.8 / 1.4 mistakes (was ×0.9 / 1.2), workstation ×1.2, MacBook ×1.4; Wi-Fi congestion — home serves 3 people, fiber 15, business unlimited; each extra person −3% (home) / −1.5% (fiber), floor ×0.7.
+- Turnover costs: recruiting fee on every hire (half a month for interns, a month for full-time).
+- Big teams cost: management overhead $600/mo per person from the 16th, $1,200 from the 31st.
+- Result (day-730 MRR, medium → hard): 3/10 $16k → $111k, 5/10 $62k → $340k, 8/10 $150k → $631k (was medium ≈ 80–95% of hard). Easy survives ~1/9. Medium loses ~75–85 people to quits at 5/10 and 8/10; hard none. Hard on a 3/10 idea still reaches ~$110k (epics multiply even a small market) — cost if wrong: optimal play on a weak idea is still rewarding.

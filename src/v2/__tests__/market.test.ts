@@ -10,7 +10,7 @@ const withTier = (score: number) => makeState({ difficultyModifier: scoreToDiffi
 
 describe('market ceiling', () => {
   it('depends on the idea tier', () => {
-    expect(TIER_MARKET).toEqual({ promising: 2000, competitive: 1200, risky: 700, brutal: 350 })
+    expect(TIER_MARKET).toEqual({ promising: 2000, competitive: 1200, risky: 400, brutal: 200 })
     expect(marketCeiling(withTier(9))).toBe(Math.round(2000 * (1 + 10 / 400)))
     expect(marketCeiling(withTier(2))).toBeLessThan(marketCeiling(withTier(6)))
   })
@@ -42,7 +42,7 @@ describe('lead saturation', () => {
 describe('sales', () => {
   it('converts better for better ideas', () => {
     expect(salesBase('promising')).toBe(0.3)
-    expect(salesBase('brutal')).toBe(0.15)
+    expect(salesBase('brutal')).toBe(0.1)
   })
 
   it('never sells past the market ceiling', () => {

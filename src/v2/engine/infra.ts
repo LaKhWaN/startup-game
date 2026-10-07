@@ -73,7 +73,17 @@ export function toolEffects(s: S) {
   }
 }
 
-export const wifiSpeed = (s: S) => WIFI[infraOf(s).wifi].speed
+/** How many people each plan serves before it slows down (founder included), and the slowdown per extra person. */
+export const WIFI_CAPACITY: Record<WifiPlan, number> = { home: 3, fiber: 15, business: Infinity }
+const CONGESTION = { home: 0.03, fiber: 0.015, business: 0 } as const
+
+/** Work-speed multiplier from Wi-Fi: the plan's speed, minus congestion when too many people share it. */
+export function wifiSpeed(s: S): number {
+  const plan = infraOf(s).wifi
+  const people = 1 + Object.keys(s.v2.team ?? {}).length
+  const over = Math.max(0, people - WIFI_CAPACITY[plan])
+  return Math.max(0.7, WIFI[plan].speed - over * CONGESTION[plan])
+}
 
 /** Daily outage chance once over capacity. */
 export function outageChance(s: S & Pick<GameV2, 'customers'>): number {

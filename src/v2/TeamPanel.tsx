@@ -6,7 +6,7 @@ import { formatProfit } from './finance'
 import { fmtMoney, ROLE_INFO, TierBadge } from './MemberCard'
 import { portraitUrl } from './PersonCard'
 import { statusText } from './scene/hoverText'
-import { canHire, canPromote, isFullTimeUnlocked, PROMOTE_SKILL, teamCapacity, teamFinances } from './team'
+import { canHire, canPromote, isFullTimeUnlocked, PROMOTE_SKILL, recruitingFee, teamCapacity, teamFinances } from './team'
 import type { Assignment, FounderSkill, InternCandidate, TeamMember, TeamRole, Tier, V2GameState } from './state'
 import { openModal } from './ui'
 import { MAIN_TASK, mainSkillOf } from './work'
@@ -107,7 +107,7 @@ function CandidateTile({ c, reason }: { c: InternCandidate; reason: string | nul
         <img className="v2-tm-portrait" src={portraitUrl(c.characterModel)} alt="" onError={e => { (e.target as HTMLImageElement).style.visibility = 'hidden' }} />
         <div className="v2-tm-who">
           <div className="v2-tm-name">{c.name}<TierBadge tier={c.tier} /></div>
-          <div className="v2-muted">{ROLE_INFO[c.role].icon} {ROLE_INFO[c.role].label} · {fmtMoney(c.salary)}/mo</div>
+          <div className="v2-muted">{ROLE_INFO[c.role].icon} {ROLE_INFO[c.role].label} · {fmtMoney(c.salary)}/mo · fee {fmtMoney(recruitingFee(c))}</div>
         </div>
       </div>
       <div className="v2-tm-bio">{c.bio}</div>
@@ -147,7 +147,7 @@ export function TeamPanel() {
   function hireReason(c: InternCandidate): string | null {
     switch (canHire(state, c.id)) {
       case 'full': return `Room is full (${members.length}/${capacity})${isMapUnlocked(state) ? '. Move somewhere bigger on the Map' : ''}`
-      case 'cash': return `Need ${fmtMoney(c.salary)} for the first month`
+      case 'cash': return `Need ${fmtMoney(c.salary + recruitingFee(c))} (first month + recruiting fee)`
       case 'locked': return 'Full-time hires start at the Villa'
       default: return null
     }

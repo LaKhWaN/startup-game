@@ -52,8 +52,8 @@ describe('peopleDay', () => {
 
 describe('effects', () => {
   it('tired, unhappy newcomers work slower than rested veterans', () => {
-    expect(workFactor({ energy: 100, morale: 100, context: 100 })).toBeCloseTo(1 * 1.2 * 1.2)
-    expect(workFactor({ energy: 0, morale: 0, context: 0 })).toBeCloseTo(0.55 * 0.8 * 0.7)
+    expect(workFactor({ energy: 100, morale: 100, context: 100 })).toBeCloseTo(1 * 1.4 * 1.2)
+    expect(workFactor({ energy: 0, morale: 0, context: 0 })).toBeCloseTo(0.55 * 0.6 * 0.7)
   })
   it('stress raises mistakes', () => {
     expect(mistakeFactor(0)).toBe(1)

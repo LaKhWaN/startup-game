@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { chooseWifi, migrateHosting, toggleInfraTool, useV2 } from './actions'
 import { clockLabel, totalDays } from './engine/clock'
-import { HOSTING, TOOLS, WIFI, hostingLoad, type ToolId, type WifiPlan } from './engine/infra'
+import { HOSTING, TOOLS, WIFI, WIFI_CAPACITY, hostingLoad, wifiSpeed, type ToolId, type WifiPlan } from './engine/infra'
 import { EmployeesApp } from './EmployeesApp'
 import { RoadmapApp } from './RoadmapApp'
 import { AdsApp } from './AdsApp'
@@ -22,6 +22,8 @@ const fmt = (n: number) => `$${n.toLocaleString()}`
 export function InfraDesktop({ onClose }: { onClose: () => void }) {
   const infra = useV2(s => s.v2.infra)
   const customers = useV2(s => s.customers)
+  const team = useV2(s => s.v2.team)
+  const people = 1 + Object.keys(team).length
   const hours = useV2(s => s.gameTime.totalHours)
   const [app, setApp] = useState<App>('hosting')
   useEffect(() => {
@@ -77,7 +79,7 @@ export function InfraDesktop({ onClose }: { onClose: () => void }) {
               {app === 'ads' && <AdsApp />}
               {app === 'wifi' && (Object.keys(WIFI) as WifiPlan[]).map(id => (
                 <div key={id} className={`v2-desk-row${infra.wifi === id ? ' v2-desk-row--on' : ''}`}>
-                  <div><strong>{WIFI[id].name}</strong><div className="v2-muted">work speed ×{WIFI[id].speed} · {WIFI[id].price ? `${fmt(WIFI[id].price)}/mo` : 'free'}</div></div>
+                  <div><strong>{WIFI[id].name}</strong><div className="v2-muted">work speed ×{WIFI[id].speed} · {Number.isFinite(WIFI_CAPACITY[id]) ? `serves ${WIFI_CAPACITY[id]} people, slower beyond` : 'no limit'} · {WIFI[id].price ? `${fmt(WIFI[id].price)}/mo` : 'free'}</div>{infra.wifi === id && <div className="v2-muted">You have {people} {people === 1 ? 'person' : 'people'} online: effective speed ×{wifiSpeed({ v2: { infra, team } as never }).toFixed(2)}</div>}</div>
                   {infra.wifi === id ? <span className="v2-shop-tag">Connected</span> : <button className="v2-btn" onClick={() => chooseWifi(id)}>Switch</button>}
                 </div>
               ))}
