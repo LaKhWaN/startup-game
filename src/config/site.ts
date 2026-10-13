@@ -7,9 +7,13 @@
  *
  * No trailing slash.
  */
-export const SITE_URL: string = (
-  import.meta.env.VITE_SITE_URL as string | undefined
-)?.replace(/\/+$/, '') || 'https://failunicorn.vercel.app'
+const envSiteUrl = (
+  typeof process !== 'undefined' && process.env?.VITE_SITE_URL
+    ? process.env.VITE_SITE_URL
+    : (typeof import.meta !== 'undefined' && (import.meta as Record<string, any>).env?.VITE_SITE_URL)
+) as string | undefined
+
+export const SITE_URL: string = envSiteUrl?.replace(/\/+$/, '') || 'https://failunicorn.vercel.app'
 
 /** Absolute URL for a site-relative path. `url('/blog')` → `https://…/blog` */
 export function url(path = '/'): string {

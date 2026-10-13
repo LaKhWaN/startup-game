@@ -156,7 +156,7 @@ export function LandingPage({ onPlay }: LandingPageProps) {
     <div className="lp-root">
       <SEOHead
         title="failunicorn — Build a Startup. Survive. (Probably Don't.)"
-        description="A free browser startup simulator. Hire your team, ship features, manage burn rate, and survive crises. How long can you last?"
+        description="A free browser startup simulator. Hire your team, ship features, manage burn rate, and survive crises. No signup needed."
         canonical={SITE_URL}
         schema={videoGameSchema}
       />

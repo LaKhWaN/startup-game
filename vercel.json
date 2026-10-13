@@ -1,4 +1,5 @@
 {
+  "cleanUrls": true,
   "functions": {
     "api/rate-idea.js": { "maxDuration": 20 }
   },
