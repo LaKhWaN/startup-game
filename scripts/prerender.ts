@@ -48,6 +48,10 @@ for (const route of routes) {
   lines.push(`    <title>${escapeHtml(route.title)}</title>`)
   lines.push(`    <meta name="description" content="${escapeHtml(route.description)}" />`)
 
+  if (route.keywords) {
+    lines.push(`    <meta name="keywords" content="${escapeHtml(route.keywords)}" />`)
+  }
+
   if (route.canonical) {
     lines.push(`    <link rel="canonical" href="${escapeHtml(route.canonical)}" />`)
   }
@@ -55,13 +59,23 @@ for (const route of routes) {
   lines.push(`    <meta property="og:title" content="${escapeHtml(route.title)}" />`)
   lines.push(`    <meta property="og:description" content="${escapeHtml(route.description)}" />`)
   lines.push(`    <meta property="og:image" content="${escapeHtml(route.ogImage || `${BASE_URL}/og-default.png`)}" />`)
+  lines.push(`    <meta property="og:image:width" content="1200" />`)
+  lines.push(`    <meta property="og:image:height" content="630" />`)
+  if (route.ogImageAlt) {
+    lines.push(`    <meta property="og:image:alt" content="${escapeHtml(route.ogImageAlt)}" />`)
+  }
   lines.push(`    <meta property="og:type" content="${escapeHtml(route.ogType || 'website')}" />`)
   lines.push(`    <meta property="og:url" content="${escapeHtml(route.canonical || `${BASE_URL}${route.path}`)}" />`)
   lines.push(`    <meta property="og:site_name" content="failunicorn" />`)
+  lines.push(`    <meta property="og:locale" content="en_US" />`)
   lines.push(`    <meta name="twitter:card" content="summary_large_image" />`)
+  lines.push(`    <meta name="twitter:site" content="@failunicorn" />`)
   lines.push(`    <meta name="twitter:title" content="${escapeHtml(route.title)}" />`)
   lines.push(`    <meta name="twitter:description" content="${escapeHtml(route.description)}" />`)
   lines.push(`    <meta name="twitter:image" content="${escapeHtml(route.ogImage || `${BASE_URL}/og-default.png`)}" />`)
+  if (route.ogImageAlt) {
+    lines.push(`    <meta name="twitter:image:alt" content="${escapeHtml(route.ogImageAlt)}" />`)
+  }
 
   if (route.publishedAt) {
     lines.push(`    <meta property="article:published_time" content="${escapeHtml(route.publishedAt)}" />`)
