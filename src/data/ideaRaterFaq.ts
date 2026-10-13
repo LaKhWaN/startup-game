@@ -6,15 +6,15 @@ export interface FaqItem {
 export const IDEA_RATER_FAQ: FaqItem[] = [
   {
     q: 'How is the score calculated?',
-    a: 'We use Google Gemini AI to evaluate your idea on market viability, competition, and execution difficulty. Scores range from 1 (very hard to execute) to 10 (strong market fit). Most realistic ideas land between 4 and 7.',
+    a: 'An AI model (run through Groq) rates your idea on six things: market size, how painful the problem is, competition, feasibility, how specific the idea is, and the business model. The 1–10 score is calculated from those, and it uses the whole range: a specific B2B idea can score 8 or more, while a vague one like "an app" scores 1. If the AI is unavailable, you get a quick local estimate instead.',
   },
   {
     q: 'What does the score mean for the game?',
-    a: 'In failunicorn, your score determines your difficulty tier: Promising (8-10) gets a customer bonus and lower churn; Brutal (0-3) starts with higher churn and skeptical investors. The simulation mirrors real market dynamics.',
+    a: 'In failunicorn, your score sets your difficulty tier: Promising (8–10), Competitive (5–7), Risky (3–4) or Brutal (0–2). Better tiers get a bigger market, easier sales and lower churn; weaker ones have to fight for every customer.',
   },
   {
     q: 'Is my idea stored or shared?',
-    a: 'No. Your idea is sent to the Gemini API for analysis and the result is cached locally in your browser for 7 days. We don\'t store your idea on our servers.',
+    a: 'The idea rater doesn\'t save your idea: it\'s sent to the AI model for scoring, and the result is cached in your browser for 7 days. If you then play a game with it, the idea is saved along with anonymous game stats, which we use to balance the game.',
   },
   {
     q: 'What makes a high-scoring startup idea?',
