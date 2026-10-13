@@ -25,7 +25,7 @@ npm run dev
 - Lose: cash < $0. End by selling (Sell button / acquisition events).
 
 ## Key Financial Numbers
-- Start: $500 founder savings, $0 burn, ARPU $50. Family money ($800–1,500) at the end of Chapter 1.
+- Start: $500 founder savings, $0 burn, ARPU $50. After the tutorial the founder has $400/mo living costs (`FOUNDER_LIVING`), so a few customers can't pay for doing nothing. Family money ($800–1,500) at the end of Chapter 1.
 - Interns $600–1,000/mo, full-time $3,500–5,100/mo (full-time from the Villa); yearly raises set in 💻 Desktop → Employees (`src/v2/payroll.ts`). Location ladder (rent/move-in/capacity/unlock) in `src/v2/locations.ts`.
 
 ## Late game

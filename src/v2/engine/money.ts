@@ -16,10 +16,14 @@ export function overheadCost(teamSize: number): number {
   return Math.max(0, Math.min(teamSize, 30) - 15) * 600 + Math.max(0, teamSize - 30) * 1200
 }
 
-/** Rent/infra + every hire's salary + variable costs + management overhead, per month. */
+/** The founder's own rent and food: $400 a month once the tutorial is over. A few customers can't pay for doing nothing. */
+export const FOUNDER_LIVING = 400
+export const founderLiving = (state: Pick<GameV2, 'v2'>) => (state.v2.chapter.complete ? FOUNDER_LIVING : 0)
+
+/** Rent/infra + the founder's living costs + every hire's salary + variable costs + management overhead, per month. */
 export function monthlyBurn(state: BurnInput): number {
   const team = Object.values(state.v2.team)
-  return state.infraCostMonthly + team.reduce((sum, m) => sum + m.salary, 0) + variableCosts(state) + infraServicesCost(state) + overheadCost(team.length)
+  return state.infraCostMonthly + founderLiving(state) + team.reduce((sum, m) => sum + m.salary, 0) + variableCosts(state) + infraServicesCost(state) + overheadCost(team.length)
 }
 
 /** Months of cash left at the current net burn; 999 when profitable. */

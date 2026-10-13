@@ -3,7 +3,7 @@ import { estimateFeatureEffects } from '../engine/features'
 import { applyOutcome, pickResearchTemplates } from '../founder'
 import { hireSpeed, MAIN_TASK, mistakeChance, workerDurationDays } from '../work'
 import type { V2GameState } from '../state'
-import { makeFeature, makeState, seq, withV2 } from './fixtures'
+import { makeFeature, makeState, seq, withChapter, withV2 } from './fixtures'
 
 const priya = { id: 'h1', name: 'Priya', skills: { research: 1, build: 1, outreach: 3, sales: 1 } }
 const noMistake = { mistake: false, firstSaleGuarantee: false }
@@ -18,9 +18,9 @@ describe('hire speeds', () => {
     expect(hireSpeed('marketing', 'develop')).toBe(0.4)
   })
   it('stretches the founder duration by 1/speed', () => {
-    const s = makeState()
-    expect(workerDurationDays(s, 'emails', undefined, 0.7)).toBeCloseTo(1 / 0.7)
-    expect(workerDurationDays(s, 'emails', undefined, 1)).toBe(1)
+    const s = withChapter(makeState(), { beat: 5, complete: true })
+    expect(workerDurationDays(s, 'emails', undefined, 0.7)).toBeCloseTo(0.75 / 0.7)
+    expect(workerDurationDays(s, 'emails', undefined, 1)).toBe(0.75)
   })
 })
 

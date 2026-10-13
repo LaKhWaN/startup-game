@@ -18,7 +18,7 @@ describe('support', () => {
     expect(applyOutcome(withV2(makeState(), { tickets: 3 }), w, { type: 'support', progress: 1 }, () => 0.5, ok)!.v2.tickets).toBe(0)
   })
   it('takes half a founder day', () => {
-    expect(taskDurationDays(makeState(), 'support')).toBe(0.5)
+    expect(taskDurationDays(withChapter(makeState(), { beat: 5, complete: true }), 'support')).toBe(0.5)
   })
 })
 
@@ -30,7 +30,7 @@ describe('refactor', () => {
     expect(applyOutcome(makeState({ techDebt: 5 }), w, { type: 'refactor', progress: 1 }, () => 0.5, ok)!.techDebt).toBe(0)
   })
   it('takes one founder day', () => {
-    expect(taskDurationDays(makeState(), 'refactor')).toBe(1)
+    expect(taskDurationDays(withChapter(makeState(), { beat: 5, complete: true }), 'refactor')).toBe(1)
   })
 })
 

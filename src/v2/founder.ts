@@ -14,9 +14,13 @@ import { addStory, type FounderSkill, type FounderTask, type FounderTaskType, ty
 export const FOUNDER_ID = 'founder'
 /** Real milliseconds per game hour at 1× (a game day lasts 36 s). */
 export const GAME_HOUR_MS = 1500
-export const RESEARCH_DAYS = 1.5
-export const EMAILS_DAYS = 1
-export const SALES_DAYS = 1
+export const RESEARCH_DAYS = 1
+export const EMAILS_DAYS = 0.75
+export const SALES_DAYS = 0.75
+/** Chapter 1 is the tutorial: every task runs this many times faster, so the first loop takes minutes. */
+export const TUTORIAL_SPEED = 5
+/** Regular features take this share of their template's baseDays to build (epics keep their full length). */
+export const FEATURE_TIME_SCALE = 0.8
 export const FOUNDER_BUILD_SPEED = 1.2
 /** Features can raise ARPU up to this; past it, customers won't pay more. */
 export const ARPU_CAP = 100
@@ -80,16 +84,18 @@ export function taskDurationDays(
   type: FounderTaskType,
   featureId?: string,
 ): number {
+  const tutorial = 'v2' in state && !(state as V2GameState).v2.chapter.complete ? TUTORIAL_SPEED : 1
   switch (type) {
-    case 'research': return RESEARCH_DAYS
-    case 'emails': return EMAILS_DAYS
-    case 'sales': return SALES_DAYS
-    case 'support': return SUPPORT_DAYS
-    case 'refactor': return REFACTOR_DAYS
+    case 'research': return RESEARCH_DAYS / tutorial
+    case 'emails': return EMAILS_DAYS / tutorial
+    case 'sales': return SALES_DAYS / tutorial
+    case 'support': return SUPPORT_DAYS / tutorial
+    case 'refactor': return REFACTOR_DAYS / tutorial
     case 'develop': {
       const feature = state.features.find(f => f.id === featureId)
+      const scale = feature?.epic ? 1 : FEATURE_TIME_SCALE
       // Tech debt slows every build, up to twice as long (spec §4).
-      return ((feature?.baseDays ?? 1) / FOUNDER_BUILD_SPEED) * (1 + (state.techDebt ?? 0) / 100) / ('v2' in state ? toolEffects(state as V2GameState).buildSpeed : 1)
+      return ((feature?.baseDays ?? 1) * scale / FOUNDER_BUILD_SPEED) * (1 + (state.techDebt ?? 0) / 100) / ('v2' in state ? toolEffects(state as V2GameState).buildSpeed : 1) / tutorial
     }
   }
 }

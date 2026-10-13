@@ -103,9 +103,9 @@ describe('standing assignment', () => {
 
   it('repeats emails without the founder, at 0.7× speed', () => {
     let s = hired(ready(), candidate())
-    // 1 day / (0.8 speed × 0.756 fresh-hire mood) ≈ 39.7 hours per emails run
+    // 0.75 days / (0.8 speed × 0.756 fresh-hire mood) ≈ 29.8 hours per emails run
     let completions = 0
-    for (let h = 0; h < 40 * 3; h++) {
+    for (let h = 0; h < 30 * 3; h++) {
       const r = advanceTeam(s, 1, seq(0.99)) // 0.99 → no mistakes
       s = r.state
       completions += r.completedBy.length
