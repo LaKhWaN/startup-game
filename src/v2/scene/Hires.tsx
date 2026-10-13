@@ -1,0 +1,59 @@
+import { useEffect, useRef, useState } from 'react'
+import { useV2 } from '../actions'
+import type { TeamMember } from '../state'
+import { characterUrl } from './assets'
+import { Character } from './Character'
+import { hirePose } from './founderPose'
+import { MISTAKE_FLASH_MS, reactionIcon } from './reactions'
+import { useRoom } from './RoomContext'
+import { statusText } from './hoverText'
+import { ROLE_INFO } from '../MemberCard'
+import type { HireSpots } from './layout'
+
+function Hire({ m, spots, onSelect, featureTitle }: {
+  m: TeamMember; spots: HireSpots; onSelect?: (id: string) => void; featureTitle?: string
+}) {
+  const pose = hirePose(m.task)
+  // Grimace for a moment whenever their mistake count goes up.
+  const seen = useRef(m.mistakes)
+  const [mistakeAt, setMistakeAt] = useState<number | null>(null)
+  useEffect(() => {
+    if (m.mistakes <= seen.current) { seen.current = m.mistakes; return }
+    seen.current = m.mistakes
+    setMistakeAt(Date.now())
+    const t = setTimeout(() => setMistakeAt(null), MISTAKE_FLASH_MS)
+    return () => clearTimeout(t)
+  }, [m.mistakes])
+  const icon = reactionIcon({ idle: m.assignment === 'idle', taskIcon: pose.icon, mistakeAt, now: Date.now(), stress: m.stress, energy: m.energy })
+  return (
+    <Character
+      url={characterUrl(m.characterModel)}
+      spots={spots}
+      pose={{ ...pose, icon }}
+      startSpot="seat"
+      progress={m.task ? m.task.progress : null}
+      onSelect={onSelect ? () => onSelect(m.id) : undefined}
+      hoverCard={{
+        title: m.name,
+        subtitle: `${ROLE_INFO[m.role].label} · ${m.tier === 'fulltime' ? 'Full-time' : 'Intern'} · ⚡${Math.round(m.energy ?? 100)} 😰${Math.round(m.stress ?? 10)}${m.leavingOn !== undefined ? ' · leaving' : ''}`,
+        status: statusText(m, featureTitle),
+      }}
+    />
+  )
+}
+
+/** One character per team member, at their seat. */
+export function Hires({ onSelect }: { onSelect?: (id: string) => void }) {
+  const team = useV2(s => s.v2.team)
+  const features = useV2(s => s.features)
+  const room = useRoom()
+  return (
+    <>
+      {Object.values(team).map(m => {
+        const spots = room.seats[m.seat]?.spots
+        const featureTitle = m.task?.type === 'develop' ? features.find(f => f.id === m.task?.featureId)?.title : undefined
+        return spots ? <Hire key={m.id} m={m} spots={spots} onSelect={onSelect} featureTitle={featureTitle} /> : null
+      })}
+    </>
+  )
+}

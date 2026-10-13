@@ -1,0 +1,114 @@
+import { eventById } from './engine/eventData'
+import { prepareEvent } from './eventsV2'
+import { totalDays } from './engine/clock'
+import { reconcileFounderFeatures } from './founder'
+import { migrateV2Slice, type V2GameState } from './state'
+
+export type SlotId = 1 | 2 | 3
+
+export interface SaveMetaV2 {
+  slot: SlotId
+  startupName: string
+  idea: string
+  day: number
+  mrr: number
+  cash: number
+  savedAt: string
+  chapterComplete: boolean
+}
+
+interface SaveEnvelopeV2 {
+  meta: SaveMetaV2
+  state: Record<string, unknown>
+}
+
+// New engine, new shape: saves from before the launch build (startup-game-v2-save-*) are ignored.
+const KEY_PREFIX = 'startup-v2-save-'
+
+export function slotKeyV2(slot: SlotId): string {
+  return `${KEY_PREFIX}${slot}`
+}
+
+/** The saved shape of a game: functions (event effects) out, the pending event kept by id. */
+export function serializeGame(state: V2GameState): Record<string, unknown> {
+  const serializable: Record<string, unknown> = { ...state }
+  serializable._pendingEventId = state.pendingEvent?.id ?? null
+  serializable.pendingEvent = null
+  serializable.recentFeatureResults = []
+  serializable.fullMetricsHistory = []
+  return serializable
+}
+
+export function saveGameV2(slot: SlotId, state: V2GameState): void {
+  const serializable = serializeGame(state)
+
+  const meta: SaveMetaV2 = {
+    slot,
+    startupName: state.startupName,
+    idea: state.idea ?? '',
+    day: totalDays(state.gameTime),
+    mrr: state.mrr,
+    cash: state.cash,
+    savedAt: new Date().toISOString(),
+    chapterComplete: state.v2.chapter.complete,
+  }
+
+  try {
+    localStorage.setItem(slotKeyV2(slot), JSON.stringify({ meta, state: serializable } satisfies SaveEnvelopeV2))
+  } catch (err) {
+    console.error('[save-v2] Failed to save:', err)
+  }
+}
+
+export function loadGameV2(slot: SlotId): V2GameState | null {
+  try {
+    const raw = localStorage.getItem(slotKeyV2(slot))
+    if (!raw) return null
+    return hydrateGame((JSON.parse(raw) as Partial<SaveEnvelopeV2>).state)
+  } catch (err) {
+    console.error('[save-v2] Failed to load:', err)
+    return null
+  }
+}
+
+/** Turn a saved game (from a slot or a dev scene file) back into a playable state. */
+export function hydrateGame(raw: unknown): V2GameState | null {
+  try {
+    const state = raw as (V2GameState & { _pendingEventId?: string | null }) | undefined
+    if (!state || typeof state !== 'object') return null
+    if (typeof state.gameId !== 'string' || !state.gameId.startsWith('v2-')) return null
+    const v2 = migrateV2Slice(state.v2)
+    if (!v2) return null
+    state.v2 = v2
+
+    const eventId = state._pendingEventId
+    const rawEvent = eventId ? eventById(eventId) ?? null : null
+    // It was already kept before saving: re-apply v2 sizing now, without re-rolling.
+    state.pendingEvent = rawEvent ? prepareEvent(state, rawEvent) : null
+    delete state._pendingEventId
+    state.recentFeatureResults = state.recentFeatureResults ?? []
+    state.fullMetricsHistory = state.fullMetricsHistory ?? []
+
+    return reconcileFounderFeatures(state)
+  } catch (err) {
+    console.error('[save-v2] Failed to load:', err)
+    return null
+  }
+}
+
+export function listSavesV2(): (SaveMetaV2 | null)[] {
+  const slots: SlotId[] = [1, 2, 3]
+  return slots.map(slot => {
+    try {
+      const raw = localStorage.getItem(slotKeyV2(slot))
+      if (!raw) return null
+      return (JSON.parse(raw) as SaveEnvelopeV2).meta ?? null
+    } catch {
+      return null
+    }
+  })
+}
+
+export function deleteSaveV2(slot: SlotId): void {
+  localStorage.removeItem(slotKeyV2(slot))
+}

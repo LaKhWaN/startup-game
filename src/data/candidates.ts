@@ -22,6 +22,7 @@ export const ROLE_STATS: Record<EmployeeRole, string[]> = {
   product_manager: ['research', 'strategy', 'speed', 'communication'],
   sales:           ['persuasion', 'network', 'speed', 'persistence'],
   marketing:       ['creativity', 'analytics', 'reach', 'consistency'],
+  support:         ['empathy', 'patience', 'speed', 'communication'],
 }
 
 export const ROLE_LABELS: Record<EmployeeRole, string> = {
@@ -29,6 +30,7 @@ export const ROLE_LABELS: Record<EmployeeRole, string> = {
   product_manager: 'Product Manager',
   sales:           'Sales',
   marketing:       'Marketing',
+  support:         'Support',
 }
 
 const BASE_SALARY: Record<EmployeeRole, number> = {
@@ -36,6 +38,7 @@ const BASE_SALARY: Record<EmployeeRole, number> = {
   product_manager: 7000,
   sales:           5250,
   marketing:       5750,
+  support:         4500,
 }
 
 const BIOS_DEV = [
@@ -84,11 +87,21 @@ const BIOS_MKT = [
   'Data-driven storyteller from NYC who turned a boring newsletter into a must-read with 8k subscribers.',
 ]
 
+const BIOS_SUPPORT = [
+  'Turns angry tickets into five-star reviews. Has a macro for everything.',
+  'Ran the help desk at a busy e-commerce shop through three Black Fridays.',
+  'Reads the docs so customers don\'t have to. Inbox zero, every day.',
+  'Former teacher. Explains the same thing ten different ways without sighing.',
+  'Answers the phone with a smile you can hear. Keeps a list of every bug report.',
+  'Tracks response times in a spreadsheet for fun. Hates leaving a ticket open overnight.',
+]
+
 const ROLE_BIOS: Record<EmployeeRole, string[]> = {
   developer: BIOS_DEV,
   product_manager: BIOS_PM,
   sales: BIOS_SALES,
   marketing: BIOS_MKT,
+  support: BIOS_SUPPORT,
 }
 
 let _idCounter = 0

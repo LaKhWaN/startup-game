@@ -4,7 +4,7 @@
 
 **A startup simulator where you probably die.**
 
-Hire a team, ship features, burn runway, survive crises. Get to $10k MRR before the cash hits zero — most players don't.
+Start alone in your bedroom with $500. Hire a team, ship features, keep your people from quitting, and climb from a bedroom to your own building before the cash hits zero. Most players don't.
 
 [Play it](https://failunicorn.vercel.app) · [Blog](https://failunicorn.vercel.app/blog) · [Leaderboard](https://failunicorn.vercel.app/leaderboard) · [Idea Rater](https://failunicorn.vercel.app/tools/startup-idea-rater)
 
@@ -13,7 +13,7 @@ Hire a team, ship features, burn runway, survive crises. Get to $10k MRR before 
 
 <br />
 
-<img src="docs/images/office-hire.png" alt="The failunicorn office on day 1 — pixel-art workspace on the left, hiring panel on the right showing two candidates with their stats and monthly salaries" width="900" />
+<img src="docs/images/07-building.jpg" alt="A 50-person startup in its own building: rows of desks with people working, the founder's corner and a lounge, with MRR, cash, burn and churn in the top bar" width="900" />
 
 </div>
 
@@ -21,37 +21,72 @@ Hire a team, ship features, burn runway, survive crises. Get to $10k MRR before 
 
 ## What it is
 
-A browser game. You describe a startup idea, an AI scores it, and that score sets your difficulty. Then you play: 1 real second is 1 game hour. Features take days to build. Campaigns pay off or flop. Churn eats your customers. Salaries hit every 30 days whether or not you can afford them.
+A browser game. You describe a startup idea, an AI scores it on six things (market, pain, competition, feasibility, specificity and business model), and that score sets your difficulty. Then you play in a 3D office: research ideas, build features, send cold emails, close sales, and hire.
 
-- **Win:** $10k MRR (200 customers at $50 ARPU)
-- **Lose:** cash reaches $0
+- **People are people.** Hires have energy, stress, morale and experience. Ignore them and they quit; the game pauses to warn you first.
+- **Climb the ladder.** Bedroom → bigger home → villa → co-working → small office → big office → your own building. Every move costs a move-in fee and higher rent.
+- **At scale, growth costs money.** Cold emails fade, so you buy ads. You run out of ideas, so you pay for an AI-planned roadmap of big projects your developers build together. Competitors poach customers once you own the market.
+- **Lose:** cash goes below $0. **End:** sell the company whenever you like, or take an acquisition offer.
 
-No signup, no backend account, saves live in your browser.
+1.5 real seconds is one game hour at 1×. No signup, no account, saves live in your browser.
 
 ## Screenshots
 
 <table>
   <tr>
     <td width="50%">
-      <img src="docs/images/onboarding-workspace.png" alt="Onboarding step 3: choosing between Home, Co-working and Office, each showing max desks, starting cash and monthly cost" />
-      <p align="center"><em>Every choice is a trade-off. Home gives you $120k and 2 desks; an Office gives you 6 desks, brand and culture — and $40k less runway.</em></p>
+      <img src="docs/images/01-bedroom.jpg" alt="Day 16: the founder alone at a desk in a small bedroom, building a feature, with $500 in the bank" />
+      <p align="center"><em>Day 16. One founder, one old laptop, $500.</em></p>
     </td>
     <td width="50%">
-      <img src="docs/images/office-team.png" alt="The office view with the Team panel open, showing an empty roster on day 1" />
-      <p align="center"><em>Day 1. No team, $100k in the bank, and 12% churn already working against you.</em></p>
+      <img src="docs/images/02-first-hires.jpg" alt="A bigger home with four interns at their desks, 173 customers and $9k MRR" />
+      <p align="center"><em>First hires in a bigger home. Interns are cheap and messy.</em></p>
     </td>
   </tr>
   <tr>
     <td width="50%">
-      <img src="docs/images/how-it-works.png" alt="Landing page section titled Build. Ship. Burn. Repeat. showing the four phases: pitch your idea, build your team, ship and acquire, survive or sell" />
-      <p align="center"><em>Four phases, from pitching an idea to selling — or running out of money.</em></p>
+      <img src="docs/images/08-people-alert.jpg" alt="A pop-up warning that a developer is close to quitting, with stress and morale bars and options to give time off or a raise" />
+      <p align="center"><em>Ignore your team and they quit. The game stops to ask first.</em></p>
     </td>
     <td width="50%">
-      <img src="docs/images/metrics.png" alt="Landing page section showing live financial metrics: MRR, active users, runway, valuation and monthly churn" />
-      <p align="center"><em>No abstract health bars. MRR, runway, churn and valuation, like a real dashboard.</em></p>
+      <img src="docs/images/12-city.jpg" alt="The city map: a road lined with the bedroom, bigger home, villa, co-working space, small office, big office and your own building" />
+      <p align="center"><em>The road from your bedroom to your own building.</em></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="docs/images/09-team.jpg" alt="The Team window: seats, payroll, burn, profit and runway on top, a grid of team members with mood bars and skills, and a hiring column" />
+      <p align="center"><em>Your team at a glance, with hiring on the side.</em></p>
+    </td>
+    <td width="50%">
+      <img src="docs/images/11-desktop.jpg" alt="The founder's Desktop with the Roadmap app open, listing shipped big projects and the cost of planning the next roadmap" />
+      <p align="center"><em>The founder's Desktop: hosting, Wi-Fi, tools, employees, roadmap and ads.</em></p>
     </td>
   </tr>
 </table>
+
+## The carousel
+
+The v2 launch post: 27 simulated founders, three play styles, three ideas, two years each. Click a slide for full size.
+
+<table>
+  <tr>
+    <td><a href="docs/images/carousel/slide-01.jpg"><img src="docs/images/carousel/slide-01.jpg" alt="Slide 1: I made 27 bots play my startup game. The ones who didn't think about money went broke in 8 of 9 runs." /></a></td>
+    <td><a href="docs/images/carousel/slide-02.jpg"><img src="docs/images/carousel/slide-02.jpg" alt="Slide 2: You start alone in your bedroom with $500." /></a></td>
+    <td><a href="docs/images/carousel/slide-03.jpg"><img src="docs/images/carousel/slide-03.jpg" alt="Slide 3: AI scores your idea on 6 things; examples from 10 (global payroll) to 1 (an app)." /></a></td>
+    <td><a href="docs/images/carousel/slide-04.jpg"><img src="docs/images/carousel/slide-04.jpg" alt="Slide 4: Then you hire, and people have energy, stress and morale." /></a></td>
+    <td><a href="docs/images/carousel/slide-05.jpg"><img src="docs/images/carousel/slide-05.jpg" alt="Slide 5: Ignore your team and they quit." /></a></td>
+  </tr>
+  <tr>
+    <td><a href="docs/images/carousel/slide-06.jpg"><img src="docs/images/carousel/slide-06.jpg" alt="Slide 6: Bedroom to your own building; every move can kill you." /></a></td>
+    <td><a href="docs/images/carousel/slide-07.jpg"><img src="docs/images/carousel/slide-07.jpg" alt="Slide 7: At scale, growth costs money: ads, AI roadmaps, competitors, tech debt, overhead." /></a></td>
+    <td><a href="docs/images/carousel/slide-08.jpg"><img src="docs/images/carousel/slide-08.jpg" alt="Slide 8: The experiment: reckless survived 1 of 9, sensible 9 of 9 at $16k–$150k MRR, obsessive 9 of 9 at $111k–$631k MRR." /></a></td>
+    <td><a href="docs/images/carousel/slide-09.jpg"><img src="docs/images/carousel/slide-09.jpg" alt="Slide 9: Your idea sets the ceiling. How you run the company decides how close you get." /></a></td>
+    <td><a href="docs/images/carousel/slide-10.jpg"><img src="docs/images/carousel/slide-10.jpg" alt="Slide 10: How far does your idea get? Play free at failunicorn.vercel.app." /></a></td>
+  </tr>
+</table>
+
+The numbers come from the balance simulations described below.
 
 ## Quick start
 
@@ -65,58 +100,72 @@ cp .env.example .env    # optional — see below
 npm run dev
 ```
 
-Open the URL Vite prints. **It runs with an empty `.env`** — idea scoring falls back to a local heuristic and analytics are skipped. You only need keys for those specific features:
+Open the URL Vite prints. **It runs with an empty `.env`** — idea scoring falls back to a local estimate and analytics are skipped. You only need keys for those specific features:
 
 | Variable | Needed for | Without it |
 |---|---|---|
-| `GEMINI_API_KEY` | AI idea scoring, via `/api/rate-idea` | Falls back to a keyword heuristic |
+| `GROQ_API_KEYS` | AI idea scoring, roadmaps and big projects, via `/api/rate-idea`. A bracketed, comma-separated list (`[key1, key2]`) rotated when one hits its quota | Idea scoring falls back to a local estimate; roadmaps use built-in lists |
 | `MONGODB_URI` | Analytics + global leaderboard | Those routes return 503 |
 | `MONGODB_DB_NAME` | — | Defaults to `startup-game` |
 | `VITE_SITE_URL` | Canonical URLs, OG tags, sitemap, share links | Defaults to `https://failunicorn.vercel.app` |
 | `VITE_DISABLE_REMOTE_ANALYTICS` | — | Set `true` to never phone home |
 
-> `VITE_`-prefixed variables are **inlined into the client bundle and publicly readable**. Never put a secret behind one — that's why the Gemini key has no prefix and is only ever read server-side. See [SECURITY.md](SECURITY.md).
+> `VITE_`-prefixed variables are **inlined into the client bundle and publicly readable**. Never put a secret behind one — that's why the Groq keys have no prefix and are only ever read server-side. See [SECURITY.md](SECURITY.md).
 
 ## Scripts
 
 ```bash
 npm run dev        # dev server with the /api routes wired up
 npm run build      # generate sitemap → typecheck → production build
+npm test           # unit tests (vitest)
 npm run preview    # serve the production build
 npm run mongo:ping # check your MONGODB_URI connects
 ```
 
+Balance and screenshot tools (all opt-in):
+
+```bash
+SIM_PERSONAS=1 npx vitest run src/v2/__tests__/personas.test.ts  # easy/medium/hard players × ideas 3/5/8, 2 years each
+SIM_PROBE=1 npx vitest run src/v2/__tests__/simProbe.test.ts     # month-by-month trace of one scripted game
+SIM_SCENES=1 npx vitest run src/v2/__tests__/scenes.test.ts      # save game moments, then open /?scene=<name> in npm run dev
+node scripts/v2-scene-shots.mjs http://localhost:5173            # screenshot every scene (needs npm run dev)
+```
+
 ## How it's put together
 
-**Vite + React + TypeScript + Zustand + Phaser 3**, deployed on Vercel.
+**Vite + React + TypeScript + Zustand + React Three Fiber**, deployed on Vercel.
 
 ```
 src/
-  App.tsx            game shell — routes on phase: setup → playing → sold/lost
+  App.tsx            landing page, then the game (src/v2/AppV2.tsx)
   router.tsx         react-router routes, all lazy-loaded
-  store/gameStore.ts Zustand store: GameState + actions
-  engine/            all game logic (tick, campaigns, events, features, churn)
-  office/            Phaser scene for the office view
-  components/        UI — TopBar, BottomNav, panels, modals, toasts
+  v2/                the game
+    engine/          pure game logic: clock, day, churn, market, money, people, infra, ads, events
+    store.ts         Zustand store; actions.ts has every state-changing action
+    v2Tick.ts        one game hour: founder, team, chapters, unlocks
+    scene/           the 3D rooms and the city (React Three Fiber)
+    ui/              event cards, metrics, post-mortem, investor check-in
   pages/             marketing pages: blog, changelog, leaderboard, idea rater
-  data/              blog post and changelog content
+  data/              blog posts, changelog, feature and candidate data
   analytics/         client → /api ingest
-server/              MongoDB handlers (dev, via the Vite middleware)
+server/              API handlers (dev, via the Vite middleware)
 api/                 the same handlers as Vercel serverless functions
 vite/plugins/        dev middleware routing /api/* to server/
 ```
 
-**The game loop.** `processDayTick` runs every 24 game hours — features build, campaigns run, churn applies. `processMonthTick` runs every 30 days — salaries out, MRR recalculated, events roll.
+**The game loop.** `stepV2` runs one game hour: people get tired or recover, the founder and team make progress, and at each day boundary churn, cash, events and tech debt are processed. The office never closes; the founder sleeps 23:00–07:00.
+
+**Balance is tested, not guessed.** Scripted players (`src/v2/__tests__/simPersonas.ts`) play full two-year games headlessly, and every balance decision is written down in [`docs/superpowers/v2-rulings.md`](docs/superpowers/v2-rulings.md).
 
 **Analytics are three layers:** a handler in `server/` that takes raw JSON and returns `{status, body}`, a route in `vite/plugins/analyticsApi.ts` for dev, and a fetch wrapper in `src/analytics/`. Vercel gets its own copy in `api/`. If you touch one, check the other — they have drifted before.
 
-More design notes live in [`MVP.md`](MVP.md) and [`docs/`](docs/).
+More design notes live in [`docs/`](docs/).
 
 ## Contributing
 
 Contributions welcome — see **[CONTRIBUTING.md](CONTRIBUTING.md)** for setup, conventions, and what makes a good PR. Good places to start are the issues labelled [`good first issue`](https://github.com/LaKhWaN/startup-game/labels/good%20first%20issue).
 
-Balance changes (prices, churn rates, event odds) are genuinely useful and need no deep knowledge of the codebase — the numbers are all in `src/engine/`.
+Balance changes (prices, churn rates, event odds) are genuinely useful and need no deep knowledge of the codebase. The numbers live in `src/v2/engine/`; run the persona simulation before and after to show the effect.
 
 By contributing you agree your work is licensed under the MIT License.
 
