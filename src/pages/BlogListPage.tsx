@@ -16,9 +16,10 @@ export function BlogListPage() {
   return (
     <BlogLayout wide>
       <SEOHead
-        title="Blog — failunicorn"
-        description="Startup strategy guides, simulation game tips, and founder education from the team behind failunicorn."
+        title="Startup Simulator Blog — Strategy Guides & Founder Tips | failunicorn"
+        description="Startup strategy guides, simulation game tips, burn rate explainers, and founder education from the team behind failunicorn."
         canonical={url('/blog')}
+        keywords="startup strategy, startup tips, burn rate, founder education, startup simulation, startup game guide"
         schema={{
           '@context': 'https://schema.org',
           '@type': 'Blog',

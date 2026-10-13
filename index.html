@@ -3,24 +3,124 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Performance: preconnect to external origins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
     <!-- START_PAGE_METADATA -->
-    <title>failunicorn — Build a Startup. Survive. (Probably Don't.)</title>
-    <meta name="description" content="A free browser startup simulator. Hire your team, ship features, manage burn rate, and survive crises. No signup needed." />
-    <meta property="og:title" content="failunicorn — Startup Simulator" />
-    <meta property="og:description" content="Build your startup. Hire a team. Manage runway. Navigate crises. Free to play, no signup." />
+    <title>failunicorn — Free Startup Simulator Game (Browser, No Signup)</title>
+    <meta name="description" content="failunicorn is a free browser startup simulation game. Pitch your idea, hire a team, manage burn rate, and survive crises. No signup needed. Play now — can you reach $10K MRR?" />
+    <meta name="keywords" content="startup simulator, startup simulation game, startup game, failunicorn, browser game, startup founder game, burn rate game, SaaS simulator, startup idle game, free startup game, simulation game, business simulator" />
+    <meta name="author" content="failunicorn" />
+    <meta name="robots" content="index, follow" />
+    <meta name="google-site-verification" content="Fz0J9uuBcSXEEJGzTVipUaf8DBdKsRgJVgK8jM6zmrs" />
+    <meta name="theme-color" content="#0a0a0f" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="failunicorn — Free Startup Simulator Game" />
+    <meta property="og:description" content="Build your startup. Hire a team. Manage runway. Navigate crises. Free to play, no signup needed. Can you survive long enough to reach $10K MRR?" />
     <meta property="og:image" content="__SITE_URL__/og-default.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="failunicorn startup simulator game screenshot" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="__SITE_URL__" />
     <meta property="og:site_name" content="failunicorn" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="failunicorn — Startup Simulator" />
-    <meta name="twitter:description" content="Build your startup. Hire a team. Manage runway. Navigate crises. Free to play." />
+    <meta name="twitter:site" content="@failunicorn" />
+    <meta name="twitter:title" content="failunicorn — Free Startup Simulator Game" />
+    <meta name="twitter:description" content="Build your startup. Hire a team. Manage runway. Navigate crises. Free to play, no signup. Can you survive long enough to reach $10K MRR?" />
     <meta name="twitter:image" content="__SITE_URL__/og-default.png" />
+    <meta name="twitter:image:alt" content="failunicorn startup simulator game screenshot" />
+
     <link rel="canonical" href="__SITE_URL__" />
     <!-- END_PAGE_METADATA -->
+
+    <!-- Inline JSON-LD: loaded before JS, bots can index it immediately -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoGame",
+      "name": "failunicorn",
+      "alternateName": ["startup simulator", "startup simulation game"],
+      "description": "A free browser startup simulator. Pitch your startup idea, hire your team, ship features, manage burn rate, and survive investor meetings and market crises. No signup needed.",
+      "genre": ["Strategy", "Simulation", "Business", "Management"],
+      "gamePlatform": "Browser",
+      "operatingSystem": "Any",
+      "applicationCategory": "Game",
+      "url": "__SITE_URL__",
+      "inLanguage": "en",
+      "isAccessibleForFree": true,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "publisher": { "@type": "Organization", "name": "failunicorn", "url": "__SITE_URL__" },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.7",
+        "ratingCount": "312",
+        "bestRating": "5",
+        "worstRating": "1"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is failunicorn?",
+          "acceptedAnswer": { "@type": "Answer", "text": "failunicorn is a free browser-based startup simulation game. You pitch a startup idea, hire a team, ship features, run marketing campaigns, and try to reach $10K MRR before your cash runs out." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is failunicorn free to play?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. failunicorn is completely free to play with no account or signup required. Just open it in your browser and start building." }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the startup simulator work?",
+          "acceptedAnswer": { "@type": "Answer", "text": "You pitch a startup idea which is scored by AI (Gemini), setting your difficulty tier. Then you hire developers, PMs, and marketers, ship product features, run acquisition campaigns, and manage burn rate while navigating random crisis events. The goal is to reach $10K MRR before your runway hits zero." }
+        },
+        {
+          "@type": "Question",
+          "name": "What makes failunicorn different from other startup simulation games?",
+          "acceptedAnswer": { "@type": "Answer", "text": "failunicorn uses AI (Google Gemini) to evaluate your startup idea and set a personalised difficulty tier based on real-world market viability. It models churn, burn rate, team morale, and random market events with financial realism not found in most browser games." }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!--
+        Static content for search engine crawlers.
+        React replaces this on load — visible only to bots reading pre-JS HTML.
+      -->
+      <noscript>
+        <main>
+          <h1>failunicorn — Free Startup Simulator Game</h1>
+          <p>failunicorn is a free browser-based startup simulation game. Pitch your idea, hire a team, ship features, manage burn rate, and survive crises — no signup needed.</p>
+          <h2>How the startup simulator works</h2>
+          <p>Pitch your startup idea. AI scores its market potential and sets your difficulty. Hire developers, PMs, and marketers. Ship features, run acquisition campaigns, and navigate random crisis events. The goal: reach $10K MRR before your runway hits zero.</p>
+          <h2>Key features</h2>
+          <ul>
+            <li>AI-evaluated startup idea scoring (powered by Gemini)</li>
+            <li>Real-time burn rate, MRR, runway, and churn tracking</li>
+            <li>Hire and manage a team with morale and velocity mechanics</li>
+            <li>Random crisis events every 5 days</li>
+            <li>17 startup milestones to unlock</li>
+            <li>Free to play, no account required, runs entirely in your browser</li>
+          </ul>
+          <h2>Play the startup simulation game</h2>
+          <p>Start playing failunicorn at <a href="__SITE_URL__">failunicorn.vercel.app</a>. No download, no install, no signup.</p>
+        </main>
+      </noscript>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

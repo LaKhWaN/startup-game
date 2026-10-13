@@ -142,11 +142,14 @@ export function LandingPage({ onPlay }: LandingPageProps) {
     '@context': 'https://schema.org',
     '@type': 'VideoGame',
     name: 'failunicorn',
-    description: 'A free browser startup simulator. Hire your team, ship features, manage burn rate, and survive crises. No signup needed.',
-    genre: ['Strategy', 'Simulation', 'Business'],
+    alternateName: ['startup simulator', 'startup simulation game', 'startup game'],
+    description: 'A free browser startup simulator. Pitch your startup idea, hire your team, ship features, manage burn rate, and survive investor meetings and market crises. No signup needed.',
+    genre: ['Strategy', 'Simulation', 'Business', 'Management'],
     gamePlatform: 'Browser',
     operatingSystem: 'Any',
     applicationCategory: 'Game',
+    inLanguage: 'en',
+    isAccessibleForFree: true,
     url: SITE_URL,
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
     publisher: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
@@ -155,10 +158,12 @@ export function LandingPage({ onPlay }: LandingPageProps) {
   return (
     <div className="lp-root">
       <SEOHead
-        title="failunicorn — Build a Startup. Survive. (Probably Don't.)"
-        description="A free browser startup simulator. Hire your team, ship features, manage burn rate, and survive crises. No signup needed."
+        title="failunicorn — Free Startup Simulator Game (Browser, No Signup)"
+        description="failunicorn is a free browser startup simulation game. Pitch your idea, hire a team, manage burn rate, and survive crises. No signup needed. Can you reach $10K MRR?"
         canonical={SITE_URL}
         schema={videoGameSchema}
+        keywords="startup simulator, startup simulation game, startup game, failunicorn, browser game, startup founder game, burn rate game, SaaS simulator, free startup game, business simulator"
+        ogImageAlt="failunicorn startup simulator game — manage your team, MRR, and runway"
       />
 
       {/* Grain texture overlay */}
