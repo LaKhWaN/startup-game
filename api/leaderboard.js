@@ -36,33 +36,36 @@ export default async function handler(req, res) {
     const client = await getClient(uri)
     const db = client.db(dbName)
 
+    // The 100 most recent sessions (by days played), each joined to its final-day
+    // snapshot for MRR + valuation, in one round trip (#5). Keep in step with
+    // server/getLeaderboard.ts.
     const sessions = await db
       .collection(COL_SESSIONS)
-      .find(
-        { phase: { $in: ['sold', 'lost', 'playing'] } },
+      .aggregate([
+        { $match: { phase: { $in: ['sold', 'lost', 'playing'] } } },
+        { $sort: { lastRecordedDay: -1 } },
+        { $limit: 100 },
         {
-          projection: {
-            _id: 0,
-            sessionId: 1,
-            startupName: 1,
-            idea: 1,
-            difficultyTier: 1,
-            phase: 1,
-            lastRecordedDay: 1,
+          $lookup: {
+            from: COL_DAYS,
+            localField: 'sessionId',
+            foreignField: 'sessionId',
+            let: { day: '$lastRecordedDay' },
+            pipeline: [
+              { $match: { $expr: { $eq: ['$day', '$$day'] } } },
+              { $limit: 1 },
+              { $project: { _id: 0, mrr: 1, valuation: 1 } },
+            ],
+            as: 'snap',
           },
-        }
-      )
-      .sort({ lastRecordedDay: -1 })
-      .limit(100)
+        },
+        { $project: { _id: 0, startupName: 1, idea: 1, difficultyTier: 1, phase: 1, lastRecordedDay: 1, snap: 1 } },
+      ])
       .toArray()
 
-    const results = []
-    for (const session of sessions) {
-      const snap = await db.collection(COL_DAYS).findOne(
-        { sessionId: session.sessionId, day: session.lastRecordedDay },
-        { projection: { _id: 0, mrr: 1, valuation: 1 } }
-      )
-      results.push({
+    const results = sessions.map(session => {
+      const snap = session.snap?.[0]
+      return {
         rank: 0,
         startupName: String(session.startupName ?? 'Unnamed'),
         idea: String(session.idea ?? ''),
@@ -71,8 +74,8 @@ export default async function handler(req, res) {
         lastRecordedDay: Number(session.lastRecordedDay ?? 0),
         mrr: Number(snap?.mrr ?? 0),
         valuation: Number(snap?.valuation ?? 0),
-      })
-    }
+      }
+    })
 
     results.sort((a, b) => b.valuation - a.valuation || b.mrr - a.mrr)
     results.forEach((r, i) => { r.rank = i + 1 })
