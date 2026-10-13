@@ -8,6 +8,22 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: 'v2.0',
+    date: '2026-10-13',
+    title: 'The Founder Journey: failunicorn, rebuilt',
+    type: 'new',
+    items: [
+      'A brand-new game in a 3D office: you start alone in your bedroom with $500 and an old laptop, then research, build, send cold emails and close sales yourself before hiring anyone',
+      'Hire interns and full-time developers, product managers, marketers, salespeople and support. Everyone has energy, stress, morale and experience, and ignored people quit (the game pauses to warn you first)',
+      'Climb from your bedroom to a bigger home, a villa, a co-working space, a small office, a big office and finally your own building, each with its own layout, rent and move-in cost, on a 2.5D city map',
+      'A founder Desktop with hosting, Wi-Fi, tools (including Crunch mode), Employees with yearly raises, paid AI-planned roadmaps of big projects that several developers build together, and Ads',
+      'Idea scoring now rates six things (market, pain, competition, feasibility, specificity and business model) and uses the whole 1–10 range. "Uber for laundry" scores a 2; when the AI is unavailable you get a quick estimate instead of a flat 5',
+      'The late game stays hard: competitors poach customers once you own the market, features have diminishing returns, cold emails fade, tech debt creeps up, and big teams cost management overhead',
+      'Balanced with simulated players: careless founders go broke, careful ones build real companies, and better ideas earn more',
+      'Shop perks and better computers, coach pop-ups for tips, notifications that close themselves, and an office that never closes',
+    ],
+  },
+  {
     version: 'v1.4',
     date: '2026-09-29',
     title: 'Economy Rebalance & Smarter Idea Scoring',
