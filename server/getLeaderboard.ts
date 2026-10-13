@@ -1,11 +1,50 @@
-import { MongoClient } from 'mongodb'
+import { MongoClient, type Document } from 'mongodb'
 
 const COL_SESSIONS = 'game_sessions'
+const COL_DAYS = 'game_day_snapshots'
 
 let clientPromise: Promise<MongoClient> | null = null
 function getClient(uri: string): Promise<MongoClient> {
   if (!clientPromise) clientPromise = new MongoClient(uri).connect()
   return clientPromise
+}
+
+/**
+ * Sessions to rank, newest-first by days played (top 100), each with its final-day
+ * snapshot attached as `snap` (0 or 1 items). Replaces one findOne per session (#5).
+ * Keep in step with api/leaderboard.js.
+ */
+export function leaderboardPipeline(): Document[] {
+  return [
+    { $match: { phase: { $in: ['sold', 'lost', 'playing'] } } },
+    { $sort: { lastRecordedDay: -1 } },
+    { $limit: 100 },
+    {
+      $lookup: {
+        from: COL_DAYS,
+        localField: 'sessionId',
+        foreignField: 'sessionId',
+        let: { day: '$lastRecordedDay' },
+        pipeline: [
+          { $match: { $expr: { $eq: ['$day', '$$day'] } } },
+          { $limit: 1 },
+          { $project: { _id: 0, mrr: 1, valuation: 1 } },
+        ],
+        as: 'snap',
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        startupName: 1,
+        idea: 1,
+        difficultyTier: 1,
+        phase: 1,
+        lastRecordedDay: 1,
+        snap: 1,
+      },
+    },
+  ]
 }
 
 export type LeaderboardEnv = {
@@ -38,36 +77,16 @@ export async function getLeaderboard(
     const client = await getClient(uri)
     const db = client.db(dbName)
 
-    // Get top 100 sessions by valuation (sold first, then survived longest)
+    // The 100 most recent sessions (by days played), each joined to its final-day
+    // snapshot for MRR + valuation, in one round trip.
     const sessions = await db
       .collection(COL_SESSIONS)
-      .find(
-        { phase: { $in: ['sold', 'lost', 'playing'] } },
-        {
-          projection: {
-            _id: 0,
-            sessionId: 1,
-            startupName: 1,
-            idea: 1,
-            difficultyTier: 1,
-            phase: 1,
-            lastRecordedDay: 1,
-          },
-        },
-      )
-      .sort({ lastRecordedDay: -1 })
-      .limit(100)
+      .aggregate(leaderboardPipeline())
       .toArray()
 
-    // Fetch final-day snapshot for MRR + valuation per session
-    const results: LeaderboardEntry[] = []
-    for (const session of sessions) {
-      // Look up the snapshot for the last recorded day to get MRR/valuation
-      const snap = await db.collection('game_day_snapshots').findOne(
-        { sessionId: session.sessionId, day: session.lastRecordedDay },
-        { projection: { _id: 0, mrr: 1, valuation: 1 } },
-      )
-      results.push({
+    const results: LeaderboardEntry[] = sessions.map(session => {
+      const snap = session.snap?.[0]
+      return {
         rank: 0,
         startupName: String(session.startupName ?? 'Unnamed'),
         idea: String(session.idea ?? ''),
@@ -76,8 +95,8 @@ export async function getLeaderboard(
         lastRecordedDay: Number(session.lastRecordedDay ?? 0),
         mrr: Number(snap?.mrr ?? 0),
         valuation: Number(snap?.valuation ?? 0),
-      })
-    }
+      }
+    })
 
     // Sort by valuation desc, assign rank
     results.sort((a, b) => b.valuation - a.valuation || b.mrr - a.mrr)
