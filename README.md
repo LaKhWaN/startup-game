@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/images/brand/logo-512.png" alt="failunicorn logo: a cream letter F with a sand-coloured shadow on a deep brown rounded square" width="120" />
+
 # failunicorn
 
 **A startup simulator where you probably die.**
@@ -160,6 +162,10 @@ vite/plugins/        dev middleware routing /api/* to server/
 **Analytics are three layers:** a handler in `server/` that takes raw JSON and returns `{status, body}`, a route in `vite/plugins/analyticsApi.ts` for dev, and a fetch wrapper in `src/analytics/`. Vercel gets its own copy in `api/`. If you touch one, check the other — they have drifted before.
 
 More design notes live in [`docs/`](docs/).
+
+## Brand
+
+The logo is an **F** in Roboto Black, cream on deep brown (`#5C3D1A`) with a hard sand (`#D4A373`) shadow, the same flat-shadow style as the game. Files live in [`docs/images/brand/`](docs/images/brand/): rounded and square SVGs, 512 px and Product Hunt (240 / 1024 px) PNGs. The site icons (favicon, Apple touch icon, web manifest) and the social share image are in `public/`.
 
 ## Contributing
 

@@ -35,6 +35,7 @@ export function SiteNav({ onPlay, ghostUntilScroll = false }: SiteNavProps) {
     <nav className={`site-nav${ghost ? ' site-nav--ghost' : ''}`}>
       <div className="site-nav-inner">
         <Link to="/" className="site-logo">
+          <img className="site-logo-mark" src="/logo-mark.svg" alt="" width="34" height="34" />
           <span className="site-logo-name">fail<span className="site-logo-accent">unicorn</span></span>
         </Link>
 
