@@ -6,10 +6,13 @@ interface SEOHeadProps {
   canonical?: string
   ogType?: 'website' | 'article'
   ogImage?: string
+  ogImageAlt?: string
   publishedAt?: string
   updatedAt?: string
   noIndex?: boolean
   schema?: object
+  keywords?: string
+  author?: string
 }
 
 import { SITE_URL, OG_IMAGE } from '../config/site'
@@ -45,10 +48,13 @@ export function SEOHead({
   canonical,
   ogType = 'website',
   ogImage = DEFAULT_IMAGE,
+  ogImageAlt,
   publishedAt,
   updatedAt,
   noIndex = false,
   schema,
+  keywords,
+  author,
 }: SEOHeadProps) {
   useEffect(() => {
     const prevTitle = document.title
@@ -57,16 +63,24 @@ export function SEOHead({
     const elements: Element[] = []
 
     elements.push(setMeta('description', description, 'name'))
+    if (keywords) elements.push(setMeta('keywords', keywords, 'name'))
+    if (author) elements.push(setMeta('author', author, 'name'))
     elements.push(setMeta('og:title', title))
     elements.push(setMeta('og:description', description))
     elements.push(setMeta('og:type', ogType))
     elements.push(setMeta('og:image', ogImage))
+    elements.push(setMeta('og:image:width', '1200'))
+    elements.push(setMeta('og:image:height', '630'))
+    if (ogImageAlt) elements.push(setMeta('og:image:alt', ogImageAlt))
+    elements.push(setMeta('og:locale', 'en_US'))
     elements.push(setMeta('og:url', canonical ?? BASE_URL))
     elements.push(setMeta('og:site_name', 'failunicorn'))
     elements.push(setMeta('twitter:card', 'summary_large_image', 'name'))
+    elements.push(setMeta('twitter:site', '@failunicorn', 'name'))
     elements.push(setMeta('twitter:title', title, 'name'))
     elements.push(setMeta('twitter:description', description, 'name'))
     elements.push(setMeta('twitter:image', ogImage, 'name'))
+    if (ogImageAlt) elements.push(setMeta('twitter:image:alt', ogImageAlt, 'name'))
 
     if (publishedAt) {
       elements.push(setMeta('article:published_time', publishedAt))
@@ -101,7 +115,7 @@ export function SEOHead({
       document.title = prevTitle
       if (schemaEl) schemaEl.remove()
     }
-  }, [title, description, canonical, ogType, ogImage, publishedAt, updatedAt, noIndex, schema])
+  }, [title, description, canonical, ogType, ogImage, ogImageAlt, publishedAt, updatedAt, noIndex, schema, keywords, author])
 
   return null
 }

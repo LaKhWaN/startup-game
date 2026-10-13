@@ -10,6 +10,7 @@ export interface RouteSeoMetadata {
   canonical?: string
   ogType?: 'website' | 'article'
   ogImage?: string
+  ogImageAlt?: string
   publishedAt?: string
   updatedAt?: string
   noIndex?: boolean
@@ -18,6 +19,7 @@ export interface RouteSeoMetadata {
   changefreq?: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never'
   lastmod?: string
   outputFile?: string
+  keywords?: string
 }
 
 export function getSeoRoutes(baseUrl = SITE_URL): RouteSeoMetadata[] {
@@ -58,11 +60,13 @@ export function getSeoRoutes(baseUrl = SITE_URL): RouteSeoMetadata[] {
   const routes: RouteSeoMetadata[] = [
     {
       path: '/',
-      title: 'failunicorn — Build a Startup. Survive. (Probably Don\'t.)',
-      description: 'A free browser startup simulator. Hire your team, ship features, manage burn rate, and survive crises. No signup needed.',
+      title: 'failunicorn — Free Startup Simulator Game (Browser, No Signup)',
+      description: 'failunicorn is a free browser startup simulation game. Pitch your idea, hire a team, manage burn rate, and survive crises. No signup needed. Can you reach $10K MRR?',
+      keywords: 'startup simulator, startup simulation game, startup game, failunicorn, browser game, startup founder game, burn rate game, SaaS simulator, free startup game, business simulator',
       canonical: origin,
       ogType: 'website',
       ogImage: defaultImage,
+      ogImageAlt: 'failunicorn startup simulator game — manage your team, MRR, and runway',
       priority: '1.0',
       changefreq: 'weekly',
       lastmod: today,
@@ -70,11 +74,14 @@ export function getSeoRoutes(baseUrl = SITE_URL): RouteSeoMetadata[] {
         '@context': 'https://schema.org',
         '@type': 'VideoGame',
         name: 'failunicorn',
-        description: 'A free browser startup simulator. Hire your team, ship features, manage burn rate, and survive crises. No signup needed.',
-        genre: ['Strategy', 'Simulation', 'Business'],
+        alternateName: ['startup simulator', 'startup simulation game', 'startup game'],
+        description: 'A free browser startup simulator. Pitch your startup idea, hire your team, ship features, manage burn rate, and survive investor meetings and market crises. No signup needed.',
+        genre: ['Strategy', 'Simulation', 'Business', 'Management'],
         gamePlatform: 'Browser',
         operatingSystem: 'Any',
         applicationCategory: 'Game',
+        inLanguage: 'en',
+        isAccessibleForFree: true,
         url: origin,
         offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
         publisher: { '@type': 'Organization', name: SITE_NAME, url: origin },
@@ -82,8 +89,9 @@ export function getSeoRoutes(baseUrl = SITE_URL): RouteSeoMetadata[] {
     },
     {
       path: '/blog',
-      title: 'Blog — failunicorn',
-      description: 'Startup strategy guides, simulation game tips, and founder education from the team behind failunicorn.',
+      title: 'Startup Simulator Blog — Strategy Guides & Founder Tips | failunicorn',
+      description: 'Startup strategy guides, simulation game tips, burn rate explainers, and founder education from the team behind failunicorn.',
+      keywords: 'startup strategy, startup tips, burn rate, founder education, startup simulation, startup game guide',
       canonical: `${origin}/blog`,
       ogType: 'website',
       ogImage: defaultImage,
