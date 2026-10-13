@@ -25,9 +25,9 @@ describe('the office never closes', () => {
 
   it('counts hire durations in whole game days', () => {
     expect(WORK_DAY_HOURS).toBe(24)
-    // Emails: 1/0.8 days = 30 hours at full mood; a fresh hire is slower (mood, no context).
+    // Emails: 0.75/0.8 days = 22.5 hours at full mood; a fresh hire is slower (mood, no context).
     const s = run(at(emailsHire(), 0, 9), 12)
-    const full = 12 / (24 * (1 / 0.8))
+    const full = 12 / (24 * (0.75 / 0.8))
     expect(s.v2.team.h.task!.progress).toBeLessThan(full)
     expect(s.v2.team.h.task!.progress).toBeGreaterThan(full * 0.5)
   })

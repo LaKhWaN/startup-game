@@ -9,7 +9,7 @@ import { makeState, member, withChapter, withTeam } from './fixtures'
 describe('pacing', () => {
   it('a game hour lasts 1.5 real seconds at 1× and tasks are short', () => {
     expect(GAME_HOUR_MS).toBe(1500)
-    expect([RESEARCH_DAYS, EMAILS_DAYS, SALES_DAYS]).toEqual([1.5, 1, 1])
+    expect([RESEARCH_DAYS, EMAILS_DAYS, SALES_DAYS]).toEqual([1, 0.75, 0.75])
   })
 })
 

@@ -115,7 +115,7 @@ export function play(s: V2GameState, rng: () => number, careful = false): V2Game
   for (const c of [...s.v2.candidates].sort((a, b) => (b.tier === 'fulltime' ? 1 : 0) - (a.tier === 'fulltime' ? 1 : 0))) {
     if (Object.keys(s.v2.team).length >= teamCapacity(s)) break
     const netBurnAfter = getMonthlyBurn(s) + c.salary - s.mrr
-    if (canHire(s, c.id) === 'ok' && (netBurnAfter <= 0 || s.cash / netBurnAfter >= 4)) s = hireIntern(s, c.id)
+    if (canHire(s, c.id) === 'ok' && (netBurnAfter <= 0 || s.cash / netBurnAfter >= 7)) s = hireIntern(s, c.id)
   }
   return s
 }

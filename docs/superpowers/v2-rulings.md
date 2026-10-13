@@ -309,3 +309,12 @@ Harness: `src/v2/__tests__/simPersonas.ts` + `personas.test.ts` (SIM_PERSONAS=1)
 - Turnover costs: recruiting fee on every hire (half a month for interns, a month for full-time).
 - Big teams cost: management overhead $600/mo per person from the 16th, $1,200 from the 31st.
 - Result (day-730 MRR, medium → hard): 3/10 $16k → $111k, 5/10 $62k → $340k, 8/10 $150k → $631k (was medium ≈ 80–95% of hard). Easy survives ~1/9. Medium loses ~75–85 people to quits at 5/10 and 8/10; hard none. Hard on a 3/10 idea still reaches ~$110k (epics multiply even a small market) — cost if wrong: optimal play on a weak idea is still rewarding.
+
+## Faster first minutes (user: tasks felt too long)
+
+Measured at 1× (1.5 s per game hour): chapter 1 took ~15 min (first research ~2 min, first feature shipped ~12.7 min because a 10-day build takes ~16 founder days with sleep, first sale ~15 min, first hire ~18 min); an intern's research took 2.3 game days.
+
+### Rulings
+- Chapter 1 (the tutorial) runs every founder task 5× faster (`TUTORIAL_SPEED`): the whole first loop now takes ~113 s and the first hire comes at ~3.5 min — cost if wrong: tutorial feels too easy.
+- After the tutorial: research 1.5 → 1 day, emails and sales 1 → 0.75, regular features take 0.8× their template's baseDays; support and refactor unchanged. Epics keep their full length. An intern's research drops from 2.3 to ~1.5 days. A harder cut (research 0.7, emails/sales 0.5, features 0.6×) made the economy far too fast (medium player 5/10: $62k → $252k MRR at day 730, medium caught up with hard), so I eased it back — cost if wrong: mid-game tasks still feel slow to some.
+- Sim after the change (day-730 MRR, medium → hard): 3/10 $21k → $114k, 5/10 $187k → $471k, 8/10 $181k → $748k; easy dies in 8 of 9; manager sim reaches Co-working on days 213–290 (was ~270–340). The older scripted manager now waits for 7 months of runway before a hire that loses money (it bankrupted itself on one seed) — a bot change, not a game change.
