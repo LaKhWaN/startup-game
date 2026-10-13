@@ -1,7 +1,7 @@
 import { useV2 } from '../actions'
 import { churnBreakdown } from '../engine/churn'
 import { marketCeiling } from '../engine/market'
-import { monthlyBurn, runwayMonths, valuation, variableCosts } from '../engine/money'
+import { monthlyBurn, PAYMENT_FEE, runwayMonths, TOOLS_PER_CUSTOMER, valuation, variableCosts } from '../engine/money'
 import { formatProfit } from '../finance'
 import '../v2.css'
 
@@ -81,7 +81,7 @@ export function MetricsPanel() {
           ))}
           {extras.every(e => Math.abs(e.v) < 0.05) && <div className="v2-mcard-note">Nothing extra: your product is healthy.</div>}
         </div>
-        <p className="v2-mcard-note">Variable costs: {usd(variableCosts(state))}/mo (3% payment fees + $1 per customer for tools).</p>
+        <p className="v2-mcard-note">Variable costs: {usd(variableCosts(state))}/mo ({PAYMENT_FEE * 100}% payment fees + ${TOOLS_PER_CUSTOMER} per customer for tools).</p>
       </section>
 
       <section className="v2-mcard">

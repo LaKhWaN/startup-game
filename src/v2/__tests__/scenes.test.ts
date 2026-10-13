@@ -5,6 +5,7 @@ import { scoreToDifficulty } from '../../ai/gemini'
 import { SCENE_ID_PREFIX } from '../analytics'
 import { CHAPTER2_CARDS, CHAPTER3_CARDS, COACH_CARDS } from '../chapter'
 import { totalDays } from '../engine/clock'
+import { monthlyBurn } from '../engine/money'
 import { serializeGame } from '../saveV2'
 import { createV2State, type V2GameState } from '../state'
 import { TIPS } from '../tips'
@@ -32,8 +33,9 @@ const WANTS: Want[] = [
   { name: 'first-hires', when: s => s.v2.location === 'biggerHome' && Object.keys(s.v2.team).length >= 3 },
   { name: 'villa', when: s => s.v2.location === 'villa' && Object.keys(s.v2.team).length >= 5 },
   { name: 'coworking', when: s => s.v2.location === 'coworking' && Object.keys(s.v2.team).length >= 8 },
-  { name: 'small-office', when: s => s.v2.location === 'smallOffice' && Object.keys(s.v2.team).length >= 14 },
-  { name: 'building', when: s => s.v2.location === 'building' && Object.keys(s.v2.team).length >= 40 && s.features.some(f => f.epic && f.status === 'in_development') },
+  { name: 'small-office', when: s => s.v2.location === 'smallOffice' && Object.keys(s.v2.team).length >= 14 && s.mrr > monthlyBurn(s) },
+  // Profitable again after the move, with a big project underway: the shot people will share.
+  { name: 'building', when: s => s.v2.location === 'building' && Object.keys(s.v2.team).length >= 40 && s.mrr > monthlyBurn(s) * 1.1 && s.features.some(f => f.epic && f.status === 'in_development') },
 ]
 
 describe.skipIf(!process.env.SIM_SCENES)('screenshot scenes', () => {

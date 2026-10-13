@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { SCENE_ID_PREFIX } from '../analytics'
 import { getV2State, useV2 } from '../actions'
 import { totalDays } from '../engine/clock'
 import { ingestFeedbackRemote } from '../../analytics/mongoIngest'
@@ -41,6 +42,7 @@ export function InvestorCheckin() {
   const gameTime  = useV2(s => s.gameTime)
   const mrr       = useV2(s => s.mrr)
   const customers = useV2(s => s.customers)
+  const isScene   = useV2(s => s.gameId.startsWith(SCENE_ID_PREFIX))
   const day       = totalDays(gameTime)
 
   const [step, setStep]       = useState<Step | null>(null)
@@ -53,7 +55,8 @@ export function InvestorCheckin() {
 
   // Trigger at Day 30, only once ever
   useEffect(() => {
-    if (day >= 30 && !localStorage.getItem(STORAGE_KEY)) {
+    // Screenshot scenes (dev) never ask for feedback.
+    if (day >= 30 && !localStorage.getItem(STORAGE_KEY) && !isScene) {
       // Small delay so it doesn't pop the instant day 30 ticks
       const t = setTimeout(() => {
         setStep('invite')
@@ -61,7 +64,7 @@ export function InvestorCheckin() {
       }, 1200)
       return () => clearTimeout(t)
     }
-  }, [day])
+  }, [day, isScene])
 
   // Manual trigger — always opens (used by test button + PostMortem)
   useEffect(() => {

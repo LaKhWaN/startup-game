@@ -214,7 +214,8 @@ export function TopBarV2({ onShowTutorial }: TopBarProps) {
   const totalDays = daysOf(gameTime) + 1
   const clock = clockLabel(gameTime.totalHours)
 
-  const runwayMonths = burn > 0 ? cash / burn : Infinity
+  // Net burn: a profitable company isn't running out of cash however big its costs are.
+  const runwayMonths = profit < 0 ? cash / -profit : Infinity
   const cashWarn   = runwayMonths < 6
   const cashDanger = runwayMonths < 3
   const churnWarn   = churnRate > 12
