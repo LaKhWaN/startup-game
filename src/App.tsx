@@ -6,7 +6,7 @@ const Game = lazy(() => import('./v2/AppV2'))
 
 /** `/`: the landing page, then the game. `/?play` skips straight to the game. */
 export default function App() {
-  const [showLanding, setShowLanding] = useState(() => !new URLSearchParams(window.location.search).has('play'))
+  const [showLanding, setShowLanding] = useState(() => { const q = new URLSearchParams(window.location.search); return !q.has('play') && !(import.meta.env.DEV && q.has('scene')) })
   if (showLanding) return <LandingPage onPlay={() => setShowLanding(false)} />
   return <Suspense fallback={null}><Game /></Suspense>
 }

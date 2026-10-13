@@ -60,6 +60,7 @@ Env vars: `MONGODB_URI`, `MONGODB_DB_NAME` (default: `startup-game`), `ANALYTICS
 ## Balance runs
 - `SIM_PERSONAS=1 npx vitest run src/v2/__tests__/personas.test.ts` — easy/medium/hard players × ideas 3/5/8 × 3 seeds, 2 years (`simPersonas.ts`).
 - `SIM_PROBE=1 npx vitest run src/v2/__tests__/simProbe.test.ts` — monthly trace of the scripted manager (`simPlayer.ts`).
+- Screenshot scenes: `SIM_SCENES=1 npx vitest run src/v2/__tests__/scenes.test.ts` writes `public/dev-scenes/*.json` (gitignored); open `/?scene=<name>` in `npm run dev` (`src/v2/scenes.ts`). Scene games (`v2-scene-*`) skip analytics.
 
 ## Design System
 Light theme — `--bg:#f7f8fa`, `--surface:#fff`, `--surface2:#f0f2f5`, `--border:#e2e5ec`, `--accent:#0ea5e9`

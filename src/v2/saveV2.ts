@@ -29,12 +29,18 @@ export function slotKeyV2(slot: SlotId): string {
   return `${KEY_PREFIX}${slot}`
 }
 
-export function saveGameV2(slot: SlotId, state: V2GameState): void {
+/** The saved shape of a game: functions (event effects) out, the pending event kept by id. */
+export function serializeGame(state: V2GameState): Record<string, unknown> {
   const serializable: Record<string, unknown> = { ...state }
   serializable._pendingEventId = state.pendingEvent?.id ?? null
   serializable.pendingEvent = null
   serializable.recentFeatureResults = []
   serializable.fullMetricsHistory = []
+  return serializable
+}
+
+export function saveGameV2(slot: SlotId, state: V2GameState): void {
+  const serializable = serializeGame(state)
 
   const meta: SaveMetaV2 = {
     slot,
@@ -58,8 +64,17 @@ export function loadGameV2(slot: SlotId): V2GameState | null {
   try {
     const raw = localStorage.getItem(slotKeyV2(slot))
     if (!raw) return null
-    const envelope = JSON.parse(raw) as Partial<SaveEnvelopeV2>
-    const state = envelope.state as unknown as (V2GameState & { _pendingEventId?: string | null }) | undefined
+    return hydrateGame((JSON.parse(raw) as Partial<SaveEnvelopeV2>).state)
+  } catch (err) {
+    console.error('[save-v2] Failed to load:', err)
+    return null
+  }
+}
+
+/** Turn a saved game (from a slot or a dev scene file) back into a playable state. */
+export function hydrateGame(raw: unknown): V2GameState | null {
+  try {
+    const state = raw as (V2GameState & { _pendingEventId?: string | null }) | undefined
     if (!state || typeof state !== 'object') return null
     if (typeof state.gameId !== 'string' || !state.gameId.startsWith('v2-')) return null
     const v2 = migrateV2Slice(state.v2)

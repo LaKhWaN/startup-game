@@ -3,6 +3,7 @@ import { resetStore, useV2 } from './actions'
 import { GameScreenV2 } from './GameScreenV2'
 import { OnboardingV2 } from './OnboardingV2'
 import { installDevHooks } from './devHooks'
+import { loadScene, sceneFromUrl } from './scenes'
 import { InvestorCheckin } from './ui/InvestorCheckin'
 import { PostMortem } from './ui/PostMortem'
 
@@ -14,7 +15,9 @@ export default function AppV2() {
   useEffect(() => {
     if (import.meta.env.DEV) installDevHooks()
     resetStore()
-    setReady(true)
+    const scene = sceneFromUrl()
+    if (scene) void loadScene(scene).finally(() => setReady(true))
+    else setReady(true)
   }, [])
 
   if (!ready) return null
