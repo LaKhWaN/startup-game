@@ -9,7 +9,7 @@ const base = () => withV2(withChapter(makeState({ cash: 5000, customers: 30 }), 
 
 describe('tips', () => {
   it('cover every new system once', () => {
-    expect(TIPS.map(t => t.id)).toEqual(['tip-support', 'tip-debt', 'tip-hosting', 'tip-stress', 'tip-notice', 'tip-shop', 'tip-market', 'tip-roadmap', 'tip-ads', 'tip-stale'])
+    expect(TIPS.map(t => t.id)).toEqual(['tip-churn', 'tip-support', 'tip-debt', 'tip-hosting', 'tip-stress', 'tip-notice', 'tip-shop', 'tip-market', 'tip-roadmap', 'tip-ads', 'tip-stale'])
   })
 
   it('show when their moment comes, after chapter cards', () => {

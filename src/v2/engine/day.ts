@@ -1,5 +1,5 @@
 import type { MetricsSnapshot } from '../../types'
-import type { Rng } from '../state'
+import { addStory, type Rng } from '../state'
 import { DAYS_PER_MONTH, totalDays } from './clock'
 import { EVENTS } from './eventData'
 import { pickEvent } from './events'
@@ -24,6 +24,8 @@ function dailyChurn(customers: number, monthlyRatePct: number, rng: Rng): number
   return Math.min(customers, roundChance(customers * (monthlyRatePct / 100 / DAYS_PER_MONTH), rng))
 }
 
+/** Up to this many customers, each cancellation gets its own notice. */
+export const SMALL_COMPANY = 50
 export const LEAD_DECAY_PER_DAY = 0.08
 /** Tech debt creeps up every day, faster with more customers (more code paths, more edge cases). */
 export const DEBT_CREEP_BASE = 0.2
@@ -51,6 +53,8 @@ export function processDay<T extends GameV2>(raw: T, day: number, rng: Rng): T {
   const newTickets = roundChance(state.customers * TICKETS_PER_CUSTOMER_DAY * (1 + state.techDebt / 100), rng)
   const tickets = Math.min(Math.max(10, state.customers * 2), (state.v2.tickets ?? 0) + newTickets)
   const customers = state.customers - lost
+  // A small company feels every cancellation; a big one doesn't need a notice for each.
+  const churnNotice = lost > 0 && state.customers <= SMALL_COMPANY ? `📉 ${lost === 1 ? 'A customer' : `${lost} customers`} cancelled. Keep shipping, answer support and keep emailing.` : null
   const mrr = customers * state.arpu
   const burn = monthlyBurn({ ...state, mrr, customers })
   // Services are billed hourly in stepV2; everything else accrues daily.
@@ -104,6 +108,7 @@ export function processDay<T extends GameV2>(raw: T, day: number, rng: Rng): T {
     lastEventDay: pendingEvent && !state.pendingEvent ? day : state.lastEventDay,
     phase: cash < 0 && state.phase === 'playing' ? 'lost' : state.phase,
   }
+  const withNotice = churnNotice ? addStory(next, [churnNotice]) : next
   const snapshot: MetricsSnapshot = {
     day, mrr: afterIncident.customers * next.arpu, customers: afterIncident.customers, churnRate, cash, burn,
     runway: burn - mrr <= 0 ? 999 : Math.min(999, Math.floor(cash / (burn - mrr))),
@@ -111,9 +116,9 @@ export function processDay<T extends GameV2>(raw: T, day: number, rng: Rng): T {
     teamSize: Object.keys(next.v2.team).length, culture: next.culture ?? 60, valuation: valuation(next),
   }
   return {
-    ...next,
-    metricsHistory: [...next.metricsHistory, snapshot].slice(-90),
-    fullMetricsHistory: [...next.fullMetricsHistory, snapshot],
+    ...withNotice,
+    metricsHistory: [...withNotice.metricsHistory, snapshot].slice(-90),
+    fullMetricsHistory: [...withNotice.fullMetricsHistory, snapshot],
   }
 }
 

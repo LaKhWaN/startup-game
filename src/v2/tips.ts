@@ -12,6 +12,11 @@ interface Tip extends CoachCard {
 /** One card per new system, shown the first time it matters (after chapter cards). Spec §2 F. */
 export const TIPS: Tip[] = [
   {
+    id: 'tip-churn', title: 'Customers cancel',
+    body: 'Customers leave over time, even when you do nothing, and you also have living costs now. Keep sending emails and closing sales, ship features, and answer support tickets. Check 📊 Metrics to see why people leave.',
+    when: s => s.v2.chapter.complete && (s.customersLostThisMonth ?? 0) >= 1,
+  },
+  {
     id: 'tip-support', title: 'Customers need help',
     body: 'Support tickets are piling up. Unanswered tickets raise churn and scare off new buyers. Use 🎧 Support, or set a hire to Support.',
     when: s => s.v2.chapter.complete && (s.v2.tickets ?? 0) >= 3,

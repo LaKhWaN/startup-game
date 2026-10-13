@@ -318,3 +318,12 @@ Measured at 1× (1.5 s per game hour): chapter 1 took ~15 min (first research ~2
 - Chapter 1 (the tutorial) runs every founder task 5× faster (`TUTORIAL_SPEED`): the whole first loop now takes ~113 s and the first hire comes at ~3.5 min — cost if wrong: tutorial feels too easy.
 - After the tutorial: research 1.5 → 1 day, emails and sales 1 → 0.75, regular features take 0.8× their template's baseDays; support and refactor unchanged. Epics keep their full length. An intern's research drops from 2.3 to ~1.5 days. A harder cut (research 0.7, emails/sales 0.5, features 0.6×) made the economy far too fast (medium player 5/10: $62k → $252k MRR at day 730, medium caught up with hard), so I eased it back — cost if wrong: mid-game tasks still feel slow to some.
 - Sim after the change (day-730 MRR, medium → hard): 3/10 $21k → $114k, 5/10 $187k → $471k, 8/10 $181k → $748k; easy dies in 8 of 9; manager sim reaches Co-working on days 213–290 (was ~270–340). The older scripted manager now waits for 7 months of runway before a hire that loses money (it bankrupted itself on one seed) — a bot change, not a game change.
+
+## Idle after the tutorial (user: "making money without doing anything, churn not affecting customers")
+
+Simulated 6 games right after chapter 1 with the founder doing nothing for 60 days: cash went UP ($1.8k → $2.2k) and customers drifted 7 → 4 with no notice. Churn was working (12.5%/mo), but at 4–8 customers that's one cancellation every few weeks, and a solo founder had $0 costs, so any customers were pure profit.
+
+### Rulings
+- Founder living costs $400/mo (`FOUNDER_LIVING`, part of `monthlyBurn`) once chapter 1 is complete. Idle again for 120 days: cash falls ~$1.8k → ~$1.0k, so the founder has to keep selling — cost if wrong: a slightly harsher first months (manager sim reaches Co-working on days 230–356, was 213–290).
+- Companies up to 50 customers get a "📉 A customer cancelled" notice (toast) for each cancellation; bigger ones don't — cost if wrong: extra toasts early.
+- First time a customer cancels after the tutorial, a coach tip ("Customers cancel") explains why and what to do.

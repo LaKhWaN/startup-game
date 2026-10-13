@@ -1,3 +1,4 @@
+import { FOUNDER_LIVING } from '../engine/money'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { currentCard, dismissCard, reshowCurrentCard } from '../chapter'
 import { loadGameV2, saveGameV2 } from '../saveV2'
@@ -19,8 +20,8 @@ describe('teamFinances', () => {
     let s = hire(ready(2000), cand({ id: 'a' }))
     s = hire(s, cand({ id: 'b' }))
     const f = teamFinances({ ...s, cash: 2000, mrr: 900 })
-    expect(f.burn).toBe(1600 + 27) // + 3% fees on $900 MRR
-    expect(f.runwayMonths).toBe(2) // floor(2000 / 700)
+    expect(f.burn).toBe(1600 + 27 + FOUNDER_LIVING) // + 3% fees on $900 MRR + the founder's living costs
+    expect(f.runwayMonths).toBe(1) // floor(2000 / 1127)
   })
 
   it('is unlimited once MRR covers the burn', () => {
@@ -81,7 +82,7 @@ describe('spec §7.7 coverage', () => {
 
   it('salaries appear in burn', () => {
     const s = hire(ready())
-    expect(teamFinances(s).burn).toBe(800)
+    expect(teamFinances(s).burn).toBe(800 + FOUNDER_LIVING)
   })
 
   it('round-trips a save with a team', () => {
