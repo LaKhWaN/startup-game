@@ -4,3 +4,4 @@ dist
 .git
 *.log
 public/assets/music/bg_music_original.mp3
+public/dev-scenes

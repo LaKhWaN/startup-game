@@ -1,4 +1,15 @@
-import type { GameState } from '../types'
+import type { MetricsSnapshot } from '../types'
+
+/** The bits of a game the ingest needs (v2 games pass their location as `workspace`). */
+export interface AnalyticsSession {
+  gameId: string
+  startupName: string
+  idea?: string
+  difficultyModifier?: { tier: string }
+  workspace?: string
+  phase: string
+  fullMetricsHistory?: MetricsSnapshot[]
+}
 
 function apiUrl(): string {
   const u = import.meta.env.VITE_ANALYTICS_API_URL
@@ -19,7 +30,7 @@ export function isRemoteAnalyticsConfigured(): boolean {
 }
 
 /** POST end-of-day metrics + session header to MongoDB via serverless API. Fire-and-forget from gameplay. */
-export async function ingestGameDayRemote(state: GameState): Promise<void> {
+export async function ingestGameDayRemote(state: AnalyticsSession): Promise<void> {
   if (!isRemoteAnalyticsConfigured()) return
 
   const hist = state.fullMetricsHistory ?? []

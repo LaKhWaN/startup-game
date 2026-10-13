@@ -1,7 +1,7 @@
 # Startup Game — Claude Context
 
 ## Stack
-Vite + React + TypeScript + Zustand + Phaser 3 (office scene) + MongoDB
+Vite + React + TypeScript + Zustand + React Three Fiber (2.5D rooms/city) + MongoDB
 
 ## Dev
 ```
@@ -9,61 +9,37 @@ npm run dev
 ```
 
 ## Entry Points
-- `src/App.tsx` — routes: setup → Onboarding, playing → GameScreen, sold/lost → PostMortem
-- `src/store/gameStore.ts` — Zustand store (GameState + actions)
-- `src/engine/gameEngine.ts` — all game logic (tick, campaigns, events, features, churn)
-- `src/types/index.ts` — all TypeScript interfaces
+- `src/App.tsx` — `/`: landing page, then the game (`src/v2/AppV2.tsx`: onboarding → GameScreenV2 → PostMortem). `/new` redirects to `/?play`.
+- `src/v2/store.ts` — Zustand store; `src/v2/actions.ts` — every state-changing action + `useV2` selector hook
+- `src/v2/engine/` — own engine: `clock.ts` (office hours), `day.ts` (churn, cash, events, snapshots), `events.ts`/`eventData.ts`, `money.ts`
+- `src/v2/v2Tick.ts` — `stepV2` (one game hour) and `skipToMorning`; founder/team/chapters layer
+- `src/v2/state.ts` — `V2GameState` = company state + `v2` slice (founder, team, chapters, location…)
+- `src/types/index.ts`, `src/data/featureTemplates.ts`, `src/data/candidates.ts` — shared types/data
+- Plans/specs/decisions: `docs/superpowers/` (`v2-rulings.md` lists every autonomous decision)
 
 ## Game Loop
-- 1 real second = 1 game hour at 1× speed (2×/3×/5× available)
-- `processDayTick` every 24 hours: features build, campaigns run, churn applies, XP gained
-- `processMonthTick` every 30 days: salaries deducted, MRR calculated, events triggered
-- Win: $10k MRR (200 customers × $50 ARPU) | Lose: cash = $0
+- 1.5 real seconds = 1 game hour at 1× (`GAME_HOUR_MS`; 2×/3×/5×; 10× in dev). Games start Monday 09:00.
+- No night or weekends: the office never closes and hires work every hour (task durations in whole game days; hourly mood changes are ×1/3). The founder sleeps 23–07. Notices, quit warnings and low raises pause the game with a pop-up (`PeopleAlertCard.tsx`, `peopleAlerts.ts`). Crunch mode tool: +50% speed, +50% payroll, double stress.
+- Daily: churn (probabilistic), cash += (MRR − burn)/30, event roll, metrics snapshot. Monthly: summary line.
+- Game-raised popups (events, family money, check-in, coach/tip cards) pause the game (`src/v2/pause.ts`). Notable story lines (emoji-led) show as toasts for 5 s (`NotificationToasts.tsx`).
+- Lose: cash < $0. End by selling (Sell button / acquisition events).
 
 ## Key Financial Numbers
-- ARPU: $50/user/month
-- Starting cash: Home $85k, Coworking $70k, Office $55k
-- Infra: $200 / $1k / $2.5k/mo
-- Dev salary: ~$8k/mo, PM ~$7k, Marketing ~$5.75k, Sales ~$5.25k
-- Desk cost: $1,500 each, max 6
-- Acquisition offer events only become eligible at $5k+ MRR and 500+
-  customers, and even then only a 20% chance per roll — see
-  `ACQUISITION_MIN_MRR`/`ACQUISITION_MIN_CUSTOMERS`/`ACQUISITION_SHOW_CHANCE`
-  in `gameEngine.ts`
-- Seed/Series A investor events scale funding to current monthly burn
-  (5x/8x, clamped) instead of a flat $200k/$500k
+- Start: $500 founder savings, $0 burn, ARPU $50. Family money ($800–1,500) at the end of Chapter 1.
+- Interns $600–1,000/mo, full-time $3,500–5,100/mo (full-time from the Villa); yearly raises set in 💻 Desktop → Employees (`src/v2/payroll.ts`). Location ladder (rent/move-in/capacity/unlock) in `src/v2/locations.ts`.
 
-## UI Layout
-```
-TopBar (fixed, 96px) → RunwayBanner (fixed, 36px, only when runway ≤ 3mo)
-game-main:
-  game-canvas-area: OfficeCanvas (Phaser) + BottomNav (6 tabs)
-  RightPanel: panel content based on active tab
-Overlays: EventCard, TutorialModal, CampaignResultToast, FeatureResultToast,
-          MilestoneToast, InvestorCheckin
-```
+## Late game
+- Regular features have diminishing returns (`FEATURE_DECAY` in `engine/market.ts`). Paid AI roadmaps of epics (`src/v2/epics.ts`, Desktop → Roadmap, `epics` op on `/api/rate-idea`) push further; up to 3 devs co-build an epic.
+- Ads (`engine/ads.ts`, Desktop → Ads) buy leads; cold emails fade with size; a sales call handles 12 + 4×skill leads. Tech debt creeps daily (`debtCreep` in `engine/day.ts`).
 
-## BottomNav Tabs
-product, team, hire, shop, gtm, metrics, goals
+## UI Layout (room-first)
+- TopBarV2 (metrics pill incl. Profit, clock, speed) → room canvas full width + StatsRail on the right
+- FounderBar (bottom), GoalBanner (top-left, folds to 🎯 after 5 s), toasts (top-right), BottomNav (Founder/Team/Map/Metrics/Desktop)
+- Founder/Team/Metrics/person cards open as Modal sheets; Map swaps the canvas to the 2.5D city
+- Overlays: EventCard, FeatureResultToasts, RunwayBanner, FamilyMoneyModal, InvestorCheckin (all in `src/v2/ui/`)
 
-## Key Components
-- `TopBar.tsx` — metrics pill, speed controls (1×/2×/3×/5×), ⚙️ Settings modal
-- `TutorialModal.tsx` — spotlight tutorial, shown once via `localStorage: startup-game-tutorial-completed`, re-accessible via Settings
-- `InvestorCheckin.tsx` — feedback modal, triggers Day 30 + game over, saves to MongoDB `game_feedback`
-- `RunwayBanner.tsx` — pulsing warning at 3/2/1 months runway
-- `CampaignResultToast.tsx` — shows GREAT/OK/FLOPPED after campaign ends
-- `FeatureResultToast.tsx` — shows after feature ships
-- `EventCard.tsx` — binary-choice events (pauses game), 5-day cooldown, 55% daily chance
-- `PostMortem.tsx` — win/loss screen with leaderboard + triggers InvestorCheckin
-
-## Office Scene (Phaser)
-- `OfficeCanvas.tsx` → `OfficeScene.ts`
-- `onReady` callback fires after scene `create()` + 800ms minimum
-- Loader shown until ready; tutorial shown after loader
-
-## Save System
-- 3 slots (slot 1 = auto-save every 30s): `src/save/saveManager.ts`
-- Leaderboard in localStorage: `src/save/leaderboard.ts`
+## Saves
+- 3 slots, slot 1 autosaves every 30s: `src/v2/saveV2.ts` (keys `startup-v2-save-*`). Leaderboard: `src/v2/ui/leaderboard.ts`.
 
 ## MongoDB / Analytics Pattern
 3-layer architecture:
@@ -75,15 +51,20 @@ Collections: `game_sessions`, `game_day_snapshots`, `game_feedback`
 
 Env vars: `MONGODB_URI`, `MONGODB_DB_NAME` (default: `startup-game`), `ANALYTICS_INGEST_SECRET`, `VITE_ANALYTICS_API_URL`, `VITE_DISABLE_REMOTE_ANALYTICS`
 
-## Difficulty Tiers (from idea score via Groq AI — `GROQ_API_KEYS`, `server/rateIdea.ts`/`api/rate-idea.js`)
+## Difficulty Tiers (from idea score via Groq AI — `GROQ_API_KEYS`, `server/rateIdea.ts`/`api/rate-idea.js`; `scoreToDifficulty` in `src/ai/gemini.ts`)
 - Promising (8-10): ×1.2 customers, 3% churn floor
-- Competitive (6-7): ×1.0, 5% floor
-- Risky (4-5): ×0.7, 8% floor
-- Brutal (0-3): ×0.4, 12% floor
+- Competitive (5-7): ×1.0, 5% floor
+- Risky (3-4): ×0.7, 8% floor
+- Brutal (0-2): ×0.4, 12% floor
+
+## Balance runs
+- `SIM_PERSONAS=1 npx vitest run src/v2/__tests__/personas.test.ts` — easy/medium/hard players × ideas 3/5/8 × 3 seeds, 2 years (`simPersonas.ts`).
+- `SIM_PROBE=1 npx vitest run src/v2/__tests__/simProbe.test.ts` — monthly trace of the scripted manager (`simPlayer.ts`).
+- Screenshot scenes: `SIM_SCENES=1 npx vitest run src/v2/__tests__/scenes.test.ts` writes `public/dev-scenes/*.json` (gitignored); open `/?scene=<name>` in `npm run dev` (`src/v2/scenes.ts`). Scene games (`v2-scene-*`) skip analytics.
 
 ## Design System
 Light theme — `--bg:#f7f8fa`, `--surface:#fff`, `--surface2:#f0f2f5`, `--border:#e2e5ec`, `--accent:#0ea5e9`
 Fonts: Roboto + Roboto Mono. Drop shadows only (no glow effects).
 
 ## GameSpeed Type
-`0 | 1 | 2 | 3 | 5` (10× and 50× removed)
+`0 | 1 | 2 | 3 | 5 | 10` in `src/v2/store.ts` (0 = paused; 10× only offered in dev builds)
