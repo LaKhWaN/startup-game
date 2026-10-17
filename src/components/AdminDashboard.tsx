@@ -21,6 +21,18 @@ interface DashboardData {
     finishedCount: number
     exitDayBuckets: Record<string, number>
   }
+  players: {
+    unique: number
+    recurring: number
+    returnedAnotherDay: number
+    sessionsWithoutId: number
+    gamesPerPlayer: Record<string, number>
+    top: { player: string; games: number; bestDay: number; firstSeen: string; lastSeen: string }[]
+  }
+  activity: { games24h: number; games7d: number; activePlayers7d: number }
+  funnel: { day: number; count: number; pct: number }[]
+  locationSplit: Record<string, number>
+  recent: { startupName: string; idea: string; tier: string; phase: string; day: number; location: string; player: string | null; updatedAt: string | null }[]
   feedback: {
     sessionId: string
     mood: number | null
@@ -182,6 +194,43 @@ function FeedbackList({ feedback }: { feedback: DashboardData['feedback'] }) {
   )
 }
 
+const fmtDate = (iso: string | null) => (iso ? new Date(iso).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—')
+
+function PlayersSection({ data }: { data: DashboardData }) {
+  const { players, activity } = data
+  const returnRate = players.unique > 0 ? players.recurring / players.unique : 0
+  return (
+    <div className="admin-section">
+      <h2>Players</h2>
+      <div className="admin-grid">
+        <div className="admin-stat-card"><div className="label">Unique players</div><div className="value">{players.unique}</div><div className="sub">{players.sessionsWithoutId} games from before ids</div></div>
+        <div className="admin-stat-card"><div className="label">Recurring players</div><div className="value">{players.recurring}</div><div className="sub">2+ games · {fmtPct(returnRate)} of players</div></div>
+        <div className="admin-stat-card"><div className="label">Came back another day</div><div className="value">{players.returnedAnotherDay}</div></div>
+        <div className="admin-stat-card"><div className="label">Games, last 24h</div><div className="value">{activity.games24h}</div></div>
+        <div className="admin-stat-card"><div className="label">Games, last 7 days</div><div className="value">{activity.games7d}</div></div>
+        <div className="admin-stat-card"><div className="label">Active players, 7 days</div><div className="value">{activity.activePlayers7d}</div></div>
+      </div>
+      <div className="admin-grid" style={{ gridTemplateColumns: '1fr 2fr', marginTop: 16 }}>
+        <div className="admin-panel">
+          <div className="admin-panel-title">Games per player</div>
+          <SplitBars data={players.gamesPerPlayer} />
+        </div>
+        <div className="admin-panel">
+          <div className="admin-panel-title">Most active players</div>
+          {players.top.length === 0 ? <div className="admin-empty">Players appear here as new games are played</div> : (
+            <table className="admin-table">
+              <thead><tr><th>Player</th><th>Games</th><th>Best day</th><th>First seen</th><th>Last seen</th></tr></thead>
+              <tbody>{players.top.map(p => (
+                <tr key={p.player}><td className="mono">{p.player}</td><td>{p.games}</td><td>{p.bestDay}</td><td>{fmtDate(p.firstSeen)}</td><td>{fmtDate(p.lastSeen)}</td></tr>
+              ))}</tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function DashboardBody({ data, onLogout }: { data: DashboardData; onLogout: () => void }) {
   return (
     <div className="admin-dash">
@@ -222,6 +271,8 @@ function DashboardBody({ data, onLogout }: { data: DashboardData; onLogout: () =
           </div>
         </div>
 
+        <PlayersSection data={data} />
+
         <div className="admin-section">
           <h2>Sessions started — last 30 days</h2>
           <div className="admin-panel">
@@ -248,6 +299,37 @@ function DashboardBody({ data, onLogout }: { data: DashboardData; onLogout: () =
           <h2>Exit day distribution (finished games)</h2>
           <div className="admin-panel">
             <SplitBars data={data.financials.exitDayBuckets} />
+          </div>
+        </div>
+
+        <div className="admin-grid" style={{ gridTemplateColumns: '1fr 1fr', marginBottom: 28 }}>
+          <div className="admin-section" style={{ marginBottom: 0 }}>
+            <h2>How far players get</h2>
+            <div className="admin-panel">
+              {data.funnel.map(f => (
+                <div className="admin-bar-row" key={f.day}>
+                  <div className="bar-label">Day {f.day}+</div>
+                  <div className="admin-bar-track"><div className="admin-bar-fill" style={{ width: `${f.pct * 100}%`, background: 'var(--brand-primary)' }} /></div>
+                  <div className="admin-bar-count">{f.count} · {fmtPct(f.pct)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="admin-section" style={{ marginBottom: 0 }}>
+            <h2>Where games end (location)</h2>
+            <div className="admin-panel"><SplitBars data={data.locationSplit} /></div>
+          </div>
+        </div>
+
+        <div className="admin-section">
+          <h2>Recent games</h2>
+          <div className="admin-panel">
+            <table className="admin-table">
+              <thead><tr><th>When</th><th>Startup</th><th>Idea</th><th>Tier</th><th>Outcome</th><th>Day</th><th>Location</th><th>Player</th></tr></thead>
+              <tbody>{data.recent.map((g, i) => (
+                <tr key={i}><td>{fmtDate(g.updatedAt)}</td><td>{g.startupName}</td><td className="admin-idea">{g.idea}</td><td>{g.tier}</td><td><span style={{ color: PHASE_COLORS[g.phase] }}>{g.phase}</span></td><td>{g.day}</td><td>{g.location}</td><td className="mono">{g.player ?? '—'}</td></tr>
+              ))}</tbody>
+            </table>
           </div>
         </div>
 
