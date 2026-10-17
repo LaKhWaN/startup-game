@@ -13,6 +13,7 @@ let indexesEnsured = false
 async function ensureIndexes(db) {
   if (indexesEnsured) return
   await db.collection(COL_SESSIONS).createIndex({ sessionId: 1 }, { unique: true })
+  await db.collection(COL_SESSIONS).createIndex({ anonId: 1 }, { sparse: true })
   await db.collection(COL_DAYS).createIndex({ sessionId: 1, day: 1 }, { unique: true })
   indexesEnsured = true
 }
@@ -109,6 +110,7 @@ export default async function handler(req, res) {
       {
         $set: {
           sessionId,
+          ...(typeof session.anonId === 'string' && /^[\w-]{8,64}$/.test(session.anonId) ? { anonId: session.anonId } : {}),
           startupName: String(session.startupName ?? 'Unnamed'),
           idea: String(session.idea ?? ''),
           difficultyTier: String(session.difficultyTier ?? 'unknown'),

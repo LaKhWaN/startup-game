@@ -1,4 +1,5 @@
 import type { MetricsSnapshot } from '../types'
+import { getAnonId } from './anonId'
 
 /** The bits of a game the ingest needs (v2 games pass their location as `workspace`). */
 export interface AnalyticsSession {
@@ -62,6 +63,7 @@ export async function ingestGameDayRemote(state: AnalyticsSession): Promise<void
       difficultyTier: state.difficultyModifier?.tier ?? 'unknown',
       workspace: state.workspace ?? '',
       phase: state.phase,
+      anonId: getAnonId(),
     },
   }
   if (secret.length > 0) body.ingestSecret = secret
