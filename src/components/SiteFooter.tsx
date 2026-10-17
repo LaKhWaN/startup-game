@@ -12,6 +12,7 @@ export function SiteFooter({ onPlay }: SiteFooterProps) {
     <footer className="site-footer">
       <div className="site-footer-inner">
         <Link to="/" className="site-logo">
+          <img className="site-logo-mark" src="/logo-mark.svg" alt="" width="34" height="34" />
           <span className="site-logo-name">fail<span className="site-logo-accent">unicorn</span></span>
         </Link>
 

@@ -46,6 +46,8 @@
   text-decoration: none;
   flex-shrink: 0;
 }
+.site-logo { gap: 10px; }
+.site-logo-mark { display: block; width: 34px; height: 34px; border-radius: 8px; }
 .site-logo-name {
   font-family: 'DM Serif Display', Georgia, serif;
   font-weight: 400;
@@ -160,6 +162,7 @@
   .site-nav-inner    { padding: 0 18px; }
   .site-nav-hint     { display: none; }
   .site-logo-name    { font-size: 1.6rem; }
+  .site-logo-mark    { width: 30px; height: 30px; }
   .site-nav-mobile   { padding: 12px 18px 4px; }
   .site-footer-inner { flex-direction: column; gap: 12px; text-align: center; padding: 0 18px; }
   .site-footer-links { justify-content: center; gap: 14px; }
