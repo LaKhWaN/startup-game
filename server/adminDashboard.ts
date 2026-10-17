@@ -1,5 +1,6 @@
 import { MongoClient } from 'mongodb'
 import { checkAdminToken, type AdminAuthEnv } from './adminAuth'
+import { buildPlayerStats, type StatsSession } from './playerStats'
 
 const COL_SESSIONS = 'game_sessions'
 const COL_DAYS = 'game_day_snapshots'
@@ -38,7 +39,7 @@ export async function adminDashboard(
 
     const [sessions, phaseSplit, tierSplit, dailyStarts, latestSnapshots, feedback] = await Promise.all([
       db.collection(COL_SESSIONS).find({}, {
-        projection: { _id: 0, sessionId: 1, phase: 1, lastRecordedDay: 1, difficultyTier: 1, createdAt: 1 },
+        projection: { _id: 0, sessionId: 1, anonId: 1, startupName: 1, idea: 1, workspace: 1, phase: 1, lastRecordedDay: 1, difficultyTier: 1, createdAt: 1, updatedAt: 1 },
       }).toArray(),
 
       db.collection(COL_SESSIONS).aggregate([
@@ -117,6 +118,7 @@ export async function adminDashboard(
           exitDayBuckets,
         },
         feedback,
+        ...buildPlayerStats(sessions as StatsSession[]),
       },
     }
   } catch (e) {
